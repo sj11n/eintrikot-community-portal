@@ -1,0 +1,122 @@
+Wir bauen das digitale Community-Portal für EINTRIKOT e. V.
+
+Ziel:
+Eine hochwertige, mobile-first Website und Mitglieder-App in EINEM WordPress-System. Die Website ist öffentlich zugänglich; der Mitgliederbereich ist per Login geschützt. Es gibt keine native iOS-/Android-App. Die responsive Website soll sich auf Mobilgeräten wie eine App anfühlen und später zum Homescreen hinzugefügt werden können.
+
+Harte Rahmenbedingungen:
+- Produktionshosting: normales deutsches WordPress-/PHP-Shared-Hosting, kompatibel mit STRATO.
+- Kein Node.js in Produktion, kein Vercel, kein Supabase, kein VPS, kein Headless-Setup.
+- Keine Elementor-, Divi- oder multipurpose Theme-Abhängigkeit.
+- Baue ein schlankes, hochwertiges Custom Theme bzw. Child Theme.
+- Laufende Zusatzkosten sollen maximal 15 Euro pro Monat betragen.
+- Google Workspace for Nonprofits ist vorhanden und soll für Gmail, Drive, Google Forms und Google Sheets genutzt werden.
+- WISO MeinVerein bleibt das führende System für Mitgliedschaft, Beitritt, Beiträge, SEPA, Spenden, Buchhaltung und rechtlich relevante Mitgliedsdaten.
+- Keine Bankdaten, Beitragsdaten oder vollständige Mitgliederdatenbank in WordPress nachbauen.
+- Es darf keine unkontrollierte öffentliche Registrierung geben.
+- Bestehende Produktion niemals direkt verändern. Zuerst Staging, Backup und Abnahmeprozess einrichten.
+
+Marke und Gestaltung:
+- EINTRIKOT ist ein generationsübergreifendes Hockey-Netzwerk und Förderverein.
+- Leitgedanke: „Ein Trikot endet nicht mit dem letzten Spiel.“
+- Narrative: „Rein ins Trikot. Im Trikot. Raus aus dem Trikot.“
+- Design: modern, emotional, reduziert, sportlich und professionell; Premium-Sport-/Lifestyle-Qualität, ohne Marken zu kopieren.
+- Keine generischen Stockbilder, kein Schwarz-Rot-Gold-Look, kein reines Schwarz als dominierende Farbe.
+- Brandbook und bestehendes Logo sind maßgeblich. Die Markenfont ist Montserrat.
+- Mobile responsive ab 320 px, keine horizontalen Überläufe, große gut klickbare CTAs und gute Lesbarkeit.
+- Vor dem Codieren erstelle vollständige visuelle Konzepte für alle relevanten Bereiche und hole meine Freigabe ein.
+
+Öffentliche Website:
+- Sticky Header mit: Club, Konzept, Wirkung, News, Partner, Mitglied werden, Anmelden.
+- Homepage mit:
+  1. Hero mit klarer EINTRIKOT-Idee und zwei CTAs: „Mitglied werden“ und „Anmelden“
+  2. Kennzahlen: Mitglieder, Förderprojekte, Fördervolumen
+  3. Was ist EINTRIKOT?
+  4. Rein ins Trikot / Im Trikot / Raus aus dem Trikot
+  5. Wirkung und Förderprojekte
+  6. News-Bereich
+  7. Testimonials von jüngeren und älteren Hockeypersönlichkeiten
+  8. Partnerbereich
+  9. Mitglied-werden-CTA
+  10. Footer mit Rechtlichem, Kontakt und Social Links
+- Mitglied werden führt zu MeinVerein.
+- News sind als leicht editierbarer WordPress-Inhaltstyp anzulegen.
+
+Mitgliederportal:
+- Login mit E-Mail und Passwort.
+- Passwort-vergessen-Prozess und E-Mail-basierte Passwort-Zurücksetzung.
+- Neue Konten ausschließlich per Einladung nach erfolgreichem Beitritt über MeinVerein.
+- Setze Ultimate Member für Login, Passwort-Reset, Profile, Rollen und Zugriffsschutz ein.
+- Deaktiviere ein öffentliches Mitgliederverzeichnis für Version 1.
+- Rollen:
+  - Besucher
+  - Mitglied
+  - Redaktion
+  - Vorstand
+  - technische Administration
+- Mitglieder können ein freiwilliges Profil pflegen:
+  - Profilbild
+  - aktueller Verein
+  - Hockey- und DHB-Historie
+  - Altersklassen und Zeiträume
+  - Anzahl Länderspiele und Altersklassen-Länderspiele
+  - Hobbys
+  - Universität
+  - Beruf und Arbeitgeber
+  - „So möchte ich mich bei EINTRIKOT einbringen“
+- Adresse, Zahlungs- und Beitragsdaten bleiben in MeinVerein und werden nicht als Portal-Stammdaten geführt.
+- Für jedes Profilfeld muss eine Sichtbarkeitseinstellung vorgesehen werden: nur ich / Mitglieder / nicht anzeigen.
+- Geschützter Bereich:
+  - Mein Profil
+  - Mitglieder-News
+  - Termine
+  - Service-Anfragen
+  - Dokumente
+  - Kontakt zum Vorstand
+
+Services in Version 1:
+- Event-Anmeldung
+- Förderidee einreichen
+- „Ich möchte mich einbringen“
+- Kontaktformular an den Vorstand
+- Jede Anfrage erzeugt eine E-Mail an die zuständige Rolle und einen nachvollziehbaren Eintrag im WordPress-Backend.
+- Noch keinen komplexen Shop, keine Zahlungen und keinen offenen Mitgliederchat bauen.
+
+Newsletter und Kommunikation:
+- Setze MailPoet als Newsletter-Tool in WordPress ein.
+- Newsletter-Abonnements sind getrennt von der Mitgliedschaft zu führen.
+- Funktionalitäten:
+  - An- und Abmeldung
+  - Newsletter-Archiv
+  - Testversand
+  - Versandfreigabe ausschließlich durch Vorstand
+  - Templates im EINTRIKOT-Design
+- Erstelle eine Google-Workspace-gestützte Redaktionslogik:
+  - Gmail-Label: Newsletter/Eingang
+  - Google Form: „Thema für EINTRIKOT vorschlagen“
+  - Google Sheet: Redaktionsübersicht mit Quelle, Datum, Link, Bildstatus, Relevanz, Status und Freigabe
+  - Google Drive: Bilder, freigegebene Texte, Ausgabenarchiv
+- Bereite einen KI-gestützten Workflow vor:
+  1. Themen sammeln
+  2. relevante Hockey- und Community-Themen recherchieren
+  3. Themen in Setzen / Optional / Nacharbeiten / Zurückstellen bewerten
+  4. nach menschlicher Themenfreigabe Newsletter, Betreff, Vorschautext, Website-Beiträge sowie LinkedIn- und Instagram-Entwürfe erzeugen
+  5. Fakten, Links, Bildrechte und Abmeldelogik prüfen
+  6. nie ohne menschliche Freigabe veröffentlichen oder versenden
+
+Sicherheit und Datenschutz:
+- Datenschutzfreundliche Voreinstellungen.
+- Datenminimierung.
+- Keine öffentlichen Profilinformationen ohne ausdrückliche Freigabe.
+- Sichere Rollen- und Rechteprüfung.
+- Rate Limiting und Schutz der Login-Seite.
+- DSGVO-konforme Datenschutzerklärung, Impressum und Einwilligungstexte als offene Prüfpunkte markieren; keine rechtlichen Texte erfinden.
+- Richte Backup-, Update- und Staging-Prozess ein.
+
+Arbeitsweise:
+1. Prüfe zunächst den vorhandenen WordPress-Stand, Theme, Plugins, Hostinggrenzen und vorhandene Inhalte.
+2. Lege eine KEEP / ADAPT / DEFER / REMOVE-Liste vor.
+3. Erstelle danach Designkonzepte für öffentliche Website, Profilseite, Mitglieder-Dashboard und Newsletter-Template.
+4. Warte auf meine Designfreigabe.
+5. Implementiere danach schrittweise in Staging.
+6. Nach jedem Abschnitt: Desktop- und Mobile-QA, konkrete Testfälle und kurze Dokumentation.
+7. Vor Go-live: Test mit Vorstand/Beirat und 10 bis 20 Testmitgliedern.

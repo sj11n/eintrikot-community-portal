@@ -1,0 +1,25 @@
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+wp-config.php
+*.pem
+*.key
+
+# Member data, database exports and backups
+*.csv
+*.xlsx
+*.sql
+*.sql.*
+*.zip
+*.tar
+*.gz
+backups/
+imports/
+private/
+
+# Runtime and generated files
+node_modules/
+wp-content/uploads/
+.DS_Store
+*.log
