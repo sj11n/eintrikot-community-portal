@@ -1,0 +1,101 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/theme.json",
+  "version": 3,
+  "settings": {
+    "appearanceTools": true,
+    "layout": {
+      "contentSize": "1120px",
+      "wideSize": "1320px"
+    },
+    "color": {
+      "palette": [
+        {
+          "slug": "black",
+          "name": "Schwarz",
+          "color": "#000000"
+        },
+        {
+          "slug": "white",
+          "name": "Weiß",
+          "color": "#ffffff"
+        },
+        {
+          "slug": "pink",
+          "name": "Rosa",
+          "color": "#F1D1DD"
+        },
+        {
+          "slug": "blue",
+          "name": "Blau",
+          "color": "#C8E2EE"
+        },
+        {
+          "slug": "green",
+          "name": "Grün",
+          "color": "#CEDFBD"
+        },
+        {
+          "slug": "red",
+          "name": "Rot",
+          "color": "#DA525D"
+        },
+        {
+          "slug": "gold",
+          "name": "Gold",
+          "color": "#FFCC4E"
+        }
+      ]
+    },
+    "typography": {
+      "fontFamilies": [
+        {
+          "fontFamily": "Montserrat, sans-serif",
+          "name": "Montserrat",
+          "slug": "montserrat"
+        }
+      ]
+    }
+  },
+  "styles": {
+    "typography": {
+      "fontFamily": "var:preset|font-family|montserrat",
+      "fontSize": "17px",
+      "lineHeight": "1.65"
+    },
+    "color": {
+      "background": "#ffffff",
+      "text": "#000000"
+    },
+    "spacing": {
+      "blockGap": "24px"
+    },
+    "elements": {
+      "button": {
+        "border": {
+          "radius": "99px"
+        },
+        "color": {
+          "background": "#000000",
+          "text": "#ffffff"
+        }
+      },
+      "h2": {
+        "typography": {
+          "fontSize": "clamp(30px,4vw,54px)"
+        }
+      }
+    }
+  },
+  "templateParts": [
+    {
+      "name": "header",
+      "title": "Header",
+      "area": "header"
+    },
+    {
+      "name": "footer",
+      "title": "Footer",
+      "area": "footer"
+    }
+  ]
+}
