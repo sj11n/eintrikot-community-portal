@@ -1,0 +1,8 @@
+<?php
+/**
+ * Title: EINTRIKOT Footer
+ * Slug: eintrikot/mvp-footer
+ * Inserter: no
+ */
+?>
+<!-- wp:group {"className":"footer","layout":{"type":"default"}} --><div class="wp-block-group footer"><!-- wp:group --><div class="wp-block-group"><!-- wp:html --><a class="brand" href="<?php echo esc_url(home_url('/')); ?>" aria-label="EINTRIKOT Startseite"><img class="logo" src="<?php echo esc_url(get_theme_file_uri('assets/logo.svg')); ?>" alt="EINTRIKOT"></a><!-- /wp:html --><!-- wp:paragraph --><p>Das Netzwerk der Nationalteams.</p><!-- /wp:paragraph --><!-- wp:paragraph --><p><a href="mailto:info@eintrikot.de">info@eintrikot.de</a></p><!-- /wp:paragraph --><!-- wp:paragraph --><p>EINTRIKOT e. V. · Gemeinnütziger Verein</p><!-- /wp:paragraph --></div><!-- /wp:group --><!-- wp:navigation {"overlayMenu":"never","orientation":"vertical","layout":{"type":"flex","orientation":"vertical"}} --><!-- wp:navigation-link {"label": "Der Verein", "url": "/community-verein/", "kind": "custom"} /--><!-- wp:navigation-link {"label": "Engagement", "url": "/community-engagement/", "kind": "custom"} /--><!-- wp:navigation-link {"label": "News", "url": "/community-news/", "kind": "custom"} /--><!-- wp:navigation-link {"label": "Unterstützen", "url": "/community-unterstuetzen/", "kind": "custom"} /--><!-- /wp:navigation --><!-- wp:navigation {"overlayMenu":"never","layout":{"type":"flex","orientation":"vertical"}} --><!-- wp:navigation-link {"label":"Kontakt","url":"/community-kontakt/"} /--><!-- wp:navigation-link {"label":"Impressum","url":"/impressum/"} /--><!-- wp:navigation-link {"label":"Datenschutz","url":"/datenschutz/"} /--><!-- /wp:navigation --></div><!-- /wp:group -->

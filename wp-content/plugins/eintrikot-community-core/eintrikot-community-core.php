@@ -2,7 +2,7 @@
 /**
  * Plugin Name: EINTRIKOT Community Core
  * Description: Getrennte Einrichtung und Berechtigungen für das EINTRIKOT-Portal. Entwicklungsstand.
- * Version: 0.1.0
+ * Version: 0.5.0
  * Requires PHP: 8.1
  */
 namespace Eintrikot\Community;
@@ -28,13 +28,13 @@ add_action( 'admin_menu', function () {
 } );
 function setup_page() {
     if ( ! current_user_can( 'manage_options' ) ) { return; }
-    echo '<div class="wrap"><h1>EINTRIKOT Community aufbauen</h1><p>Entwicklungsstand 0.1.0. Dieser Schritt erstellt nur neue Seitenentwürfe. Er veröffentlicht nichts und ändert weder Startseite noch bestehende Inhalte.</p>';
+    echo '<div class="wrap"><h1>EINTRIKOT Community aufbauen</h1><p>Entwicklungsstand 0.4.0. Dieser Schritt erstellt nur neue Seitenentwürfe. Er veröffentlicht nichts und ändert weder Startseite noch bestehende Inhalte.</p>';
     if ( isset( $_GET['et_created'] ) ) { echo '<div class="notice notice-success"><p>Einrichtung geprüft. Die erstellten Seiten findest du unter Seiten → Entwürfe.</p></div>'; }
     echo '<h2>Bearbeitbare Seiten vorbereiten</h2><p>Texte, Cover-Bilder und weitere Bilder werden anschließend direkt im Seiteneditor gepflegt. Öffentliche News werden als normale Beiträge erstellt.</p><form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
     wp_nonce_field( 'eintrikot_prepare_pages' );
     echo '<input type="hidden" name="action" value="eintrikot_prepare_pages">';
     submit_button( 'Seitenentwürfe anlegen' );
-    echo '</form><h2>Noch in Umsetzung</h2><p>Profile, Mitgliederverzeichnis, geschützte Vereinsinfos, Kalender, Service-Anfragen und Änderungsprotokoll. Diese Funktionen sind in diesem Paket noch nicht verfügbar.</p></div>';
+    echo '</form><h2>Noch in Umsetzung</h2><p>Profilpflege, Mitgliedersuche und Service-Anfragen sind im Portal vorbereitet. Kalender, redaktionelle Vereinsinfos und der vollständige Abnahmetest folgen.</p></div>';
 }
 add_action( 'admin_post_eintrikot_prepare_pages', function () {
     if ( ! current_user_can( 'manage_options' ) ) { wp_die( 'Keine Berechtigung.', '', array( 'response' => 403 ) ); }
@@ -56,6 +56,44 @@ add_action( 'admin_post_eintrikot_prepare_pages', function () {
         $created[$slug] = $id;
         update_option( 'eintrikot_draft_pages', $created, false );
     }
+    prepare_portal_page();
     wp_safe_redirect( admin_url( 'admin.php?page=eintrikot-community-setup&et_created=1' ) );
     exit;
 } );
+
+require_once __DIR__ . '/portal.php';
+register_activation_hook(__FILE__, __NAMESPACE__ . '\portal_install');
+
+// Upgrades also run when WordPress replaces an already active plugin.
+add_action('admin_init', function () {
+    if (current_user_can('manage_options') && get_option('eintrikot_schema_version') !== '0.4.0') {
+        activate();
+        portal_install();
+        update_option('eintrikot_schema_version', '0.4.0', false);
+    }
+});
+function prepare_portal_page() {
+    $existing = (int) get_option('eintrikot_portal_page');
+    if ($existing && get_post($existing)) { return $existing; }
+    $id = wp_insert_post(array(
+        'post_type'=>'page', 'post_status'=>'draft', 'post_title'=>'Mitgliederportal',
+        'post_name'=>'community-portal',
+        'post_content'=>'<!-- wp:shortcode -->[eintrikot_portal]<!-- /wp:shortcode -->',
+    ), true);
+    if (is_wp_error($id)) { wp_die(esc_html($id->get_error_message())); }
+    update_option('eintrikot_portal_page', $id, false);
+    return $id;
+}
+add_action('wp_enqueue_scripts', function () {
+    if ((((int)get_option('eintrikot_portal_page') > 0 && is_page((int)get_option('eintrikot_portal_page')))||((int)get_option('eintrikot_audit_page') > 0 && is_page((int)get_option('eintrikot_audit_page'))))) {
+        wp_enqueue_style('eintrikot-portal', plugins_url('portal.css', __FILE__), array(), '0.5.0');
+    }
+});
+
+require_once __DIR__ . "/site.php";
+
+require_once __DIR__ . '/infos.php';
+
+require_once __DIR__ . '/metrics.php';
+
+require_once __DIR__ . '/release.php';

@@ -67,7 +67,7 @@
       "text": "#000000"
     },
     "spacing": {
-      "blockGap": "24px"
+      "blockGap": "0"
     },
     "elements": {
       "button": {
@@ -83,6 +83,20 @@
         "typography": {
           "fontSize": "clamp(30px,4vw,54px)"
         }
+      },
+      "link": {
+        "color": {
+          "text": "#000000"
+        },
+        "typography": {
+          "fontWeight": "inherit",
+          "textDecoration": "none"
+        },
+        ":hover": {
+          "typography": {
+            "textDecoration": "underline"
+          }
+        }
       }
     }
   },
@@ -96,6 +110,22 @@
       "name": "footer",
       "title": "Footer",
       "area": "footer"
+    }
+  ],
+  "customTemplates": [
+    {
+      "name": "mvp-public",
+      "title": "EINTRIKOT · Website",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "mvp-portal",
+      "title": "EINTRIKOT · Mitgliederportal",
+      "postTypes": [
+        "page"
+      ]
     }
   ]
 }
