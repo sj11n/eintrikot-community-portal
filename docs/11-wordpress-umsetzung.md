@@ -41,3 +41,12 @@ Lokal wurde eine isolierte WordPress-Installation mit offizieller SQLite-Integra
 Auf der Entwicklungsdomain laden alle acht öffentlichen Ziele. Anonyme Aufrufe des Verzeichnisses liefern nur die Anmeldung, die Protokollseite leitet zur Anmeldung; geschützte Antworten verwenden `no-store, private`. Der angemeldete Portalstart wurde auf der Zielinstallation visuell geprüft. Vollständige Rollen-/Schreibtests auf der Strato-Datenbank, Versand und echte Datenmigration stehen noch aus.
 
 Die Benutzerfreigabe erlaubt Änderungen an dieser Entwicklungsinstallation ohne Altbackup. Der geprüfte MVP bleibt als Referenz unter `preview/` erhalten. Keine Änderungen am Tippspiel oder an MeinVerein.
+
+
+## Ergänzungen 0.6.0 (14.09.2026)
+
+Mobiles Vollbildmenü mit großen Touchflächen und getrenntem Anmelden-Button. Weiß/CI-Farbwechsel, drei zusammengehörige Trikot-Phasen-Icons und eigene News-Karten. Zwei feste Cover-Bildplätze auf der Startseite: unter Seiten → Startseite den jeweiligen Cover-Block auswählen und über die Mediathek ein Bild einsetzen/ersetzen. Das feste Seitenverhältnis hält das Layout stabil; der Bildausschnitt lässt sich über den Fokuspunkt anpassen. Auch der Hero bleibt als Cover bearbeitbar.
+
+Impressum anhand https://www.eintrikot.de/impressum/ ergänzt (Verein, Anschrift, Register und Kontakt). Datenschutz ist ausdrücklich ein Zwischenstand, keine fertige Datenschutzerklärung. Beide Seiten sind native WordPress-Seiten.
+
+Die einmalige Ergänzung unter Community-Aufbau → Website verfeinern wurde auf der Entwicklungswebsite ausgeführt. Prüfung: WordPress-Editor ohne Blockvalidierungsfehler; mobiles Vollbildmenü und Navigation zur Anmeldung auf der Entwicklungswebsite erfolgreich; drei Phasen-Icons, zwei Bildplätze, weißer Phasenbereich und Impressumsangaben vorhanden.

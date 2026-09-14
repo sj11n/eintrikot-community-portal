@@ -16,3 +16,40 @@ body .wp-site-blocks{padding:0}.wp-site-blocks>*,.entry-content>*{margin-block-s
 
 /* Collapse before the complete navigation would wrap into the hero. */
 @media(max-width:1100px){.header{flex-wrap:nowrap!important}.header>.wp-block-navigation{margin-left:auto}.header .wp-block-navigation__responsive-container:not(.is-menu-open){display:none!important}.header .wp-block-navigation__responsive-container-open{display:flex!important;align-items:center;justify-content:center;width:44px;height:44px}.header .wp-block-navigation__responsive-container.is-menu-open{display:flex!important;padding:70px 7% 30px}.header .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__container{align-items:flex-start;gap:25px}.header .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item{font-size:20px}}
+
+/* Full-screen mobile menu: a filtered ancestor must not contain the fixed overlay. */
+.header{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:#fff}
+@media(max-width:1100px){
+.header:has(.is-menu-open){position:static!important}
+.header .wp-block-navigation__responsive-container.is-menu-open{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-height:none!important;overflow-y:auto!important;background:#fff!important;z-index:100000!important;padding:90px 7% 30px!important}
+.header .is-menu-open .wp-block-navigation__responsive-dialog{min-height:calc(100dvh - 120px);position:static}
+.header .is-menu-open .wp-block-navigation__responsive-container-content{padding:0!important;align-items:stretch!important}
+.header .is-menu-open .wp-block-navigation__container{width:100%;align-items:stretch!important;gap:0!important}
+.header .is-menu-open .wp-block-navigation-item{width:100%;font-size:clamp(23px,5vw,34px)!important}
+.header .is-menu-open .wp-block-navigation-item__content{display:block;width:100%;padding:16px 0;line-height:1.2}
+.header .is-menu-open .et-nav-join{margin-top:28px;font-size:17px!important}
+.header .is-menu-open .et-nav-login{margin-top:12px;font-size:17px!important}
+.header .is-menu-open .et-nav-login a{display:flex;justify-content:center;border-radius:99px!important;background:#000!important;color:#fff!important;padding:18px 24px!important;border:1px solid #000!important}
+.header .is-menu-open .et-nav-join a{display:flex;justify-content:center;border:1px solid #000;border-radius:99px;padding:18px 24px}
+.header .wp-block-navigation__responsive-container-close{position:fixed;top:22px;right:6%;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+}
+.entry-content .phases{background:#fff!important;padding-bottom:85px}
+.entry-content #wirkung{background:#CEDFBD}
+.entry-content .voices{background:#fff}
+.entry-content .quote{background:#C8E2EE}
+.entry-content .news-section{background:#fff}
+.entry-content .thanks{background:#F1D1DD}
+.entry-content .closing{background:#fff}
+.entry-content .phase-icon{width:68px;height:64px;margin:0 0 24px}
+.entry-content .phase-icon img{display:block;width:68px;height:64px}
+.entry-content .news-section .news-query .wp-block-post{background:#fafafa;border:1px solid #eee;padding:24px;border-radius:12px}
+.entry-content .et-home-photo{grid-column:1/-1;width:100%;min-height:0!important;aspect-ratio:16/7;margin:36px 0 0;padding:24px;color:#555;overflow:hidden}
+.entry-content .et-home-photo .wp-block-cover__background{background:#f1f1ef!important}
+.entry-content .et-home-photo p{font-size:13px!important;max-width:none;text-align:center;margin:0}
+.entry-content .et-home-photo:has(img) .wp-block-cover__inner-container{display:none}
+.entry-content .et-home-photo:has(img) .wp-block-cover__background{opacity:0}
+.entry-content .et-home-photo img{object-fit:cover;width:100%;height:100%}
+.entry-content .legal-content{max-width:1000px;margin:auto}.entry-content .legal-content h2{font-size:28px;margin-top:38px}.entry-content .legal-content p{font-size:16px}
+@media(max-width:800px){.entry-content .phases{padding-bottom:60px}.entry-content .et-home-photo{aspect-ratio:4/3;margin-top:20px}.entry-content .phase-icon{margin-bottom:18px}}
+
+@media(max-width:1100px){.header .is-menu-open .wp-block-navigation-item>a{padding:16px 0!important;min-height:56px;box-sizing:border-box;align-items:center;font-size:inherit!important}.header .is-menu-open .et-nav-login>a,.header .is-menu-open .et-nav-join>a{padding:18px 24px!important;font-size:17px!important}}

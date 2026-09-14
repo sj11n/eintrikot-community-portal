@@ -4,7 +4,7 @@
 
 ## Aktueller Stand
 
-Theme 0.5.1 und Community Core 0.5.0 sind auf http://eintrikot.myemmel.com installiert. Öffentliche MVP-Inhalte wurden in native, bearbeitbare WordPress-Blöcke übernommen. Profile, Mitgliederverzeichnis, Vereinsinfos, Kalender, Service-Anfragen und Änderungsprotokoll liegen im eigenen Core-Plugin.
+Theme 0.6.0 und Community Core 0.6.0 sind auf http://eintrikot.myemmel.com installiert. Öffentliche MVP-Inhalte wurden in native, bearbeitbare WordPress-Blöcke übernommen. Profile, Mitgliederverzeichnis, Vereinsinfos, Kalender, Service-Anfragen und Änderungsprotokoll liegen im eigenen Core-Plugin.
 
 [Umsetzung, Pflege und offene Arbeiten](docs/11-wordpress-umsetzung.md) dokumentiert den tatsächlichen Stand. Die akzeptierte Gestaltungsvorschau bleibt unter `preview/` als Referenz erhalten.
 

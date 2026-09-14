@@ -16,21 +16,21 @@
 <!-- wp:group {"tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group"><!-- wp:paragraph --><p>EINTRIKOT verbindet aktuelle und ehemalige Hockey-Nationalspielerinnen und Nationalspieler aller Generationen.</p><!-- /wp:paragraph -->
 <!-- wp:paragraph --><p>Wir schaffen Begegnungen, teilen Erfahrungen und geben der nächsten Generation etwas weiter. Auf dem Platz. Und darüber hinaus.</p><!-- /wp:paragraph -->
 <!-- wp:paragraph {"className":"et-link-line"} --><p class="et-link-line"><a class="text-link" href="/community-verein/">Mehr über den Verein ↗</a></p><!-- /wp:paragraph -->
-</div><!-- /wp:group -->
+</div><!-- /wp:group --><!-- wp:cover {"dimRatio":100,"className":"et-home-photo","style":{"color":{"background":"#f1f1ef"}}} --><div class="wp-block-cover et-home-photo has-background" style="background-color:#f1f1ef"><span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:paragraph --><p>Gemeinsam im Nationaltrikot · Bild folgt</p><!-- /wp:paragraph --></div></div><!-- /wp:cover -->
 </section><!-- /wp:group -->
 <!-- wp:group {"className":"vision-2030","tagName":"section","layout":{"type":"default"}} --><section class="wp-block-group vision-2030"><!-- wp:heading {"anchor":"vision-start","level":2} --><h2 class="wp-block-heading" id="vision-start">Vision 2030</h2><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Bis 2030 ist Eintrikot eine starke, selbsttragende Community, die alle deutschen Hockey Nationalteams finanziell, strukturell und persönlich unterstützt.</p><!-- /wp:paragraph -->
 </section><!-- /wp:group -->
 <!-- wp:group {"className":"section phases","anchor":"konzept","tagName":"section","layout":{"type":"default"}} --><section class="wp-block-group section phases" id="konzept"><!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Ein Trikot. Drei Lebensphasen.</h2><!-- /wp:heading -->
-<!-- wp:group {"className":"phase-grid","tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group phase-grid"><!-- wp:group {"tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group"><!-- wp:paragraph {"className":"phase-name"} --><p class="phase-name">Jugendnationalteams</p><!-- /wp:paragraph -->
+<!-- wp:group {"className":"phase-grid","tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group phase-grid"><!-- wp:group {"tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group"><!-- wp:image {"sizeSlug":"full","className":"phase-icon"} --><figure class="wp-block-image size-full phase-icon"><img src="/wp-content/themes/eintrikot-community/assets/phase-rein.svg" alt=""/></figure><!-- /wp:image --><!-- wp:paragraph {"className":"phase-name"} --><p class="phase-name">Jugendnationalteams</p><!-- /wp:paragraph -->
 <!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Rein ins Trikot.</h3><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Schon als Mitglied eines Jugendnationalteams gehörst du dazu. Gemeinsam wachsen, Erfahrungen sammeln und Verbindungen knüpfen.</p><!-- /wp:paragraph -->
 </article><!-- /wp:group -->
-<!-- wp:group {"tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group"><!-- wp:paragraph {"className":"phase-name"} --><p class="phase-name">Aktive Nationalteams</p><!-- /wp:paragraph -->
+<!-- wp:group {"tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group"><!-- wp:image {"sizeSlug":"full","className":"phase-icon"} --><figure class="wp-block-image size-full phase-icon"><img src="/wp-content/themes/eintrikot-community/assets/phase-drin.svg" alt=""/></figure><!-- /wp:image --><!-- wp:paragraph {"className":"phase-name"} --><p class="phase-name">Aktive Nationalteams</p><!-- /wp:paragraph -->
 <!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Im Trikot.</h3><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Gemeinsame Spiele. Große Momente. Erfahrungen, die prägen – und über Mannschaften und Jahrgänge hinweg verbinden.</p><!-- /wp:paragraph -->
 </article><!-- /wp:group -->
-<!-- wp:group {"tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group"><!-- wp:paragraph {"className":"phase-name"} --><p class="phase-name">Nach der aktiven Zeit</p><!-- /wp:paragraph -->
+<!-- wp:group {"tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group"><!-- wp:image {"sizeSlug":"full","className":"phase-icon"} --><figure class="wp-block-image size-full phase-icon"><img src="/wp-content/themes/eintrikot-community/assets/phase-raus.svg" alt=""/></figure><!-- /wp:image --><!-- wp:paragraph {"className":"phase-name"} --><p class="phase-name">Nach der aktiven Zeit</p><!-- /wp:paragraph -->
 <!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Raus aus dem Trikot.</h3><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Die aktive Zeit endet. Die Verbindung bleibt. Wir halten sie lebendig und öffnen neue Wege, sich einzubringen.</p><!-- /wp:paragraph -->
 </article><!-- /wp:group -->
@@ -75,9 +75,9 @@
 </div><!-- /wp:group -->
 </section><!-- /wp:group -->
 <!-- wp:group {"className":"section quote","tagName":"section","layout":{"type":"default"}} --><section class="wp-block-group section quote"><!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Ein Trikot endet nicht mit dem letzten Spiel.</h2><!-- /wp:heading -->
-<!-- wp:paragraph --><p>Was bleibt, sind die Menschen. Die gemeinsamen Erinnerungen. Und die Möglichkeit, zusammen etwas zu bewegen.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Was bleibt, sind die Menschen. Die gemeinsamen Erinnerungen. Und die Möglichkeit, zusammen etwas zu bewegen.</p><!-- /wp:paragraph --><!-- wp:cover {"dimRatio":100,"className":"et-home-photo","style":{"color":{"background":"#f1f1ef"}}} --><div class="wp-block-cover et-home-photo has-background" style="background-color:#f1f1ef"><span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:paragraph --><p>Begegnungen über Generationen · Bild folgt</p><!-- /wp:paragraph --></div></div><!-- /wp:cover -->
 </section><!-- /wp:group -->
-<!-- wp:group {"className":"section","tagName":"section","layout":{"type":"default"}} --><section class="wp-block-group section"><!-- wp:group {"className":"news-head","tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group news-head"><!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Aus dem Netzwerk.</h2><!-- /wp:heading -->
+<!-- wp:group {"className":"section news-section","tagName":"section","layout":{"type":"default"}} --><section class="wp-block-group section news-section"><!-- wp:group {"className":"news-head","tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group news-head"><!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Aus dem Netzwerk.</h2><!-- /wp:heading -->
 <!-- wp:paragraph {"className":"et-link-line"} --><p class="et-link-line"><a class="text-link" href="/community-news/">Alle News ↗</a></p><!-- /wp:paragraph -->
 </div><!-- /wp:group -->
 <!-- wp:query {"queryId":22,"query":{"perPage":3,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","author":"","search":"","exclude":[],"sticky":"","inherit":false},"className":"news-query"} --><div class="wp-block-query news-query"><!-- wp:post-template {"layout":{"type":"grid","columnCount":3}} --><!-- wp:post-featured-image {"isLink":true,"aspectRatio":"4/3"} /-->
