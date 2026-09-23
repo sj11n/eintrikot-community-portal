@@ -43,6 +43,12 @@ add_action(
                 ['eintrikot-mvp'],
                 eintrikot_asset_version('assets/wordpress.css')
             );
+            wp_enqueue_style(
+                'eintrikot-refresh',
+                get_theme_file_uri('assets/refresh.css'),
+                ['eintrikot-wp-adapter'],
+                eintrikot_asset_version('assets/refresh.css')
+            );
         }
     },
     30
@@ -72,4 +78,70 @@ add_action(
             "\n";
     },
     1
+);
+
+/**
+ * Description and link preview (Open Graph) for public pages.
+ * Skipped when an SEO plugin already provides them, and on protected portal pages.
+ */
+function eintrikot_share_meta() {
+    $title = 'EINTRIKOT – Das Netzwerk der Hockey-Nationalteams';
+    $description =
+        'Wir verbinden Nationalspielerinnen und Nationalspieler aller Generationen – von der Jugend bis zu den Masters.';
+    $url = home_url('/');
+    if (is_singular() && !is_front_page()) {
+        $post = get_queried_object();
+        $title = wp_strip_all_tags(get_the_title($post)) . ' – EINTRIKOT';
+        $url = get_permalink($post);
+        if (has_excerpt($post)) {
+            $description = wp_strip_all_tags(get_the_excerpt($post));
+        }
+    }
+    return [
+        'title' => $title,
+        'description' => $description,
+        'url' => $url,
+        'image' => get_theme_file_uri('assets/og-image.jpg')
+    ];
+}
+
+function eintrikot_is_protected_page() {
+    foreach (['eintrikot_portal_page', 'eintrikot_audit_page'] as $option) {
+        $id = (int) get_option($option);
+        if ($id > 0 && is_page($id)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+add_action(
+    'wp_head',
+    function () {
+        if (defined('WPSEO_VERSION') || defined('RANK_MATH_VERSION') || defined('SEOPRESS_VERSION')) {
+            return;
+        }
+        if (is_404() || is_search() || eintrikot_is_protected_page()) {
+            return;
+        }
+        $meta = eintrikot_share_meta();
+        $tags = [
+            ['name', 'description', $meta['description']],
+            ['property', 'og:type', 'website'],
+            ['property', 'og:locale', 'de_DE'],
+            ['property', 'og:site_name', 'EINTRIKOT'],
+            ['property', 'og:title', $meta['title']],
+            ['property', 'og:description', $meta['description']],
+            ['property', 'og:url', $meta['url']],
+            ['property', 'og:image', $meta['image']],
+            ['property', 'og:image:width', '1200'],
+            ['property', 'og:image:height', '630'],
+            ['property', 'og:image:alt', 'EINTRIKOT – Das Netzwerk der Nationalteams'],
+            ['name', 'twitter:card', 'summary_large_image']
+        ];
+        foreach ($tags as [$attr, $key, $value]) {
+            printf('<meta %s="%s" content="%s">' . "\n", $attr, esc_attr($key), esc_attr($value));
+        }
+    },
+    5
 );
