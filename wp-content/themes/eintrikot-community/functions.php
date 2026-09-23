@@ -145,3 +145,32 @@ add_action(
     },
     5
 );
+
+/**
+ * Favicon from the logo mark (the "1"), for Chrome, Safari, iOS and Android.
+ * Replaces the WordPress site icon so every browser shows the same mark.
+ */
+function eintrikot_favicon_tags() {
+    $base = get_theme_file_uri('assets/favicon/');
+    $v = eintrikot_asset_version('assets/favicon/favicon.svg');
+    printf('<link rel="icon" href="%s" sizes="48x48">' . "\n", esc_url($base . 'favicon.ico?v=' . $v));
+    printf('<link rel="icon" href="%s" type="image/svg+xml">' . "\n", esc_url($base . 'favicon.svg?v=' . $v));
+    printf(
+        '<link rel="icon" href="%s" type="image/png" sizes="32x32">' . "\n",
+        esc_url($base . 'favicon-32.png?v=' . $v)
+    );
+    printf('<link rel="apple-touch-icon" href="%s">' . "\n", esc_url($base . 'apple-touch-icon.png?v=' . $v));
+    printf('<link rel="manifest" href="%s">' . "\n", esc_url($base . 'site.webmanifest?v=' . $v));
+    echo '<meta name="theme-color" content="#C8E2EE">' . "\n";
+}
+remove_action('wp_head', 'wp_site_icon', 99);
+remove_action('login_head', 'wp_site_icon', 99);
+remove_action('admin_head', 'wp_site_icon');
+add_action('wp_head', 'eintrikot_favicon_tags', 2);
+add_action('login_head', 'eintrikot_favicon_tags');
+add_action('admin_head', 'eintrikot_favicon_tags');
+// Browsers that ask for /favicon.ico directly get the same icon instead of the WordPress logo.
+add_action('do_faviconico', function () {
+    wp_safe_redirect(get_theme_file_uri('assets/favicon/favicon.ico'), 301);
+    exit();
+});
