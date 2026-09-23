@@ -2,12 +2,25 @@
 if (!defined('ABSPATH')) {
     exit();
 }
+
+/**
+ * Cache-busting version for a theme asset: changes whenever the file changes.
+ */
+function eintrikot_asset_version($file) {
+    $path = get_theme_file_path($file);
+    return file_exists($path) ? (string) filemtime($path) : null;
+}
 add_action('after_setup_theme', function () {
     add_theme_support('editor-styles');
     add_editor_style(['assets/mvp.css', 'assets/editor.css']);
 });
 add_action('wp_enqueue_scripts', function () {
-    wp_enqueue_style('eintrikot-community', get_theme_file_uri('assets/site.css'), [], '0.2.0');
+    wp_enqueue_style(
+        'eintrikot-community',
+        get_theme_file_uri('assets/site.css'),
+        [],
+        eintrikot_asset_version('assets/site.css')
+    );
 });
 add_action('init', function () {
     register_block_pattern_category('eintrikot', ['label' => 'EINTRIKOT']);
@@ -18,12 +31,17 @@ add_action(
     function () {
         if (is_page_template('mvp-public') || is_page_template('mvp-portal') || is_singular('post')) {
             wp_dequeue_style('eintrikot-community');
-            wp_enqueue_style('eintrikot-mvp', get_theme_file_uri('assets/mvp.css'), [], '0.6.0');
+            wp_enqueue_style(
+                'eintrikot-mvp',
+                get_theme_file_uri('assets/mvp.css'),
+                [],
+                eintrikot_asset_version('assets/mvp.css')
+            );
             wp_enqueue_style(
                 'eintrikot-wp-adapter',
                 get_theme_file_uri('assets/wordpress.css'),
                 ['eintrikot-mvp'],
-                '0.6.0'
+                eintrikot_asset_version('assets/wordpress.css')
             );
         }
     },
@@ -31,7 +49,12 @@ add_action(
 );
 
 add_action('login_enqueue_scripts', function () {
-    wp_enqueue_style('eintrikot-login', get_theme_file_uri('assets/login.css'), [], '0.6.0');
+    wp_enqueue_style(
+        'eintrikot-login',
+        get_theme_file_uri('assets/login.css'),
+        [],
+        eintrikot_asset_version('assets/login.css')
+    );
 });
 add_filter('login_headerurl', fn() => home_url('/'));
 add_filter('login_headertext', fn() => 'EINTRIKOT');

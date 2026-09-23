@@ -117,6 +117,17 @@ add_shortcode('eintrikot_metrics', function () {
     return $html;
 });
 add_action('wp_enqueue_scripts', function () {
-    wp_enqueue_style('eintrikot-metrics', plugins_url('metrics.css', __FILE__), [], '0.4.0');
-    wp_enqueue_script('eintrikot-metrics', plugins_url('metrics.js', __FILE__), [], '0.4.0', true);
+    wp_enqueue_style(
+        'eintrikot-metrics',
+        plugins_url('metrics.css', __FILE__),
+        [],
+        asset_version('metrics.css')
+    );
+    wp_enqueue_script(
+        'eintrikot-metrics',
+        plugins_url('metrics.js', __FILE__),
+        [],
+        asset_version('metrics.js'),
+        true
+    );
 });

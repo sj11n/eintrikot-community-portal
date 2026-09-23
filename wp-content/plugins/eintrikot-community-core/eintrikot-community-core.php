@@ -107,6 +107,14 @@ add_action('admin_post_eintrikot_prepare_pages', function () {
     exit();
 });
 
+/**
+ * Cache-busting version for a plugin asset: changes whenever the file changes.
+ */
+function asset_version($file) {
+    $path = __DIR__ . '/' . $file;
+    return file_exists($path) ? (string) filemtime($path) : null;
+}
+
 require_once __DIR__ . '/portal.php';
 register_activation_hook(__FILE__, __NAMESPACE__ . '\portal_install');
 
@@ -145,7 +153,12 @@ add_action('wp_enqueue_scripts', function () {
             is_page((int) get_option('eintrikot_portal_page'))) ||
         ((int) get_option('eintrikot_audit_page') > 0 && is_page((int) get_option('eintrikot_audit_page')))
     ) {
-        wp_enqueue_style('eintrikot-portal', plugins_url('portal.css', __FILE__), [], '0.5.0');
+        wp_enqueue_style(
+            'eintrikot-portal',
+            plugins_url('portal.css', __FILE__),
+            [],
+            asset_version('portal.css')
+        );
     }
 });
 

@@ -507,6 +507,12 @@ add_action('wp_enqueue_scripts', function () {
             is_page((int) get_option('eintrikot_portal_page'))) ||
         ((int) get_option('eintrikot_audit_page') > 0 && is_page((int) get_option('eintrikot_audit_page')))
     ) {
-        wp_enqueue_script('eintrikot-portal-ui', plugins_url('portal.js', __FILE__), [], '0.5.0', true);
+        wp_enqueue_script(
+            'eintrikot-portal-ui',
+            plugins_url('portal.js', __FILE__),
+            [],
+            asset_version('portal.js'),
+            true
+        );
     }
 });
