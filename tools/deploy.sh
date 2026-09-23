@@ -68,10 +68,10 @@ fi
 echo "== Ziel prüfen: $REMOTE"
 if ! exists "$REMOTE/plugins" || ! exists "$REMOTE/themes"; then
     echo "::error::Unter $REMOTE fehlen plugins/ oder themes/. WP_CONTENT_PATH prüfen – es wurde nichts verändert."
-    # Hilfe zur Pfadsuche: nur Ordnernamen, eine Ebene, keine Dateiinhalte.
-    for dir in "$REMOTE" "$(dirname "$REMOTE")"; do
-        echo "Ordner in $dir:"
-        remote_soft "cls -1 -F '$dir/'" | grep '/$' | head -n 30 | sed 's/^/  /' || true
+    # Hilfe zur Pfadsuche als Hinweis im Lauf: nur Ordnernamen, eine Ebene, keine Dateiinhalte.
+    for dir in "/" "." "$(dirname "$REMOTE")" "$REMOTE"; do
+        found="$(remote_soft "cls -1 -F '${dir%/}/'" | grep '/$' | head -n 30 | tr '\n' ' ' || true)"
+        echo "::notice::Ordner in '$dir': ${found:-(leer oder nicht vorhanden)}"
     done
     exit 1
 fi
