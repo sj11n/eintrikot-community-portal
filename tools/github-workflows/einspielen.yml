@@ -1,0 +1,62 @@
+name: Einspielen
+
+# Spielt Theme und Plugin auf die Entwicklungsinstallation ein.
+# Automatisch bei jedem Push auf main, der Theme oder Plugin ändert,
+# oder von Hand unter Actions → Einspielen → Run workflow (mit Probelauf).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'wp-content/themes/eintrikot-community/**'
+      - 'wp-content/plugins/eintrikot-community-core/**'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Nur Probelauf (zeigt Änderungen, verändert nichts)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: einspielen
+  cancel-in-progress: false
+
+jobs:
+  pruefen:
+    uses: ./.github/workflows/pruefen.yml
+
+  einspielen:
+    needs: pruefen
+    runs-on: ubuntu-latest
+    environment: entwicklung
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: lftp installieren
+        run: sudo apt-get update -q && sudo apt-get install -y -q lftp
+
+      - name: Einspielen
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_KNOWN_HOSTS: ${{ secrets.SFTP_KNOWN_HOSTS }}
+          WP_CONTENT_PATH: ${{ vars.WP_CONTENT_PATH }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          DEPLOY_PROTOCOL: ${{ vars.DEPLOY_PROTOCOL || 'sftp' }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+          BACKUP_DIR: backup
+        run: tools/deploy.sh
+
+      - name: Sicherung des vorherigen Stands aufbewahren
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sicherung-${{ github.run_number }}
+          path: backup/
+          if-no-files-found: ignore
+          retention-days: 30

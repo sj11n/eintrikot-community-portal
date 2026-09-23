@@ -1,0 +1,36 @@
+name: Prüfen
+
+on:
+  push:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  pruefen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: none
+
+      - name: PHP-Syntax (PHP 8.1, Mindestversion laut Plugin)
+        run: |
+          set -e
+          find wp-content -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+          echo "Alle PHP-Dateien ohne Syntaxfehler."
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Formatierung (Prettier)
+        run: npx --yes -p prettier@3.9.9 -p @prettier/plugin-php@0.25.0 prettier --check "wp-content/plugins/eintrikot-community-core/**/*.{php,js}" "wp-content/themes/eintrikot-community/functions.php"
+
+      - name: Deploy-Skript (ShellCheck)
+        run: shellcheck tools/deploy.sh
