@@ -28,9 +28,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: npm
 
       - name: Formatierung (Prettier)
-        run: npx --yes -p prettier@3.9.9 -p @prettier/plugin-php@0.25.0 prettier --check "wp-content/plugins/eintrikot-community-core/**/*.{php,js}" "wp-content/themes/eintrikot-community/functions.php"
+        run: |
+          npm ci --no-audit --no-fund
+          npm run check
 
       - name: Deploy-Skript (ShellCheck)
         run: shellcheck tools/deploy.sh
