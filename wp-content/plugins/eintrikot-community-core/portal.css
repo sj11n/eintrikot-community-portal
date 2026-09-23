@@ -34,3 +34,22 @@
 .et-app .et-event-body{margin-top:10px;font-size:14px;line-height:1.6}
 .et-app .et-event-body p{margin:0 0 8px}
 .et-app .et-event-body a{text-decoration:underline;text-underline-offset:3px}
+
+/* 0.8 – Sichtbarkeit je Abschnitt */
+.et-app .visibility-intro{margin:0 0 32px;padding:18px 20px;background:#F4F8FA;border-radius:12px;font-size:14px;line-height:1.6}
+.et-app .visibility-intro p{margin:0 0 8px;max-width:none}
+.et-app .section-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;margin-bottom:20px}
+.et-app .section-head h2{margin:0}
+.et-app .visibility-switch-row{display:grid;gap:4px;justify-items:end}
+.et-app .profile-extra .visibility-switch-row{justify-items:start;margin:16px 0 20px}
+.et-app .visibility-switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;min-height:44px;font-size:14px;font-weight:600;user-select:none}
+.et-app .visibility-switch input{position:absolute;opacity:0;width:1px;height:1px}
+.et-app .switch-track{position:relative;flex:0 0 auto;width:44px;height:26px;border-radius:999px;background:#cfcfcf;transition:background .15s}
+.et-app .switch-track::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0003;transition:transform .15s}
+.et-app .visibility-switch input:checked+.switch-track{background:#000}
+.et-app .visibility-switch input:checked+.switch-track::after{transform:translateX(18px)}
+.et-app .visibility-switch input:focus-visible+.switch-track{outline:3px solid #000;outline-offset:3px}
+.et-app .visibility-note{font-size:12px;color:#8a4b00;max-width:34ch;text-align:right}
+.et-app .profile-extra .visibility-note{text-align:left}
+.et-app .visibility-badge{margin-left:10px;padding:2px 9px;border-radius:999px;background:#eee;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle}
+@media(max-width:720px){.et-app .section-head{align-items:flex-start}.et-app .visibility-switch-row{justify-items:start}.et-app .visibility-note{text-align:left}}

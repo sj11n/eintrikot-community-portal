@@ -50,17 +50,53 @@ function profile_revision($id) {
             get_user_meta($id, 'eintrikot_avatar', true)
     );
 }
-function visibility_control($key, $data) {
-    return '<select class="visibility" name="visibility[' .
-        esc_attr($key) .
-        ']" aria-label="Sichtbarkeit: ' .
-        esc_attr(profile_fields()[$key] ?? ($key === 'stations' ? 'DHB-Vita' : $key)) .
-        '"><option value="private" ' .
-        selected($data['visibility'][$key] ?? 'private', 'private', false) .
-        '>Privat / Verwaltung</option><option value="members" ' .
-        selected($data['visibility'][$key] ?? 'private', 'members', false) .
-        '>Mitglieder</option></select>';
+/** Stable keys for the profile sections; used for the per-section visibility switch. */
+function profile_group_slugs() {
+    return [
+        'Über dich' => 'about',
+        'Hockey-Lebenslauf' => 'hockey',
+        'Abseits des Platzes' => 'leisure',
+        'Beruf & Ausbildung' => 'career',
+        'Interessen & Mitmachen' => 'interests'
+    ];
 }
+
+/** Keys whose visibility a section switch controls (the DHB-Vita belongs to "Hockey"). */
+function section_visibility_keys($group) {
+    $keys = array_keys(profile_groups()[$group] ?? []);
+    if ($group === 'Hockey-Lebenslauf') {
+        $keys[] = 'stations';
+    }
+    return $keys;
+}
+
+/** 'all' when every field of the section is shared with members, 'none', or 'mixed' (older profiles). */
+function section_visibility_state($data, $group) {
+    $shared = 0;
+    $keys = section_visibility_keys($group);
+    foreach ($keys as $key) {
+        if (($data['visibility'][$key] ?? 'private') === 'members') {
+            $shared++;
+        }
+    }
+    return $shared === 0 ? 'none' : ($shared === count($keys) ? 'all' : 'mixed');
+}
+
+/** One switch per section instead of a selector per field. Off = only the club administration sees it. */
+function section_visibility_switch($group, $data) {
+    $slug = profile_group_slugs()[$group] ?? '';
+    $state = section_visibility_state($data, $group);
+    return '<div class="visibility-switch-row"><label class="visibility-switch"><input type="checkbox" role="switch" name="section_visibility[' .
+        esc_attr($slug) .
+        ']" value="members"' .
+        ($state === 'all' ? ' checked' : '') .
+        '><span class="switch-track" aria-hidden="true"></span><span class="switch-label">Für Mitglieder sichtbar</span></label>' .
+        ($state === 'mixed'
+            ? '<small class="visibility-note">Bisher nur teilweise geteilt. Beim Speichern gilt der Schalter für den ganzen Abschnitt.</small>'
+            : '') .
+        '</div>';
+}
+
 function profile_field($key, $label, $data) {
     $value = $data[$key] ?? '';
     $options = [
@@ -70,13 +106,11 @@ function profile_field($key, $label, $data) {
     ];
     echo '<div class="field ' .
         (long_profile_field($key) ? 'full' : '') .
-        '"><div class="field-head"><label for="et-' .
+        '"><label for="et-' .
         esc_attr($key) .
         '">' .
         esc_html($label) .
-        '</label>' .
-        visibility_control($key, $data) .
-        '</div>';
+        '</label>';
     if (long_profile_field($key)) {
         echo '<textarea id="et-' .
             esc_attr($key) .
@@ -159,7 +193,9 @@ function render_profile($id) {
         ($id === get_current_user_id()
             ? 'Dein Weg. Dein Profil.'
             : esc_html($user->display_name) . ' bearbeiten.') .
-        '</h1><p>Du entscheidest, was du teilst.</p></div>';
+        '</h1><p>Du entscheidest, was du teilst.</p></div><div class="visibility-intro"><p><strong>So funktioniert die Sichtbarkeit:</strong> Name und Profilbild sehen alle Mitglieder. Jeden weiteren Abschnitt teilst du mit einem Schalter – ausgeschaltet sieht ihn nur die Vereinsverwaltung. Leere Felder erscheinen nirgends. Dein Geburtsdatum bleibt immer privat.</p><a class="text-link" href="' .
+        esc_url(portal_url('member', ['member' => $id])) .
+        '">So sehen dich andere →</a></div>';
     if ($draft) {
         echo '<div class="form-error" role="alert"><strong>Bitte prüfe deine Angaben.</strong><p>' .
             esc_html($draft['message']) .
@@ -176,9 +212,19 @@ function render_profile($id) {
         '">';
     foreach (profile_groups() as $group => $fields) {
         $extra = in_array($group, ['Beruf & Ausbildung', 'Interessen & Mitmachen'], true);
+        $state = section_visibility_state($data, $group);
         echo $extra
-            ? '<details class="form-section profile-extra"><summary>' . esc_html($group) . '</summary>'
-            : '<section class="form-section"><h2>' . esc_html($group) . '</h2>';
+            ? '<details class="form-section profile-extra"><summary>' .
+                esc_html($group) .
+                '<span class="visibility-badge">' .
+                ($state === 'all' ? 'sichtbar' : ($state === 'mixed' ? 'teilweise' : 'privat')) .
+                '</span></summary>' .
+                section_visibility_switch($group, $data)
+            : '<section class="form-section"><div class="section-head"><h2>' .
+                esc_html($group) .
+                '</h2>' .
+                section_visibility_switch($group, $data) .
+                '</div>';
         echo '<div class="form-grid">';
         if ($group === 'Über dich') {
             echo '<div class="field">' .
@@ -203,9 +249,7 @@ function render_profile($id) {
         }
         echo '</div>';
         if ($group === 'Hockey-Lebenslauf') {
-            echo '<div class="field-head"><h3>DHB-Vita</h3>' .
-                visibility_control('stations', $data) .
-                '</div><p>Deine Rollen und Stationen im Nationalteam. Bei einer laufenden Station bleibt „Bis“ leer.</p><div id="stations">';
+            echo '<h3>DHB-Vita</h3><p>Deine Rollen und Stationen im Nationalteam. Bei einer laufenden Station bleibt „Bis“ leer.</p><div id="stations">';
             foreach ($data['stations'] ?? [[]] as $i => $row) {
                 station_fields($i, $row);
             }
@@ -226,7 +270,7 @@ function render_profile($id) {
         selected($data['funding_interest'] ?? '', 'no', false) .
         '>Derzeit nicht</option></select></label><p>Deine Auswahl ist unverbindlich. Betrag und Beginn bestätigst du in einer separaten Anfrage.</p><a class="text-link" href="' .
         esc_url(portal_url('service', ['service' => 'funding'])) .
-        '">Förderanfrage vorbereiten ↗</a></section><section class="form-section"><h2>In Verbindung bleiben</h2><label class="check"><input type="checkbox" name="birthday_notice" value="1" ' .
+        '">Förderanfrage vorbereiten →</a></section><section class="form-section"><h2>In Verbindung bleiben</h2><label class="check"><input type="checkbox" name="birthday_notice" value="1" ' .
         checked(!empty($data['birthday_notice']), true, false) .
         '><span>Mein Geburtstag darf mit meinem Namen in den internen Vereinsinfos erscheinen. Das Geburtsjahr wird nicht angezeigt.</span></label><label class="check"><input type="checkbox" name="newsletter" value="1" ' .
         checked($data['newsletter'] ?? true, true, false) .
@@ -400,8 +444,8 @@ add_action('admin_post_et_profile', function () {
     check_admin_referer('et_profile_' . $id);
     $data = profile_data($id);
     $raw = $_POST['profile'] ?? [];
-    $visibility = $_POST['visibility'] ?? [];
-    if (!is_array($raw) || !is_array($visibility)) {
+    $sections = $_POST['section_visibility'] ?? [];
+    if (!is_array($raw) || !is_array($sections)) {
         wp_die('Ungültige Eingabe.', '', ['response' => 400]);
     }
     $errors = [];
@@ -412,7 +456,13 @@ add_action('admin_post_et_profile', function () {
             $errors[] = $label . ' bitte prüfen.';
         }
         $data[$key] = profile_form_text($value, $max);
-        $data['visibility'][$key] = ($visibility[$key] ?? 'private') === 'members' ? 'members' : 'private';
+    }
+    // One switch per section sets the visibility of all its fields (and of the DHB-Vita).
+    foreach (profile_group_slugs() as $group => $slug) {
+        $shared = ($sections[$slug] ?? '') === 'members';
+        foreach (section_visibility_keys($group) as $key) {
+            $data['visibility'][$key] = $shared ? 'members' : 'private';
+        }
     }
     foreach (['display_name' => 120, 'birthday' => 10] as $key => $max) {
         $v = $_POST[$key] ?? '';
@@ -438,8 +488,6 @@ add_action('admin_post_et_profile', function () {
             $data['stations'][] = $safe;
         }
     }
-    $data['visibility']['stations'] =
-        ($visibility['stations'] ?? 'private') === 'members' ? 'members' : 'private';
     if (!$data['display_name']) {
         $errors[] = 'Bitte deinen Namen angeben.';
     }
