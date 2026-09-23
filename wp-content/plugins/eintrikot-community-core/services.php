@@ -56,7 +56,15 @@ function render_service_overview($types) {
         }
         echo '</div></section>';
     }
+    $number = member_number_label(get_user_meta(get_current_user_id(), 'eintrikot_member_number', true));
     echo '<section class="portal-section"><h2>Unterlagen</h2>' .
+        ($number !== '' && certificate_ready()
+            ? service_link(
+                portal_url('certificate'),
+                'Meine Mitgliedsurkunde',
+                'PDF · Mitgliedsnummer ' . $number
+            )
+            : '') .
         service_link(portal_url('documents'), 'Dokumente', 'Satzung, Protokolle und Unterlagen') .
         '</section>';
     if (current_user_can('eintrikot_edit_infos') || manager_access()) {

@@ -132,7 +132,7 @@ function funding_summary($id, $state) {
 
 function request_allowed($from, $to) {
     $paths = [
-        'received' => ['received', 'review'],
+        'received' => ['received', 'review', 'adopted', 'rejected'],
         'review' => ['review', 'adopted', 'rejected'],
         'adopted' => ['adopted', 'review'],
         'rejected' => ['rejected', 'review']
@@ -157,6 +157,9 @@ function render_requests($all) {
             page_head('Service-Anfragen', 'Prüfen, Rückmeldung hinterlegen und die Übernahme dokumentieren.');
     }
     $status = directory_param('status');
+    if ($all && $status === '') {
+        $status = 'open';
+    }
     $args = [
         'post_type' => 'et_request',
         'post_status' => 'private',
@@ -168,9 +171,19 @@ function render_requests($all) {
         $args['author'] = get_current_user_id();
     }
     $rows = get_posts($args);
+    $state_of = fn($row) => request_state($row->ID)['status'] ?? 'received';
+    $counts = ['open' => 0, 'all' => count($rows)];
+    foreach ($rows as $row) {
+        $counts[$state_of($row)] = ($counts[$state_of($row)] ?? 0) + 1;
+        if (in_array($state_of($row), ['received', 'review'], true)) {
+            $counts['open']++;
+        }
+    }
     $rows = array_filter(
         $rows,
-        fn($row) => $status === '' || (request_state($row->ID)['status'] ?? 'received') === $status
+        fn($row) => in_array($status, ['', 'all'], true) ||
+            $state_of($row) === $status ||
+            ($status === 'open' && in_array($state_of($row), ['received', 'review'], true))
     );
     usort($rows, function ($a, $b) {
         $closed = fn($r) => in_array(request_state($r->ID)['status'] ?? '', ['adopted', 'rejected'], true)
@@ -182,11 +195,12 @@ function render_requests($all) {
         echo '<nav class="request-filters" aria-label="Anfragen filtern">';
         foreach (
             [
-                '' => 'Alle',
+                'open' => 'Offen',
                 'received' => 'Eingegangen',
                 'review' => 'In Prüfung',
-                'adopted' => 'Abgeschlossen',
-                'rejected' => 'Abgelehnt'
+                'adopted' => 'Erledigt',
+                'rejected' => 'Abgelehnt',
+                'all' => 'Alle'
             ]
             as $key => $label
         ) {
@@ -196,7 +210,9 @@ function render_requests($all) {
                 esc_url(portal_url('requests', ['status' => $key])) .
                 '">' .
                 esc_html($label) .
-                '</a>';
+                ' <span class="filter-num">' .
+                (int) ($counts[$key] ?? 0) .
+                '</span></a>';
         }
         echo '</nav>';
     }
@@ -206,7 +222,9 @@ function render_requests($all) {
     if (!$rows) {
         echo '<p class="portal-empty">' .
             ($all
-                ? 'Keine Anfragen mit diesem Status.'
+                ? ($status === 'open'
+                    ? 'Alles erledigt – keine offenen Anfragen.'
+                    : 'Keine Anfragen mit diesem Status.')
                 : 'Du hast noch keine Anfragen gestellt. Wähle oben aus, wobei wir dir helfen können.') .
             '</p>';
     }
@@ -316,7 +334,14 @@ function render_request($id) {
     if ($draft) {
         echo '<div class="form-error" role="alert">' . esc_html($draft['error']) . '</div>';
     }
-    echo '<form class="et-form request-editor" method="post" action="' .
+    $current = $state['status'] ?? 'received';
+    $meinverein = in_array($kind, ['address', 'bank', 'funding'], true);
+    $details = request_details_list($id);
+    echo '<section class="request-work"><h2>Bearbeiten</h2><p class="request-task"><strong>Aufgabe:</strong> ' .
+        esc_html(request_task($kind)) .
+        '</p>' .
+        $details .
+        '<form class="et-form request-editor" method="post" action="' .
         esc_url(admin_url('admin-post.php')) .
         '">';
     wp_nonce_field('et_request_' . $id);
@@ -324,39 +349,99 @@ function render_request($id) {
         $id .
         '"><input type="hidden" name="revision" value="' .
         esc_attr(request_revision($id)) .
-        '"><h2>Bearbeitung</h2><label>Status<select name="status">';
-    foreach ($labels as $value => $label) {
-        if (request_allowed($state['status'], $value)) {
-            echo '<option value="' .
-                esc_attr($value) .
-                '" ' .
-                selected($state['status'], $value, false) .
-                '>' .
-                esc_html($label) .
-                '</option>';
-        }
-    }
-    echo '</select></label><label>Rückmeldung für das Mitglied<textarea name="reply" maxlength="4000">' .
+        '"><label>Nachricht an das Mitglied<small>Sieht das Mitglied bei seiner Anfrage unter „Rückmeldung“. Pflicht, wenn du ablehnst. Es wird keine E-Mail verschickt.</small><textarea name="reply" maxlength="4000">' .
         esc_textarea($draft['reply'] ?? ($state['reply'] ?? '')) .
-        '</textarea></label><label>Interne Notiz<textarea name="note" maxlength="4000">' .
+        '</textarea></label><label>Interne Notiz<small>Nur für Vorstand und Verwaltung sichtbar, nie für das Mitglied.</small><textarea name="note" maxlength="4000">' .
         esc_textarea($draft['note'] ?? ($state['note'] ?? '')) .
-        '</textarea><small>Nur für Vorstand und Admin sichtbar.</small></label>';
-    if (in_array($kind, ['address', 'bank', 'funding'], true)) {
-        echo '<label class="check"><input type="checkbox" name="transferred" value="1"> Die Änderung wurde von mir in MeinVerein übernommen.</label>';
-    }
-    if (in_array($state['status'], ['adopted', 'rejected'], true)) {
-        echo '<p>Mit „In Prüfung“ öffnest du die Anfrage erneut. Das wird protokolliert.</p>';
+        '</textarea></label>';
+    if ($meinverein && $current !== 'adopted') {
+        echo '<label class="check"><input type="checkbox" name="transferred" value="1"><span>Ich habe die Änderung in MeinVerein eingetragen.<br><small>Nötig für „' .
+            esc_html($labels['adopted']) .
+            '“.</small></span></label>';
     }
     if (!empty($draft['conflict'])) {
         echo '<details class="form-section" open><summary>Inzwischen gespeicherte Bearbeitung</summary><p>Status: ' .
-            esc_html($labels[$state['status']]) .
+            esc_html($labels[$current]) .
             '</p><p>Rückmeldung: ' .
             nl2br(esc_html($state['reply'] ?? '')) .
             '</p><p>Interne Notiz: ' .
             nl2br(esc_html($state['note'] ?? '')) .
             '</p></details><label class="check"><input type="checkbox" name="resolve_conflict" value="1" required> Ich habe den aktuellen Bearbeitungsstand geprüft.</label>';
     }
-    echo '<button class="button solid">Bearbeitung speichern</button><p><small>Die Rückmeldung ist anschließend hier im Portal sichtbar. Es wird keine E-Mail versendet.</small></p></form>';
+    // One button per next step instead of a status menu. Each button saves the texts as well.
+    $actions = in_array($current, ['adopted', 'rejected'], true)
+        ? [['review', 'Wieder öffnen', 'button']]
+        : array_values(
+            array_filter([
+                $current === 'received' ? ['review', 'In Prüfung nehmen', 'button'] : null,
+                ['adopted', $labels['adopted'], 'button solid'],
+                ['rejected', 'Ablehnen', 'button danger']
+            ])
+        );
+    echo '<div class="request-actions">';
+    foreach ($actions as [$value, $label, $class]) {
+        echo '<button class="' .
+            esc_attr($class) .
+            '" name="status" value="' .
+            esc_attr($value) .
+            '">' .
+            esc_html($label) .
+            '</button>';
+    }
+    echo '<button class="text-reset" name="status" value="' .
+        esc_attr($current) .
+        '">Nur Texte speichern</button></div><p class="form-note">Aktueller Stand: <strong>' .
+        esc_html($labels[$current]) .
+        '</strong>. Jede Änderung wird mit Datum im Verlauf und im Änderungsprotokoll festgehalten.</p></form></section>';
+}
+
+/** What the administration has to do for each kind of request. */
+function request_task($kind) {
+    $tasks = [
+        'address' => 'Neue Kontaktdaten in MeinVerein eintragen und danach hier bestätigen.',
+        'bank' =>
+            'Mit dem Mitglied den sicheren Weg klären (nie über das Portal) und die Bankverbindung in MeinVerein ändern.',
+        'funding' =>
+            'Betrag und Beginn als freiwilligen Förderbeitrag in MeinVerein hinterlegen. Erst mit „In MeinVerein übernommen“ wird die Zusage für das Mitglied verbindlich.',
+        'event' => 'Anmeldung notieren und dem Mitglied kurz bestätigen.',
+        'idea' => 'Idee im Vorstand besprechen und dem Mitglied antworten.',
+        'help' => 'Passende Aufgabe finden und dem Mitglied antworten.',
+        'contact' => 'Frage beantworten. Die Antwort sieht das Mitglied hier im Portal.'
+    ];
+    return $tasks[$kind] ?? 'Anfrage prüfen und dem Mitglied antworten.';
+}
+
+/** Structured details of a request (address fields, amount), shown to the administration. */
+function request_details_list($id) {
+    $details = get_post_meta($id, 'et_details', true);
+    if (!is_array($details) || !$details) {
+        return '';
+    }
+    $labels = [
+        'street' => 'Straße',
+        'postcode' => 'Postleitzahl',
+        'city' => 'Ort',
+        'country' => 'Land',
+        'email' => 'E-Mail',
+        'phone' => 'Telefon',
+        'annual_amount_cents' => 'Jährlicher Betrag',
+        'effective_date' => 'Gewünschter Beginn'
+    ];
+    $html = '<dl class="request-details">';
+    foreach ($labels as $key => $label) {
+        if (!isset($details[$key]) || $details[$key] === '') {
+            continue;
+        }
+        $value = $details[$key];
+        if ($key === 'annual_amount_cents') {
+            $value =
+                (int) $value === 0 ? 'Förderbeitrag beenden' : number_format_i18n($value / 100, 2) . ' €';
+        } elseif ($key === 'effective_date') {
+            $value = wp_date('d.m.Y', strtotime($value . ' 12:00:00'));
+        }
+        $html .= '<div><dt>' . esc_html($label) . '</dt><dd>' . esc_html((string) $value) . '</dd></div>';
+    }
+    return $html . '</dl>';
 }
 function persist_request($id, $next, $revision) {
     global $wpdb;
