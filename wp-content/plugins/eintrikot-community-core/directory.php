@@ -134,7 +134,7 @@ function render_directory() {
             esc_html($u->display_name) .
             '</strong>' .
             ($line !== '' ? '<small>' . $line . '</small>' : '') .
-            '</span><span class="member-arrow" aria-hidden="true">↗</span></a>';
+            '</span><span class="member-arrow" aria-hidden="true">→</span></a>';
     }
     if (!$total) {
         echo '<div class="directory-empty"><h2>Hier haben wir niemanden gefunden.</h2><p>Versuche einen anderen Suchbegriff oder setze die Filter zurück.</p></div>';

@@ -92,7 +92,7 @@ function portal_shell($content, $view) {
         portal_nav_links(portal_nav_items(), $selected) .
         '</nav><div class="side-bottom"><a href="' .
         esc_url(home_url('/')) .
-        '">Zur öffentlichen Website ↗</a></div></aside><div class="portal-workspace"><div class="mobile-brand">' .
+        '">Zur öffentlichen Website →</a></div></aside><div class="portal-workspace"><div class="mobile-brand">' .
         portal_brand() .
         $more_link .
         '</div>' .
