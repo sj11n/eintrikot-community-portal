@@ -1,31 +1,266 @@
 <?php
 namespace Eintrikot\Community;
-if(!defined('ABSPATH'))exit;
-function directory_param($key){$v=$_GET[$key]??'';return is_scalar($v)?mb_substr(sanitize_text_field(wp_unslash((string)$v)),0,160):'';}
-function shared_stations($data){return ($data['visibility']['stations']??'private')==='members'&&is_array($data['stations']??null)?$data['stations']:array();}
-function directory_projection($user){$data=profile_data($user->ID);$shared=array();foreach(profile_fields() as $key=>$label){$v=visible_value($data,$key);$shared[$key]=is_scalar($v)?(string)$v:'';}$station_words=array();foreach(shared_stations($data) as $row)if(is_array($row))foreach($row as $v)if(is_scalar($v))$station_words[]=(string)$v;return array('user'=>$user,'shared'=>$shared,'search'=>mb_strtolower(implode(' ',array_merge(array($user->display_name),array_values($shared),$station_words))));}
-function render_directory(){
- if(!member_access())return;
- $q=directory_param('q');$keys=array('team'=>'Team','age_class'=>'Altersklasse','phase'=>'Trikotphase','region'=>'Region');$filters=array();$options=array_fill_keys(array_keys($keys),array());$rows=array();
- foreach(get_users(array('capability'=>'eintrikot_portal','number'=>-1,'orderby'=>'display_name','order'=>'ASC')) as $user){$row=directory_projection($user);$rows[]=$row;foreach($keys as $key=>$label)if($row['shared'][$key]!=='')$options[$key][$row['shared'][$key]]=$row['shared'][$key];}
- foreach($keys as $key=>$label)$filters[$key]=directory_param($key);
- $matches=array_values(array_filter($rows,function($row)use($q,$filters){foreach($filters as $key=>$value)if($value!==''&&$row['shared'][$key]!==$value)return false;foreach(preg_split('/\s+/u',mb_strtolower(trim($q))) as $term)if($term!==''&&!str_contains($row['search'],$term))return false;return true;}));
- $total=count($matches);$pages=max(1,(int)ceil($total/25));$page=min($pages,max(1,(int)directory_param('member_page')));
- echo '<div class="directory-heading"><h1>Menschen, die dich verbinden.</h1><p>Unser Netzwerk. Über Teams, Generationen und Orte hinweg.</p></div><form class="directory-search" action="'.esc_url(get_permalink((int)get_option('eintrikot_portal_page'))).'" method="get"><input type="hidden" name="view" value="members"><label class="search-field"><span class="screen-reader-text">Mitglieder suchen</span><input type="search" name="q" value="'.esc_attr($q).'" placeholder="Name, Ort oder U18"></label><button class="button solid" type="submit">Suchen</button><details class="directory-filters" '.(array_filter($filters)?'open':'').'><summary>Filter'.(array_filter($filters)?' · '.count(array_filter($filters)):'').'</summary><div class="filter-fields">';
- foreach($keys as $key=>$label){natcasesort($options[$key]);echo '<label>'.esc_html($label).'<select name="'.esc_attr($key).'"><option value="">Alle</option>';foreach($options[$key] as $value)echo '<option value="'.esc_attr($value).'" '.selected($filters[$key],$value,false).'>'.esc_html($value).'</option>';echo '</select></label>';}
- echo '<button class="button" type="submit">Anwenden</button></div></details>';if($q!==''||array_filter($filters))echo '<a class="text-link" href="'.esc_url(portal_url('members')).'">Zurücksetzen</a>';echo '</form><div class="directory-results"><p class="result-count" role="status">'.esc_html($total.' '.($total===1?'Mitglied':'Mitglieder')).'</p><div class="member-grid">';
- foreach(array_slice($matches,($page-1)*25,25) as $row){$u=$row['user'];$data=$row['shared'];$meta=array_filter(array($data['team'],$data['age_class'],$data['phase']));$line=esc_html(implode(' · ',$meta));if($data['city']!=='')$line.=($line!==''?' · ':'').'<b>'.esc_html($data['city']).'</b>';echo '<a class="et-member" href="'.esc_url(portal_url('member',array('member'=>$u->ID))).'">'.member_avatar($u->ID,$u->display_name).'<span><strong>'.esc_html($u->display_name).'</strong>'.($line!==''?'<small>'.$line.'</small>':'').'</span><span class="member-arrow" aria-hidden="true">↗</span></a>';}
- if(!$total)echo '<div class="directory-empty"><h2>Hier haben wir niemanden gefunden.</h2><p>Versuche einen anderen Suchbegriff oder setze die Filter zurück.</p></div>';echo '</div>';
- if($pages>1){echo '<nav class="pagination" aria-label="Mitgliederseiten">';$args=array_merge(array('q'=>$q),$filters);if($page>1)echo '<a class="button" href="'.esc_url(portal_url('members',array_merge($args,array('member_page'=>$page-1)))).'">← Zurück</a>';echo '<span>Seite '.esc_html($page.' von '.$pages).'</span>';if($page<$pages)echo '<a class="button" href="'.esc_url(portal_url('members',array_merge($args,array('member_page'=>$page+1)))).'">Weiter →</a>';echo '</nav>';}echo '</div>';
+if (!defined('ABSPATH')) {
+    exit();
 }
-function member_age($data){if(empty($data['show_age'])||empty($data['birthday'])||!is_string($data['birthday']))return null;$birth=\DateTimeImmutable::createFromFormat('!Y-m-d',$data['birthday'],wp_timezone());$today=new \DateTimeImmutable('today',wp_timezone());return $birth&&$birth->format('Y-m-d')===$data['birthday']&&$birth<=$today?$birth->diff($today)->y:null;}
-function render_member($id){
- if(!member_access()||!is_portal_user($id)){echo '<h1>Profil nicht verfügbar.</h1>';return;}$u=get_user_by('id',$id);$data=profile_data($id);
- echo '<a class="text-link service-back" href="'.esc_url(portal_url('members')).'">← Mitglieder</a><header class="member-profile-header">'.member_avatar($id,$u->display_name).'<div><h1>'.esc_html($u->display_name).'</h1><p>';
- $meta=array_filter(array(visible_value($data,'team'),visible_value($data,'age_class'),visible_value($data,'phase')));$age=member_age($data);if($age!==null)$meta[]=$age.' Jahre';echo esc_html(implode(' · ',$meta));$city=visible_value($data,'city');if($city!=='')echo ($meta?' · ':'').'<strong>'.esc_html($city).'</strong>';echo '</p></div>';
- if(manager_access()||$id===get_current_user_id())echo '<a class="button" href="'.esc_url(portal_url($id===get_current_user_id()?'profile':'edit-member',array('member'=>$id))).'">Profil bearbeiten</a>';echo '</header><div class="member-profile-sections">';$shown=false;
- foreach(profile_groups() as $title=>$fields){$values=array();foreach($fields as $key=>$label){if(in_array($key,array('team','age_class','phase','city'),true))continue;$v=visible_value($data,$key);if(is_scalar($v)&&(string)$v!=='')$values[$key]=array($label,(string)$v);}$stations=$title==='Hockey-Lebenslauf'?shared_stations($data):array();$legacy=$title==='Hockey-Lebenslauf'?visible_value($data,'vita'):'';if(!$values&&!$stations&&!$legacy)continue;$shown=true;echo '<section class="member-profile-section"><h2>'.esc_html($title).'</h2><dl>';foreach($values as $key=>$pair)echo '<div class="'.(long_profile_field($key)?'full':'').'"><dt>'.esc_html($pair[0]).'</dt><dd>'.nl2br(esc_html($pair[1])).'</dd></div>';echo '</dl>';
- if($stations){echo '<h3>DHB-Vita</h3><ol class="dhb-stations">';foreach($stations as $row){if(!is_array($row))continue;$from=$row['from']??'';$to=$row['to']??'';echo '<li><span class="station-years">'.esc_html($from!==''?$from.' – '.($to!==''?$to:'heute'):'Zeitraum offen').'</span><div><strong>'.esc_html($row['role']??'').'</strong><p>'.esc_html(implode(' · ',array_filter(array($row['organisation']??'',$row['age_class']??'')))).'</p></div></li>';}echo '</ol>';}
- if($legacy)echo '<h3>Hockey-Lebenslauf</h3><p>'.nl2br(esc_html($legacy)).'</p>';echo '</section>';}
- if(!$shown)echo '<p class="profile-empty">Weitere Profilangaben wurden noch nicht mit dem Netzwerk geteilt.</p>';echo '</div>';
+function directory_param($key) {
+    $v = $_GET[$key] ?? '';
+    return is_scalar($v) ? mb_substr(sanitize_text_field(wp_unslash((string) $v)), 0, 160) : '';
+}
+function shared_stations($data) {
+    return ($data['visibility']['stations'] ?? 'private') === 'members' && is_array($data['stations'] ?? null)
+        ? $data['stations']
+        : [];
+}
+function directory_projection($user) {
+    $data = profile_data($user->ID);
+    $shared = [];
+    foreach (profile_fields() as $key => $label) {
+        $v = visible_value($data, $key);
+        $shared[$key] = is_scalar($v) ? (string) $v : '';
+    }
+    $station_words = [];
+    foreach (shared_stations($data) as $row) {
+        if (is_array($row)) {
+            foreach ($row as $v) {
+                if (is_scalar($v)) {
+                    $station_words[] = (string) $v;
+                }
+            }
+        }
+    }
+    return [
+        'user' => $user,
+        'shared' => $shared,
+        'search' => mb_strtolower(
+            implode(' ', array_merge([$user->display_name], array_values($shared), $station_words))
+        )
+    ];
+}
+function render_directory() {
+    if (!member_access()) {
+        return;
+    }
+    $q = directory_param('q');
+    $keys = ['team' => 'Team', 'age_class' => 'Altersklasse', 'phase' => 'Trikotphase', 'region' => 'Region'];
+    $filters = [];
+    $options = array_fill_keys(array_keys($keys), []);
+    $rows = [];
+    foreach (
+        get_users([
+            'capability' => 'eintrikot_portal',
+            'number' => -1,
+            'orderby' => 'display_name',
+            'order' => 'ASC'
+        ])
+        as $user
+    ) {
+        $row = directory_projection($user);
+        $rows[] = $row;
+        foreach ($keys as $key => $label) {
+            if ($row['shared'][$key] !== '') {
+                $options[$key][$row['shared'][$key]] = $row['shared'][$key];
+            }
+        }
+    }
+    foreach ($keys as $key => $label) {
+        $filters[$key] = directory_param($key);
+    }
+    $matches = array_values(
+        array_filter($rows, function ($row) use ($q, $filters) {
+            foreach ($filters as $key => $value) {
+                if ($value !== '' && $row['shared'][$key] !== $value) {
+                    return false;
+                }
+            }
+            foreach (preg_split('/\s+/u', mb_strtolower(trim($q))) as $term) {
+                if ($term !== '' && !str_contains($row['search'], $term)) {
+                    return false;
+                }
+            }
+            return true;
+        })
+    );
+    $total = count($matches);
+    $pages = max(1, (int) ceil($total / 25));
+    $page = min($pages, max(1, (int) directory_param('member_page')));
+    echo '<div class="directory-heading"><h1>Menschen, die dich verbinden.</h1><p>Unser Netzwerk. Über Teams, Generationen und Orte hinweg.</p></div><form class="directory-search" action="' .
+        esc_url(get_permalink((int) get_option('eintrikot_portal_page'))) .
+        '" method="get"><input type="hidden" name="view" value="members"><label class="search-field"><span class="screen-reader-text">Mitglieder suchen</span><input type="search" name="q" value="' .
+        esc_attr($q) .
+        '" placeholder="Name, Ort oder U18"></label><button class="button solid" type="submit">Suchen</button><details class="directory-filters" ' .
+        (array_filter($filters) ? 'open' : '') .
+        '><summary>Filter' .
+        (array_filter($filters) ? ' · ' . count(array_filter($filters)) : '') .
+        '</summary><div class="filter-fields">';
+    foreach ($keys as $key => $label) {
+        natcasesort($options[$key]);
+        echo '<label>' .
+            esc_html($label) .
+            '<select name="' .
+            esc_attr($key) .
+            '"><option value="">Alle</option>';
+        foreach ($options[$key] as $value) {
+            echo '<option value="' .
+                esc_attr($value) .
+                '" ' .
+                selected($filters[$key], $value, false) .
+                '>' .
+                esc_html($value) .
+                '</option>';
+        }
+        echo '</select></label>';
+    }
+    echo '<button class="button" type="submit">Anwenden</button></div></details>';
+    if ($q !== '' || array_filter($filters)) {
+        echo '<a class="text-link" href="' . esc_url(portal_url('members')) . '">Zurücksetzen</a>';
+    }
+    echo '</form><div class="directory-results"><p class="result-count" role="status">' .
+        esc_html($total . ' ' . ($total === 1 ? 'Mitglied' : 'Mitglieder')) .
+        '</p><div class="member-grid">';
+    foreach (array_slice($matches, ($page - 1) * 25, 25) as $row) {
+        $u = $row['user'];
+        $data = $row['shared'];
+        $meta = array_filter([$data['team'], $data['age_class'], $data['phase']]);
+        $line = esc_html(implode(' · ', $meta));
+        if ($data['city'] !== '') {
+            $line .= ($line !== '' ? ' · ' : '') . '<b>' . esc_html($data['city']) . '</b>';
+        }
+        echo '<a class="et-member" href="' .
+            esc_url(portal_url('member', ['member' => $u->ID])) .
+            '">' .
+            member_avatar($u->ID, $u->display_name) .
+            '<span><strong>' .
+            esc_html($u->display_name) .
+            '</strong>' .
+            ($line !== '' ? '<small>' . $line . '</small>' : '') .
+            '</span><span class="member-arrow" aria-hidden="true">↗</span></a>';
+    }
+    if (!$total) {
+        echo '<div class="directory-empty"><h2>Hier haben wir niemanden gefunden.</h2><p>Versuche einen anderen Suchbegriff oder setze die Filter zurück.</p></div>';
+    }
+    echo '</div>';
+    if ($pages > 1) {
+        echo '<nav class="pagination" aria-label="Mitgliederseiten">';
+        $args = array_merge(['q' => $q], $filters);
+        if ($page > 1) {
+            echo '<a class="button" href="' .
+                esc_url(portal_url('members', array_merge($args, ['member_page' => $page - 1]))) .
+                '">← Zurück</a>';
+        }
+        echo '<span>Seite ' . esc_html($page . ' von ' . $pages) . '</span>';
+        if ($page < $pages) {
+            echo '<a class="button" href="' .
+                esc_url(portal_url('members', array_merge($args, ['member_page' => $page + 1]))) .
+                '">Weiter →</a>';
+        }
+        echo '</nav>';
+    }
+    echo '</div>';
+}
+function member_age($data) {
+    if (empty($data['show_age']) || empty($data['birthday']) || !is_string($data['birthday'])) {
+        return null;
+    }
+    $birth = \DateTimeImmutable::createFromFormat('!Y-m-d', $data['birthday'], wp_timezone());
+    $today = new \DateTimeImmutable('today', wp_timezone());
+    return $birth && $birth->format('Y-m-d') === $data['birthday'] && $birth <= $today
+        ? $birth->diff($today)->y
+        : null;
+}
+function render_member($id) {
+    if (!member_access() || !is_portal_user($id)) {
+        echo '<h1>Profil nicht verfügbar.</h1>';
+        return;
+    }
+    $u = get_user_by('id', $id);
+    $data = profile_data($id);
+    echo '<a class="text-link service-back" href="' .
+        esc_url(portal_url('members')) .
+        '">← Mitglieder</a><header class="member-profile-header">' .
+        member_avatar($id, $u->display_name) .
+        '<div><h1>' .
+        esc_html($u->display_name) .
+        '</h1><p>';
+    $meta = array_filter([
+        visible_value($data, 'team'),
+        visible_value($data, 'age_class'),
+        visible_value($data, 'phase')
+    ]);
+    $age = member_age($data);
+    if ($age !== null) {
+        $meta[] = $age . ' Jahre';
+    }
+    echo esc_html(implode(' · ', $meta));
+    $city = visible_value($data, 'city');
+    if ($city !== '') {
+        echo ($meta ? ' · ' : '') . '<strong>' . esc_html($city) . '</strong>';
+    }
+    echo '</p></div>';
+    if (manager_access() || $id === get_current_user_id()) {
+        echo '<a class="button" href="' .
+            esc_url(
+                portal_url($id === get_current_user_id() ? 'profile' : 'edit-member', ['member' => $id])
+            ) .
+            '">Profil bearbeiten</a>';
+    }
+    echo '</header><div class="member-profile-sections">';
+    $shown = false;
+    foreach (profile_groups() as $title => $fields) {
+        $values = [];
+        foreach ($fields as $key => $label) {
+            if (in_array($key, ['team', 'age_class', 'phase', 'city'], true)) {
+                continue;
+            }
+            $v = visible_value($data, $key);
+            if (is_scalar($v) && (string) $v !== '') {
+                $values[$key] = [$label, (string) $v];
+            }
+        }
+        $stations = $title === 'Hockey-Lebenslauf' ? shared_stations($data) : [];
+        $legacy = $title === 'Hockey-Lebenslauf' ? visible_value($data, 'vita') : '';
+        if (!$values && !$stations && !$legacy) {
+            continue;
+        }
+        $shown = true;
+        echo '<section class="member-profile-section"><h2>' . esc_html($title) . '</h2><dl>';
+        foreach ($values as $key => $pair) {
+            echo '<div class="' .
+                (long_profile_field($key) ? 'full' : '') .
+                '"><dt>' .
+                esc_html($pair[0]) .
+                '</dt><dd>' .
+                nl2br(esc_html($pair[1])) .
+                '</dd></div>';
+        }
+        echo '</dl>';
+        if ($stations) {
+            echo '<h3>DHB-Vita</h3><ol class="dhb-stations">';
+            foreach ($stations as $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+                $from = $row['from'] ?? '';
+                $to = $row['to'] ?? '';
+                echo '<li><span class="station-years">' .
+                    esc_html($from !== '' ? $from . ' – ' . ($to !== '' ? $to : 'heute') : 'Zeitraum offen') .
+                    '</span><div><strong>' .
+                    esc_html($row['role'] ?? '') .
+                    '</strong><p>' .
+                    esc_html(
+                        implode(' · ', array_filter([$row['organisation'] ?? '', $row['age_class'] ?? '']))
+                    ) .
+                    '</p></div></li>';
+            }
+            echo '</ol>';
+        }
+        if ($legacy) {
+            echo '<h3>Hockey-Lebenslauf</h3><p>' . nl2br(esc_html($legacy)) . '</p>';
+        }
+        echo '</section>';
+    }
+    if (!$shown) {
+        echo '<p class="profile-empty">Weitere Profilangaben wurden noch nicht mit dem Netzwerk geteilt.</p>';
+    }
+    echo '</div>';
 }

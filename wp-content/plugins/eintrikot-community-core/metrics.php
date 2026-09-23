@@ -1,12 +1,122 @@
 <?php
 namespace Eintrikot\Community;
-if(!defined('ABSPATH'))exit;
-function metric_values(){return wp_parse_args(get_option('eintrikot_metrics',array()),array('members'=>201,'donations'=>12750,'generations'=>5));}
-add_action('admin_menu',function(){add_submenu_page('eintrikot-community-setup','Kennzahlen','Kennzahlen','manage_options','eintrikot-metrics',__NAMESPACE__.'\metrics_page');});
-function metrics_page(){if(!current_user_can('manage_options'))return;$values=metric_values();echo '<div class="wrap"><h1>Kennzahlen</h1><form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';wp_nonce_field('et_metrics');echo '<input type="hidden" name="action" value="et_metrics">';foreach(array('members'=>'Mitglieder','donations'=>'Spendenaufkommen in Euro','generations'=>'Generationen im Trikot') as $key=>$label)echo '<p><label>'.esc_html($label).'<br><input type="number" name="'.esc_attr($key).'" min="0" max="999999999" step="1" required value="'.esc_attr($values[$key]).'"></label></p>';echo '<p>Die Länderspiele werden aus den Profilangaben summiert. Jedes Profil wird einmal berücksichtigt; technische Konten ohne Eintrag zählen nicht mit.</p>';submit_button('Kennzahlen speichern');echo '</form></div>';}
-add_action('admin_post_et_metrics',function(){if(!current_user_can('manage_options'))wp_die('Keine Berechtigung.','',array('response'=>403));check_admin_referer('et_metrics');$values=array();foreach(array('members','donations','generations') as $key){$v=post_text($key,'',9);if(!ctype_digit($v))wp_die('Bitte ganze nichtnegative Zahlen eingeben.');$values[$key]=(int)$v;}update_option('eintrikot_metrics',$values,false);wp_safe_redirect(admin_url('admin.php?page=eintrikot-metrics'));exit;});
-function caps_total(){ $sum=0;$known=0;foreach(get_users(array('capability'=>'eintrikot_portal')) as $user){$p=profile_data($user->ID);$v=$p['caps']??'';if(is_scalar($v)&&$v!==''&&ctype_digit((string)$v)){$sum+=(int)$v;$known++;}}return $known?$sum:null;}
-add_shortcode('eintrikot_metrics',function(){
- $v=metric_values();$v['caps']=caps_total();$html='<div class="et-metrics">';foreach(array('members'=>'Mitglieder','donations'=>'Spendenaufkommen','caps'=>'Länderspiele','generations'=>'Generationen im Trikot') as $key=>$label){$value=$v[$key];$html.='<div class="et-metric"><strong '.($value!==null?'data-count="'.esc_attr($value).'" data-suffix="'.($key==='donations'?' €':'').'"':'').'>'.($value===null?'–':esc_html(number_format_i18n($value).($key==='donations'?' €':''))).'</strong><span>'.esc_html($label).'</span>'.($value===null?'<small>Wird aus den Profilen ermittelt</small>':'').'</div>';}$html.='</div>';return $html;
+if (!defined('ABSPATH')) {
+    exit();
+}
+function metric_values() {
+    return wp_parse_args(get_option('eintrikot_metrics', []), [
+        'members' => 201,
+        'donations' => 12750,
+        'generations' => 5
+    ]);
+}
+add_action('admin_menu', function () {
+    add_submenu_page(
+        'eintrikot-community-setup',
+        'Kennzahlen',
+        'Kennzahlen',
+        'manage_options',
+        'eintrikot-metrics',
+        __NAMESPACE__ . '\metrics_page'
+    );
 });
-add_action('wp_enqueue_scripts',function(){wp_enqueue_style('eintrikot-metrics',plugins_url('metrics.css',__FILE__),array(),'0.4.0');wp_enqueue_script('eintrikot-metrics',plugins_url('metrics.js',__FILE__),array(),'0.4.0',true);});
+function metrics_page() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    $values = metric_values();
+    echo '<div class="wrap"><h1>Kennzahlen</h1><form method="post" action="' .
+        esc_url(admin_url('admin-post.php')) .
+        '">';
+    wp_nonce_field('et_metrics');
+    echo '<input type="hidden" name="action" value="et_metrics">';
+    foreach (
+        [
+            'members' => 'Mitglieder',
+            'donations' => 'Spendenaufkommen in Euro',
+            'generations' => 'Generationen im Trikot'
+        ]
+        as $key => $label
+    ) {
+        echo '<p><label>' .
+            esc_html($label) .
+            '<br><input type="number" name="' .
+            esc_attr($key) .
+            '" min="0" max="999999999" step="1" required value="' .
+            esc_attr($values[$key]) .
+            '"></label></p>';
+    }
+    echo '<p>Die Länderspiele werden aus den Profilangaben summiert. Jedes Profil wird einmal berücksichtigt; technische Konten ohne Eintrag zählen nicht mit.</p>';
+    submit_button('Kennzahlen speichern');
+    echo '</form></div>';
+}
+add_action('admin_post_et_metrics', function () {
+    if (!current_user_can('manage_options')) {
+        wp_die('Keine Berechtigung.', '', ['response' => 403]);
+    }
+    check_admin_referer('et_metrics');
+    $values = [];
+    foreach (['members', 'donations', 'generations'] as $key) {
+        $v = post_text($key, '', 9);
+        if (!ctype_digit($v)) {
+            wp_die('Bitte ganze nichtnegative Zahlen eingeben.');
+        }
+        $values[$key] = (int) $v;
+    }
+    update_option('eintrikot_metrics', $values, false);
+    wp_safe_redirect(admin_url('admin.php?page=eintrikot-metrics'));
+    exit();
+});
+function caps_total() {
+    $sum = 0;
+    $known = 0;
+    foreach (get_users(['capability' => 'eintrikot_portal']) as $user) {
+        $p = profile_data($user->ID);
+        $v = $p['caps'] ?? '';
+        if (is_scalar($v) && $v !== '' && ctype_digit((string) $v)) {
+            $sum += (int) $v;
+            $known++;
+        }
+    }
+    return $known ? $sum : null;
+}
+add_shortcode('eintrikot_metrics', function () {
+    $v = metric_values();
+    $v['caps'] = caps_total();
+    $html = '<div class="et-metrics">';
+    foreach (
+        [
+            'members' => 'Mitglieder',
+            'donations' => 'Spendenaufkommen',
+            'caps' => 'Länderspiele',
+            'generations' => 'Generationen im Trikot'
+        ]
+        as $key => $label
+    ) {
+        $value = $v[$key];
+        $html .=
+            '<div class="et-metric"><strong ' .
+            ($value !== null
+                ? 'data-count="' .
+                    esc_attr($value) .
+                    '" data-suffix="' .
+                    ($key === 'donations' ? ' €' : '') .
+                    '"'
+                : '') .
+            '>' .
+            ($value === null
+                ? '–'
+                : esc_html(number_format_i18n($value) . ($key === 'donations' ? ' €' : ''))) .
+            '</strong><span>' .
+            esc_html($label) .
+            '</span>' .
+            ($value === null ? '<small>Wird aus den Profilen ermittelt</small>' : '') .
+            '</div>';
+    }
+    $html .= '</div>';
+    return $html;
+});
+add_action('wp_enqueue_scripts', function () {
+    wp_enqueue_style('eintrikot-metrics', plugins_url('metrics.css', __FILE__), [], '0.4.0');
+    wp_enqueue_script('eintrikot-metrics', plugins_url('metrics.js', __FILE__), [], '0.4.0', true);
+});

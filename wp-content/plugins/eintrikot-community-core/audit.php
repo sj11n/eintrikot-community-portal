@@ -1,14 +1,104 @@
 <?php
 namespace Eintrikot\Community;
-if(!defined('ABSPATH'))exit;
-function audit_url(){return get_option('eintrikot_audit_page')?get_permalink((int)get_option('eintrikot_audit_page')):portal_url('audit');}
-function audit_value($raw){$v=json_decode($raw,true);if($v===null||$v==='')return '—';if(is_bool($v))return $v?'Ja':'Nein';return is_array($v)?wp_json_encode($v,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES):(string)$v;}
-function render_audit(){
- if(!manager_access())return;global $wpdb;$page=max(1,(int)directory_param('audit_page'));$total=(int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit");$pages=max(1,(int)ceil($total/50));$page=min($page,$pages);
- echo '<a class="text-link service-back" href="'.esc_url(portal_url('admin')).'">← Verwaltung</a><h1>Änderungsprotokoll.</h1><p>Wer hat wann welche Angaben geändert? Dieses Protokoll ist im Portal ausschließlich lesbar.</p>';
- $rows=$wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}eintrikot_audit ORDER BY id DESC LIMIT 50 OFFSET %d",($page-1)*50));if(!$rows)echo '<p>Noch keine Änderungen protokolliert.</p>';
- foreach($rows as $row){$actor=get_user_by('id',$row->actor);$target=get_user_by('id',$row->target);echo '<article class="audit-row"><small>#'.esc_html($row->id).' · '.esc_html(wp_date('d.m.Y H:i',strtotime($row->created_at.' UTC'))).'</small><h2>'.esc_html(profile_fields()[$row->field]??$row->field).'</h2><p>Geändert von '.esc_html($actor?$actor->display_name:'Benutzer #'.$row->actor).' · Mitglied: '.esc_html($target?$target->display_name:'#'.$row->target).'</p><p>'.esc_html($row->reason).'</p><details><summary>Vorher und nachher anzeigen</summary><div class="audit-values"><div><h3>Vorher</h3><pre>'.esc_html(audit_value($row->before_value)).'</pre></div><div><h3>Nachher</h3><pre>'.esc_html(audit_value($row->after_value)).'</pre></div></div></details></article>';}
- if($pages>1){echo '<nav class="pagination" aria-label="Protokollseiten">';if($page>1)echo '<a href="'.esc_url(add_query_arg('audit_page',$page-1,audit_url())).'">← Neuere Einträge</a>';echo '<span>Seite '.esc_html($page.' von '.$pages).'</span>';if($page<$pages)echo '<a href="'.esc_url(add_query_arg('audit_page',$page+1,audit_url())).'">Ältere Einträge →</a>';echo '</nav>';}
+if (!defined('ABSPATH')) {
+    exit();
 }
-add_shortcode('eintrikot_audit',function(){if(!manager_access())return '<h1>Kein Zugriff</h1>';ob_start();render_audit();return portal_shell(ob_get_clean(),'audit');});
-add_action('template_redirect',function(){if(!((int)get_option('eintrikot_audit_page') > 0 && is_page((int)get_option('eintrikot_audit_page'))))return;nocache_headers();header('X-Robots-Tag: noindex, nofollow',true);if(!is_user_logged_in()){wp_safe_redirect(wp_login_url(audit_url()));exit;}if(!manager_access())wp_die('Dieser Bereich ist Vorstand und Admin vorbehalten.','',array('response'=>403));});
+function audit_url() {
+    return get_option('eintrikot_audit_page')
+        ? get_permalink((int) get_option('eintrikot_audit_page'))
+        : portal_url('audit');
+}
+function audit_value($raw) {
+    $v = json_decode($raw, true);
+    if ($v === null || $v === '') {
+        return '—';
+    }
+    if (is_bool($v)) {
+        return $v ? 'Ja' : 'Nein';
+    }
+    return is_array($v)
+        ? wp_json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        : (string) $v;
+}
+function render_audit() {
+    if (!manager_access()) {
+        return;
+    }
+    global $wpdb;
+    $page = max(1, (int) directory_param('audit_page'));
+    $total = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit");
+    $pages = max(1, (int) ceil($total / 50));
+    $page = min($page, $pages);
+    echo '<a class="text-link service-back" href="' .
+        esc_url(portal_url('admin')) .
+        '">← Verwaltung</a><h1>Änderungsprotokoll.</h1><p>Wer hat wann welche Angaben geändert? Dieses Protokoll ist im Portal ausschließlich lesbar.</p>';
+    $rows = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}eintrikot_audit ORDER BY id DESC LIMIT 50 OFFSET %d",
+            ($page - 1) * 50
+        )
+    );
+    if (!$rows) {
+        echo '<p>Noch keine Änderungen protokolliert.</p>';
+    }
+    foreach ($rows as $row) {
+        $actor = get_user_by('id', $row->actor);
+        $target = get_user_by('id', $row->target);
+        echo '<article class="audit-row"><small>#' .
+            esc_html($row->id) .
+            ' · ' .
+            esc_html(wp_date('d.m.Y H:i', strtotime($row->created_at . ' UTC'))) .
+            '</small><h2>' .
+            esc_html(profile_fields()[$row->field] ?? $row->field) .
+            '</h2><p>Geändert von ' .
+            esc_html($actor ? $actor->display_name : 'Benutzer #' . $row->actor) .
+            ' · Mitglied: ' .
+            esc_html($target ? $target->display_name : '#' . $row->target) .
+            '</p><p>' .
+            esc_html($row->reason) .
+            '</p><details><summary>Vorher und nachher anzeigen</summary><div class="audit-values"><div><h3>Vorher</h3><pre>' .
+            esc_html(audit_value($row->before_value)) .
+            '</pre></div><div><h3>Nachher</h3><pre>' .
+            esc_html(audit_value($row->after_value)) .
+            '</pre></div></div></details></article>';
+    }
+    if ($pages > 1) {
+        echo '<nav class="pagination" aria-label="Protokollseiten">';
+        if ($page > 1) {
+            echo '<a href="' .
+                esc_url(add_query_arg('audit_page', $page - 1, audit_url())) .
+                '">← Neuere Einträge</a>';
+        }
+        echo '<span>Seite ' . esc_html($page . ' von ' . $pages) . '</span>';
+        if ($page < $pages) {
+            echo '<a href="' .
+                esc_url(add_query_arg('audit_page', $page + 1, audit_url())) .
+                '">Ältere Einträge →</a>';
+        }
+        echo '</nav>';
+    }
+}
+add_shortcode('eintrikot_audit', function () {
+    if (!manager_access()) {
+        return '<h1>Kein Zugriff</h1>';
+    }
+    ob_start();
+    render_audit();
+    return portal_shell(ob_get_clean(), 'audit');
+});
+add_action('template_redirect', function () {
+    if (
+        !((int) get_option('eintrikot_audit_page') > 0 && is_page((int) get_option('eintrikot_audit_page')))
+    ) {
+        return;
+    }
+    nocache_headers();
+    header('X-Robots-Tag: noindex, nofollow', true);
+    if (!is_user_logged_in()) {
+        wp_safe_redirect(wp_login_url(audit_url()));
+        exit();
+    }
+    if (!manager_access()) {
+        wp_die('Dieser Bereich ist Vorstand und Admin vorbehalten.', '', ['response' => 403]);
+    }
+});
