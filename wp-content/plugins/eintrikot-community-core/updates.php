@@ -2,10 +2,9 @@
 /**
  * Inhaltliche Aktualisierungen bestehender Seiten, einzeln und bewusst auszulösen.
  *
- * Jede Aktualisierung prüft vorher, ob die Seite noch dem erwarteten Stand entspricht.
- * Wurde sie inzwischen im Editor bearbeitet, wird nichts überschrieben. WordPress legt
- * bei jeder Änderung eine Revision an, sodass sich jeder Schritt unter Seiten → Revisionen
- * zurücknehmen lässt.
+ * Vollständiges Ersetzen einer Seite nur, wenn ihr Inhalt exakt einem bekannten
+ * Ausgangsstand entspricht (Fingerabdruck). Gezielte Anpassungen ändern nur die
+ * genannten Stellen. WordPress legt bei jeder Änderung eine Revision an.
  */
 namespace Eintrikot\Community;
 if (!defined('ABSPATH')) {
@@ -17,7 +16,7 @@ function content_updates() {
         '0.7-beitritt' => [
             'title' => 'Seite „Mitglied werden" neu aufbauen',
             'text' =>
-                'Ersetzt den Platzhaltertext durch Beitrittskriterien, Beitrag, freiwillige Jahresspende, Ablauf und den Beitritts-Button (erscheint erst, wenn unter „Beitritt" ein MeinVerein-Link hinterlegt ist).',
+                'Ersetzt die Seite durch Beitrittskriterien, Beitrag, freiwillige Jahresspende, Ablauf und den Beitritts-Button (erscheint erst, wenn unter „Beitritt" ein MeinVerein-Link hinterlegt ist). Nur wenn die Seite noch exakt dem Ausgangsstand entspricht.',
             'run' => __NAMESPACE__ . '\update_join_page'
         ],
         '0.7-relative-links' => [
@@ -50,20 +49,37 @@ function pattern_markup($slug) {
     return isset($parts[1]) ? trim($parts[1]) : new \WP_Error('theme', 'Ungültige Seitenvorlage.');
 }
 
+/**
+ * Content fingerprint for comparing a page with a known shipped state.
+ * Ignores the site origin in links (absolute vs. relative) and whitespace, nothing else.
+ */
+function page_fingerprint($content) {
+    $content = preg_replace('/(["\'(])https?:\/\/[^\/"\'\s)]+(?=\/)/i', '$1', (string) $content);
+    return hash('sha256', trim(preg_replace('/\s+/', ' ', $content)));
+}
+
+/** Fingerprints of "Mitglied werden" as shipped before 0.7 (MVP import 0.5.0). */
+const JOIN_PAGE_ORIGINALS = ['31f086317404b36ec9b113bfbd60ae972fd592695e3ad25f9e57257d94076c15'];
+
 function update_join_page() {
     $page = get_page_by_path('mitglied-werden');
     if (!$page) {
         return new \WP_Error('missing', 'Die Seite „Mitglied werden" wurde nicht gefunden.');
     }
-    if (!str_contains($page->post_content, 'Der direkte Online-Antrag wird hier ergänzt')) {
-        return new \WP_Error(
-            'edited',
-            'Die Seite wurde bereits bearbeitet und wird nicht überschrieben. Die neue Fassung steht im Editor als Vorlage „EINTRIKOT – beitritt" bereit.'
-        );
-    }
     $content = pattern_markup('mvp-beitritt');
     if (is_wp_error($content)) {
         return $content;
+    }
+    $current = page_fingerprint($page->post_content);
+    if ($current === page_fingerprint($content)) {
+        return 'Nichts zu ändern – die Seite entspricht bereits der neuen Fassung.';
+    }
+    // Replace the whole page only if it is exactly the shipped original; any edit blocks it.
+    if (!in_array($current, JOIN_PAGE_ORIGINALS, true)) {
+        return new \WP_Error(
+            'edited',
+            'Die Seite wurde gegenüber dem Ausgangsstand verändert und wird deshalb nicht ersetzt. Die neue Fassung steht im Editor als Vorlage „EINTRIKOT – beitritt" bereit.'
+        );
     }
     $result = wp_update_post(wp_slash(['ID' => $page->ID, 'post_content' => $content]), true);
     return is_wp_error($result) ? $result : 'Seite „Mitglied werden" aktualisiert.';
@@ -159,7 +175,7 @@ function content_updates_page() {
     $done = applied_content_updates();
     $notice = get_transient('et_update_notice_' . get_current_user_id());
     delete_transient('et_update_notice_' . get_current_user_id());
-    echo '<div class="wrap"><h1>Aktualisierungen</h1><p>Jede Aktualisierung ändert nur die genannte Seite. Wurde sie inzwischen bearbeitet, wird nichts überschrieben. Jede Änderung lässt sich über die Revisionen der Seite zurücknehmen.</p>';
+    echo '<div class="wrap"><h1>Aktualisierungen</h1><p>Jede Aktualisierung beschreibt genau, was sie ändert. Eine Seite wird nur dann vollständig ersetzt, wenn sie noch exakt dem Ausgangsstand entspricht – jede eigene Bearbeitung verhindert das. Gezielte Anpassungen (Links, Schreibweise) ändern nur die genannten Stellen und lassen den übrigen Inhalt unberührt. Jede Änderung legt eine Revision an und lässt sich unter Seiten → Revisionen zurücknehmen.</p>';
     if (is_array($notice)) {
         echo '<div class="notice notice-' .
             ($notice['ok'] ? 'success' : 'warning') .

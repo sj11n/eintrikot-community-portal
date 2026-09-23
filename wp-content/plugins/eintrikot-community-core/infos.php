@@ -72,7 +72,7 @@ function calendar_box($post) {
         esc_attr(get_post_meta($post->ID, 'et_date', true)) .
         '"></label></p><p><label><input type="checkbox" name="et_annual" value="1" ' .
         checked(get_post_meta($post->ID, 'et_annual', true), '1', false) .
-        '> Jährlich wiederholen</label></p><p>Veröffentlichte Einträge erscheinen in den Vereinsinfos, sobald sie in den nächsten 30 Tagen liegen.</p>';
+        '> Jährlich wiederholen</label></p><p>Veröffentlichte Einträge erscheinen im Portal unter „Termine“, sobald sie in den nächsten drei Monaten liegen. Ort, Uhrzeit, Beschreibung und Anmeldelink bitte ins Textfeld schreiben – Mitglieder können den Termin dort aufklappen.</p>';
 }
 add_action('save_post_et_calendar', function ($id) {
     if (
@@ -128,6 +128,7 @@ function calendar_items($days = 30) {
         if ($date && $date >= $today && $date <= $until) {
             $items[] = [
                 'date' => $date->format('Y-m-d'),
+                'content' => $post->post_content,
                 'title' =>
                     (get_post_meta($post->ID, 'et_annual', true) === '1' &&
                     (int) $date->format('Y') > (int) substr($source, 0, 4)
@@ -213,15 +214,25 @@ function render_events() {
                 '</h2><ol>';
             $month = $label;
         }
+        $details =
+            trim(wp_strip_all_tags((string) ($item['content'] ?? ''))) !== ''
+                ? wp_kses_post(apply_filters('the_content', $item['content']))
+                : '';
         echo '<li><time datetime="' .
             esc_attr($item['date']) .
             '"><strong>' .
             esc_html(wp_date('j.', $ts)) .
             '</strong> ' .
             esc_html(wp_date('D', $ts)) .
-            '</time><span>' .
-            esc_html($item['title']) .
-            '</span></li>';
+            '</time>' .
+            ($details !== ''
+                ? '<details><summary>' .
+                    esc_html($item['title']) .
+                    '</summary><div class="et-event-body">' .
+                    $details .
+                    '</div></details>'
+                : '<span>' . esc_html($item['title']) . '</span>') .
+            '</li>';
     }
     echo '</ol></section>';
 }
