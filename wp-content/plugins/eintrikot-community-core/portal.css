@@ -11,3 +11,19 @@
 .et-app .audit-values{display:grid;grid-template-columns:1fr 1fr;gap:20px}.et-app .audit-values pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;background:#f6f6f6;padding:16px}.et-app .audit-row h2{font-size:20px}.et-app .audit-row summary{cursor:pointer}.et-app .profile-form{padding-bottom:60px}.et-app .profile-form input,.et-app .profile-form select,.et-app .profile-form textarea{scroll-margin-bottom:170px}@media(max-width:800px){.et-app .audit-values{grid-template-columns:1fr}.et-app .form-section .et-avatar{display:flex}.et-app .save-bar{bottom:65px}}
 
 .et-app .directory-heading h1{font-size:clamp(32px,3.5vw,50px);max-width:650px}.et-app .search-field input{font-size:14px}
+
+/* 0.8 – Navigation, Mehr, Termine, Erstanmeldung */
+.et-app .mobile-more{display:none}
+@media(max-width:800px){.et-app .mobile-brand .mobile-more{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid #000;border-radius:999px;font-size:14px;font-weight:650}.et-app .mobile-brand .mobile-more.active{background:#C8E2EE;border-color:#C8E2EE}.et-app .bottom-nav a{flex:1;text-align:center;display:flex;align-items:center;justify-content:center;padding:10px 4px}}
+.et-app .service-link>span:first-child{display:grid;gap:2px}
+.et-app .service-link small{font-size:12px;font-weight:400;color:#656565}
+.et-app .auth-first{margin-top:28px;padding-top:22px;border-top:1px solid #e3e3e3}
+.et-app .auth-first h2{font-size:17px;letter-spacing:-.02em;margin:0 0 8px}
+.et-app .auth-first p{font-size:13px;line-height:1.6;margin:0 0 8px;color:#333}
+.et-app .et-events ol{list-style:none;margin:16px 0 0;padding:0}
+.et-app .et-events li{display:grid;grid-template-columns:84px 1fr;gap:16px;align-items:baseline;padding:16px 0;border-top:1px solid #e3e3e3}
+.et-app .et-events time{font-size:13px;color:#656565}
+.et-app .et-events time strong{font-size:22px;letter-spacing:-.04em;color:#000;margin-right:4px}
+.et-app .et-services .et-member strong{flex:1;min-width:0;white-space:normal;overflow:visible}
+.et-app .side-nav a.role-nav:first-of-type,.et-app .side-nav a:not(.role-nav)+a.role-nav{margin-top:18px;border-top:1px solid #eee;border-radius:0 0 7px 7px;padding-top:18px}
+.et-app .et-services .et-member>span{flex:0 0 auto}

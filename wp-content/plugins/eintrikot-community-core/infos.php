@@ -112,9 +112,9 @@ function upcoming_date($source, $annual, $today) {
     }
     return $date;
 }
-function calendar_items() {
+function calendar_items($days = 30) {
     $today = new \DateTimeImmutable('today', wp_timezone());
-    $until = $today->modify('+30 days');
+    $until = $today->modify('+' . max(1, (int) $days) . ' days');
     $items = [];
     foreach (
         get_posts(['post_type' => 'et_calendar', 'post_status' => 'publish', 'posts_per_page' => -1])
@@ -153,25 +153,11 @@ function render_infos() {
     if (!member_access()) {
         return;
     }
-    echo '<h1>Vereinsinfos</h1>';
+    echo '<div class="profile-title"><h1>Neuigkeiten.</h1><p>Mitteilungen aus dem Verein.</p></div>';
     if (current_user_can('eintrikot_edit_infos')) {
-        echo '<p><a href="' .
+        echo '<p><a class="text-link" href="' .
             esc_url(admin_url('post-new.php?post_type=et_info')) .
-            '">Vereinsinfo schreiben</a> · <a href="' .
-            esc_url(admin_url('edit.php?post_type=et_calendar')) .
-            '">Kalender pflegen</a></p>';
-    }
-    $items = calendar_items();
-    if ($items) {
-        echo '<section><h2>In den nächsten 30 Tagen</h2>';
-        foreach ($items as $item) {
-            echo '<p><strong>' .
-                esc_html(wp_date('d.m.', strtotime($item['date'] . ' 12:00:00'))) .
-                '</strong> · ' .
-                esc_html($item['title']) .
-                '</p>';
-        }
-        echo '</section>';
+            '">Vereinsinfo schreiben →</a></p>';
     }
     $page = max(1, absint($_GET['info_page'] ?? 1));
     $query = new \WP_Query([
@@ -181,7 +167,7 @@ function render_infos() {
         'paged' => $page
     ]);
     if (!$query->have_posts()) {
-        echo '<p>Hier erscheinen Mitteilungen aus dem Verein.</p>';
+        echo '<p class="profile-empty">Noch keine Mitteilungen. Neue Vereinsinfos erscheinen hier.</p>';
     }
     foreach ($query->posts as $post) {
         echo '<article class="et-request"><h2>' .
@@ -198,4 +184,44 @@ function render_infos() {
     if ($page < $query->max_num_pages) {
         echo '<a href="' . esc_url(portal_url('infos', ['info_page' => $page + 1])) . '">Ältere Infos →</a>';
     }
+}
+
+/** "Termine": dated entries and shared birthdays for the next three months, grouped by month. */
+function render_events() {
+    if (!member_access()) {
+        return;
+    }
+    echo '<div class="profile-title"><h1>Termine.</h1><p>Die nächsten drei Monate.</p></div>';
+    if (current_user_can('eintrikot_edit_infos')) {
+        echo '<p><a class="text-link" href="' .
+            esc_url(admin_url('edit.php?post_type=et_calendar')) .
+            '">Kalender pflegen →</a></p>';
+    }
+    $items = calendar_items(92);
+    if (!$items) {
+        echo '<p class="profile-empty">In den nächsten drei Monaten stehen keine Termine an.</p>';
+        return;
+    }
+    $month = '';
+    foreach ($items as $item) {
+        $ts = strtotime($item['date'] . ' 12:00:00');
+        $label = wp_date('F Y', $ts);
+        if ($label !== $month) {
+            echo ($month !== '' ? '</ol></section>' : '') .
+                '<section class="portal-section et-events"><h2>' .
+                esc_html($label) .
+                '</h2><ol>';
+            $month = $label;
+        }
+        echo '<li><time datetime="' .
+            esc_attr($item['date']) .
+            '"><strong>' .
+            esc_html(wp_date('j.', $ts)) .
+            '</strong> ' .
+            esc_html(wp_date('D', $ts)) .
+            '</time><span>' .
+            esc_html($item['title']) .
+            '</span></li>';
+    }
+    echo '</ol></section>';
 }
