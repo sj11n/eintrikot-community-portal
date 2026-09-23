@@ -1,15 +1,129 @@
 <?php
 namespace Eintrikot\Community;
-if(!defined('ABSPATH'))exit;
-add_action('admin_menu',function(){add_submenu_page('eintrikot-community-setup','MVP übernehmen','MVP übernehmen','manage_options','eintrikot-mvp',__NAMESPACE__.'\mvp_setup');});
-function mvp_setup(){if(!current_user_can('manage_options'))return;echo '<div class="wrap"><h1>Freigegebenes MVP übernehmen</h1><p>Überträgt die vollständigen Seiten Startseite, Verein, Menschen, Engagement, Unterstützen, News, Kontakt und Mitglied werden in bearbeitbare WordPress-Blöcke. Verbindet das neue Portal-Layout und die geschützte Protokollseite.</p><p>Die bisherigen Community-Seiteninhalte werden durch diese geprüfte MVP-Fassung ersetzt. Mitgliederdaten, Beiträge und Service-Anfragen bleiben erhalten. Impressum und Datenschutz werden inhaltlich nicht geändert.</p>';if(get_option('eintrikot_mvp_version')==='0.5.0'){echo '<p><strong>Version 0.5.0 wurde bereits übernommen.</strong> Inhalte kannst du jetzt unter Seiten bearbeiten.</p></div>';return;}echo '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';wp_nonce_field('et_apply_mvp');echo '<input type="hidden" name="action" value="et_apply_mvp">';submit_button('MVP 0.5.0 übernehmen');echo '</form></div>';}
-function mvp_apply(){
- $specs=array('startseite'=>array('Startseite','community-startseite'),'verein'=>array('Der Verein','community-verein'),'menschen'=>array('Menschen','community-menschen'),'engagement'=>array('Engagement','community-engagement'),'unterstuetzen'=>array('Unterstützen','community-unterstuetzen'),'news'=>array('News','community-news'),'kontakt'=>array('Kontakt','community-kontakt'),'beitritt'=>array('Mitglied werden','mitglied-werden'));
- $ids=get_option('eintrikot_draft_pages',array());foreach($specs as $key=>$spec){$file=get_theme_file_path('patterns/mvp-'.$key.'.php');if(!is_readable($file))return new \WP_Error('theme','Bitte zuerst Theme 0.5.0 installieren.');}
- foreach($specs as $key=>$spec){$content=explode('?>',file_get_contents(get_theme_file_path('patterns/mvp-'.$key.'.php')),2)[1];$content=preg_replace_callback('/(href|src)="(\/[^"\s]*)"/',fn($m)=>$m[1].'="'.esc_url(home_url(html_entity_decode($m[2]))).'"',$content);$existing=get_page_by_path($spec[1]);$id=!empty($ids[$key])&&get_post($ids[$key])?(int)$ids[$key]:($existing?$existing->ID:0);$id=wp_insert_post(wp_slash(array('ID'=>$id,'post_type'=>'page','post_status'=>'publish','post_title'=>$spec[0],'post_name'=>$spec[1],'post_content'=>$content)),true);if(is_wp_error($id))return $id;update_post_meta($id,'_wp_page_template','mvp-public');$ids[$key]=$id;}
- $portal=prepare_portal_page();if(is_wp_error($portal))return $portal;wp_update_post(array('ID'=>$portal,'post_status'=>'publish'));update_post_meta($portal,'_wp_page_template','mvp-portal');
- $audit=get_page_by_path('community-protokoll');$audit=wp_insert_post(array('ID'=>$audit?$audit->ID:0,'post_type'=>'page','post_status'=>'publish','post_title'=>'Änderungsprotokoll','post_name'=>'community-protokoll','post_content'=>'<!-- wp:shortcode -->[eintrikot_audit]<!-- /wp:shortcode -->'),true);if(is_wp_error($audit))return $audit;update_post_meta($audit,'_wp_page_template','mvp-portal');update_option('eintrikot_audit_page',$audit,false);
- foreach(array('impressum','datenschutz') as $slug){$page=get_page_by_path($slug);if($page)update_post_meta($page->ID,'_wp_page_template','mvp-public');}
- update_option('eintrikot_draft_pages',$ids,false);update_option('eintrikot_news_page',$ids['news'],false);update_option('page_for_posts',0);update_option('show_on_front','page');update_option('page_on_front',$ids['startseite']);update_option('eintrikot_mvp_version','0.5.0',false);return $ids;
+if (!defined('ABSPATH')) {
+    exit();
 }
-add_action('admin_post_et_apply_mvp',function(){if(!current_user_can('manage_options'))wp_die('Keine Berechtigung.','',array('response'=>403));check_admin_referer('et_apply_mvp');if(get_option('eintrikot_mvp_version')!=='0.5.0'){$result=mvp_apply();if(is_wp_error($result))wp_die(esc_html($result->get_error_message()));}wp_safe_redirect(home_url('/'));exit;});
+add_action('admin_menu', function () {
+    add_submenu_page(
+        'eintrikot-community-setup',
+        'MVP übernehmen',
+        'MVP übernehmen',
+        'manage_options',
+        'eintrikot-mvp',
+        __NAMESPACE__ . '\mvp_setup'
+    );
+});
+function mvp_setup() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    echo '<div class="wrap"><h1>Freigegebenes MVP übernehmen</h1><p>Überträgt die vollständigen Seiten Startseite, Verein, Menschen, Engagement, Unterstützen, News, Kontakt und Mitglied werden in bearbeitbare WordPress-Blöcke. Verbindet das neue Portal-Layout und die geschützte Protokollseite.</p><p>Die bisherigen Community-Seiteninhalte werden durch diese geprüfte MVP-Fassung ersetzt. Mitgliederdaten, Beiträge und Service-Anfragen bleiben erhalten. Impressum und Datenschutz werden inhaltlich nicht geändert.</p>';
+    if (get_option('eintrikot_mvp_version') === '0.5.0') {
+        echo '<p><strong>Version 0.5.0 wurde bereits übernommen.</strong> Inhalte kannst du jetzt unter Seiten bearbeiten.</p></div>';
+        return;
+    }
+    echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+    wp_nonce_field('et_apply_mvp');
+    echo '<input type="hidden" name="action" value="et_apply_mvp">';
+    submit_button('MVP 0.5.0 übernehmen');
+    echo '</form></div>';
+}
+function mvp_apply() {
+    $specs = [
+        'startseite' => ['Startseite', 'community-startseite'],
+        'verein' => ['Der Verein', 'community-verein'],
+        'menschen' => ['Menschen', 'community-menschen'],
+        'engagement' => ['Engagement', 'community-engagement'],
+        'unterstuetzen' => ['Unterstützen', 'community-unterstuetzen'],
+        'news' => ['News', 'community-news'],
+        'kontakt' => ['Kontakt', 'community-kontakt'],
+        'beitritt' => ['Mitglied werden', 'mitglied-werden']
+    ];
+    $ids = get_option('eintrikot_draft_pages', []);
+    foreach ($specs as $key => $spec) {
+        $file = get_theme_file_path('patterns/mvp-' . $key . '.php');
+        if (!is_readable($file)) {
+            return new \WP_Error('theme', 'Bitte zuerst Theme 0.5.0 installieren.');
+        }
+    }
+    foreach ($specs as $key => $spec) {
+        $content = explode(
+            '?>',
+            file_get_contents(get_theme_file_path('patterns/mvp-' . $key . '.php')),
+            2
+        )[1];
+        $content = preg_replace_callback(
+            '/(href|src)="(\/[^"\s]*)"/',
+            fn($m) => $m[1] . '="' . esc_url(home_url(html_entity_decode($m[2]))) . '"',
+            $content
+        );
+        $existing = get_page_by_path($spec[1]);
+        $id = !empty($ids[$key]) && get_post($ids[$key]) ? (int) $ids[$key] : ($existing ? $existing->ID : 0);
+        $id = wp_insert_post(
+            wp_slash([
+                'ID' => $id,
+                'post_type' => 'page',
+                'post_status' => 'publish',
+                'post_title' => $spec[0],
+                'post_name' => $spec[1],
+                'post_content' => $content
+            ]),
+            true
+        );
+        if (is_wp_error($id)) {
+            return $id;
+        }
+        update_post_meta($id, '_wp_page_template', 'mvp-public');
+        $ids[$key] = $id;
+    }
+    $portal = prepare_portal_page();
+    if (is_wp_error($portal)) {
+        return $portal;
+    }
+    wp_update_post(['ID' => $portal, 'post_status' => 'publish']);
+    update_post_meta($portal, '_wp_page_template', 'mvp-portal');
+    $audit = get_page_by_path('community-protokoll');
+    $audit = wp_insert_post(
+        [
+            'ID' => $audit ? $audit->ID : 0,
+            'post_type' => 'page',
+            'post_status' => 'publish',
+            'post_title' => 'Änderungsprotokoll',
+            'post_name' => 'community-protokoll',
+            'post_content' => '<!-- wp:shortcode -->[eintrikot_audit]<!-- /wp:shortcode -->'
+        ],
+        true
+    );
+    if (is_wp_error($audit)) {
+        return $audit;
+    }
+    update_post_meta($audit, '_wp_page_template', 'mvp-portal');
+    update_option('eintrikot_audit_page', $audit, false);
+    foreach (['impressum', 'datenschutz'] as $slug) {
+        $page = get_page_by_path($slug);
+        if ($page) {
+            update_post_meta($page->ID, '_wp_page_template', 'mvp-public');
+        }
+    }
+    update_option('eintrikot_draft_pages', $ids, false);
+    update_option('eintrikot_news_page', $ids['news'], false);
+    update_option('page_for_posts', 0);
+    update_option('show_on_front', 'page');
+    update_option('page_on_front', $ids['startseite']);
+    update_option('eintrikot_mvp_version', '0.5.0', false);
+    return $ids;
+}
+add_action('admin_post_et_apply_mvp', function () {
+    if (!current_user_can('manage_options')) {
+        wp_die('Keine Berechtigung.', '', ['response' => 403]);
+    }
+    check_admin_referer('et_apply_mvp');
+    if (get_option('eintrikot_mvp_version') !== '0.5.0') {
+        $result = mvp_apply();
+        if (is_wp_error($result)) {
+            wp_die(esc_html($result->get_error_message()));
+        }
+    }
+    wp_safe_redirect(home_url('/'));
+    exit();
+});

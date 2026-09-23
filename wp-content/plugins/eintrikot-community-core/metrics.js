@@ -1,1 +1,25 @@
-(()=>{const nodes=document.querySelectorAll('[data-count]');if(matchMedia('(prefers-reduced-motion: reduce)').matches||!('IntersectionObserver'in window))return;const formatter=new Intl.NumberFormat('de-DE');const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(!entry.isIntersecting)return;const el=entry.target,end=Number(el.dataset.count),suffix=el.dataset.suffix||'';let start;function frame(now){if(start===undefined)start=now;const t=Math.min((now-start)/1300,1);el.textContent=formatter.format(Math.round(end*(1-Math.pow(1-t,3))))+suffix;if(t<1)requestAnimationFrame(frame);}requestAnimationFrame(frame);observer.unobserve(el);}),{threshold:.3});nodes.forEach(el=>observer.observe(el));})();
+(() => {
+    const nodes = document.querySelectorAll('[data-count]');
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+    const formatter = new Intl.NumberFormat('de-DE');
+    const observer = new IntersectionObserver(
+        (entries) =>
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                const el = entry.target,
+                    end = Number(el.dataset.count),
+                    suffix = el.dataset.suffix || '';
+                let start;
+                function frame(now) {
+                    if (start === undefined) start = now;
+                    const t = Math.min((now - start) / 1300, 1);
+                    el.textContent = formatter.format(Math.round(end * (1 - Math.pow(1 - t, 3)))) + suffix;
+                    if (t < 1) requestAnimationFrame(frame);
+                }
+                requestAnimationFrame(frame);
+                observer.unobserve(el);
+            }),
+        { threshold: 0.3 },
+    );
+    nodes.forEach((el) => observer.observe(el));
+})();
