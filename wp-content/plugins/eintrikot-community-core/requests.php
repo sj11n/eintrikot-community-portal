@@ -22,6 +22,114 @@ function request_labels($kind) {
         'rejected' => 'Abgelehnt'
     ];
 }
+function request_status_pill($status, $kind) {
+    $labels = request_labels($kind);
+    $status = isset($labels[$status]) ? $status : 'received';
+    return '<span class="request-status status-' .
+        esc_attr($status) .
+        '">' .
+        esc_html($labels[$status]) .
+        '</span>';
+}
+
+/** Who looks after a request, in words for the member. */
+function request_owner_label($kind) {
+    return $kind === 'contact' ? 'Der Vorstand' : 'Die Mitgliederverwaltung';
+}
+
+/**
+ * Timeline "Eingegangen → In Prüfung → Erledigt" with the dates known for each step.
+ * Older requests have no history yet; their current status date is the last update.
+ */
+function request_timeline($row, $state, $kind) {
+    $labels = request_labels($kind);
+    $dates = ['received' => $row->post_date_gmt];
+    foreach (is_array($state['history'] ?? null) ? $state['history'] : [] as $entry) {
+        if (is_array($entry) && isset($labels[$entry['status'] ?? ''])) {
+            $dates[$entry['status']] = $entry['at'] ?? '';
+        }
+    }
+    $current = isset($labels[$state['status'] ?? '']) ? $state['status'] : 'received';
+    if (!isset($dates[$current]) && !empty($state['updated_at'])) {
+        $dates[$current] = $state['updated_at'];
+    }
+    $final = $current === 'rejected' ? 'rejected' : 'adopted';
+    $steps = ['received', 'review', $final];
+    $reached = array_search($current, $steps, true);
+    $html = '<ol class="request-timeline">';
+    foreach ($steps as $i => $step) {
+        $class = $i < $reached ? 'is-done' : ($i === $reached ? 'is-current' : 'is-open');
+        if ($step === 'rejected') {
+            $class .= ' is-rejected';
+        }
+        $date = $i <= $reached && !empty($dates[$step]) ? get_date_from_gmt($dates[$step], 'd.m.Y') : '';
+        $html .=
+            '<li class="' .
+            esc_attr($class) .
+            '"' .
+            ($i === $reached ? ' aria-current="step"' : '') .
+            '><span class="timeline-dot" aria-hidden="true"></span><strong>' .
+            esc_html($labels[$step]) .
+            '</strong>' .
+            ($date !== '' ? '<small>' . esc_html($date) . '</small>' : '') .
+            '</li>';
+    }
+    return $html . '</ol>';
+}
+
+/** Plain-language next step for the member. */
+function request_next_step($state, $kind) {
+    $who = request_owner_label($kind);
+    switch ($state['status'] ?? 'received') {
+        case 'review':
+            return $who . ' prüft deine Anfrage gerade. Die Rückmeldung erscheint hier.';
+        case 'adopted':
+            return in_array($kind, ['address', 'bank', 'funding'], true)
+                ? 'Erledigt: Die Änderung ist in MeinVerein übernommen.'
+                : 'Erledigt. Danke für deine Anfrage.';
+        case 'rejected':
+            return 'Diese Anfrage wurde nicht übernommen. Die Begründung steht unter „Rückmeldung“. Bei Fragen erreichst du den Vorstand über den Service.';
+        default:
+            return 'Wir haben deine Anfrage erhalten. ' . $who . ' sieht sie sich als Nächstes an.';
+    }
+}
+
+/** Funding requests: say clearly whether the amount is only requested or already binding. */
+function funding_summary($id, $state) {
+    $details = get_post_meta($id, 'et_details', true);
+    if (!is_array($details) || !isset($details['annual_amount_cents'])) {
+        return '';
+    }
+    $amount = number_format_i18n(
+        $details['annual_amount_cents'] / 100,
+        $details['annual_amount_cents'] % 100 ? 2 : 0
+    );
+    $start = !empty($details['effective_date'])
+        ? wp_date('j. F Y', strtotime($details['effective_date'] . ' 12:00:00'))
+        : '';
+    $ending = (int) $details['annual_amount_cents'] === 0;
+    $what = $ending
+        ? 'Beenden deines freiwilligen Förderbeitrags' . ($start !== '' ? ' zum ' . $start : '')
+        : $amount . ' € jährlich' . ($start !== '' ? ' ab ' . $start : '');
+    $status = $state['status'] ?? 'received';
+    if ($status === 'adopted') {
+        $date = !empty($state['transferred_at']) ? get_date_from_gmt($state['transferred_at'], 'd.m.Y') : '';
+        return '<section class="funding-state is-binding"><p class="funding-state-label">Verbindlich übernommen</p><p><strong>' .
+            esc_html($what) .
+            '</strong></p><p>In MeinVerein hinterlegt' .
+            ($date !== '' ? ' am ' . esc_html($date) : '') .
+            '. Ab jetzt gilt diese Vereinbarung.</p></section>';
+    }
+    if ($status === 'rejected') {
+        return '<section class="funding-state is-rejected"><p class="funding-state-label">Nicht übernommen</p><p><strong>' .
+            esc_html($what) .
+            '</strong></p><p>An deinem bisherigen Beitrag ändert sich nichts.</p></section>';
+    }
+    return '<section class="funding-state is-requested"><p class="funding-state-label">Angefragt – noch nicht verbindlich</p><p><strong>' .
+        esc_html($what) .
+        '</strong></p><p>Verbindlich wird die Änderung erst, wenn der Vorstand sie in MeinVerein übernommen hat. Bis dahin ändert sich an deinem Beitrag nichts.</p></section>';
+}
+
 function request_allowed($from, $to) {
     $paths = [
         'received' => ['received', 'review'],
@@ -43,7 +151,10 @@ function render_requests($all) {
         return;
     }
     if ($all) {
-        echo '<h1>Service-Anfragen</h1><p>Prüfen, Rückmeldung hinterlegen und die Übernahme dokumentieren.</p>';
+        echo '<a class="text-link service-back" href="' .
+            esc_url(portal_url('admin')) .
+            '">← Verwaltung</a>' .
+            page_head('Service-Anfragen', 'Prüfen, Rückmeldung hinterlegen und die Übernahme dokumentieren.');
     }
     $status = directory_param('status');
     $args = [
@@ -93,11 +204,14 @@ function render_requests($all) {
     $pages = max(1, (int) ceil($total / 20));
     $page = min($pages, max(1, (int) directory_param('request_page')));
     if (!$rows) {
-        echo '<p>Noch keine passenden Anfragen.</p>';
+        echo '<p class="portal-empty">' .
+            ($all
+                ? 'Keine Anfragen mit diesem Status.'
+                : 'Du hast noch keine Anfragen gestellt. Wähle oben aus, wobei wir dir helfen können.') .
+            '</p>';
     }
     foreach (array_slice($rows, ($page - 1) * 20, 20) as $row) {
         $state = request_state($row->ID);
-        $label = request_labels(get_post_meta($row->ID, 'et_kind', true))[$state['status']] ?? 'Eingegangen';
         $author = get_user_by('id', $row->post_author);
         echo '<a class="request-card" href="' .
             esc_url(portal_url('request', ['request' => $row->ID])) .
@@ -108,9 +222,9 @@ function render_requests($all) {
             ($all ? ' · ' . esc_html($author ? $author->display_name : 'Gelöschtes Mitglied') : '') .
             '</small><h3>' .
             esc_html($row->post_title) .
-            '</h3></div><span class="request-status">' .
-            esc_html($label) .
-            '</span><span aria-hidden="true">→</span></a>';
+            '</h3></div>' .
+            request_status_pill($state['status'] ?? 'received', get_post_meta($row->ID, 'et_kind', true)) .
+            '<span aria-hidden="true">→</span></a>';
     }
     if ($pages > 1) {
         echo '<nav class="pagination" aria-label="Anfragenseiten">';
@@ -153,23 +267,42 @@ function render_request($id) {
         esc_url(portal_url($manager ? 'requests' : 'service')) .
         '">← ' .
         ($manager ? 'Service-Anfragen' : 'Service') .
-        '</a><h1>' .
-        esc_html($row->post_title) .
-        '</h1><p>#' .
-        esc_html($id) .
-        ' · ' .
-        esc_html(get_the_date('d.m.Y', $row)) .
-        ' · <strong>' .
-        esc_html($labels[$state['status']] ?? 'Eingegangen') .
-        '</strong></p>';
-    if ($manager) {
-        echo '<p>Antrag von ' . esc_html($author ? $author->display_name : 'Gelöschtes Mitglied') . '</p>';
+        '</a>' .
+        page_head(
+            $row->post_title,
+            esc_html('#' . $id . ' · eingereicht am ' . get_the_date('d.m.Y', $row)) .
+                ($manager
+                    ? ' · von ' . esc_html($author ? $author->display_name : 'Gelöschtes Mitglied')
+                    : ''),
+            '',
+            $manager ? 'admin' : 'service'
+        );
+    if (isset($_GET['saved']) && !$manager) {
+        echo '<div class="request-confirm" role="status" tabindex="-1"><h2>Deine Anfrage ist eingegangen.</h2><p>Hier siehst du jederzeit, wie weit sie ist. Es wird keine E-Mail versendet – der Stand erscheint hier und auf deiner Startseite.</p></div>';
+    } elseif (isset($_GET['saved'])) {
+        echo '<p role="status" class="portal-success">Bearbeitung gespeichert.</p>';
     }
-    echo '<section class="form-section"><h2>Deine Anfrage</h2><p>' .
+    $handler = !empty($state['actor']) ? get_user_by('id', (int) $state['actor']) : null;
+    echo '<section class="request-overview"><h2 class="screen-reader-text">Stand</h2>' .
+        request_timeline($row, $state, $kind) .
+        '<dl class="request-facts"><div><dt>Wer kümmert sich</dt><dd>' .
+        esc_html(request_owner_label($kind)) .
+        ($handler ? ' · bearbeitet von ' . esc_html($handler->display_name) : '') .
+        '</dd></div><div><dt>' .
+        ($manager ? 'Das sieht das Mitglied' : 'Wie es weitergeht') .
+        '</dt><dd>' .
+        esc_html(request_next_step($state, $kind)) .
+        '</dd></div></dl></section>';
+    if ($kind === 'funding') {
+        echo funding_summary($id, $state);
+    }
+    echo '<section class="form-section"><h2>' .
+        ($manager ? 'Anfrage' : 'Deine Anfrage') .
+        '</h2><p>' .
         nl2br(esc_html($row->post_content)) .
         '</p></section>';
     if (!empty($state['reply'])) {
-        echo '<section class="form-section"><h2>Rückmeldung</h2><p>' .
+        echo '<section class="form-section request-reply"><h2>Rückmeldung</h2><p>' .
             nl2br(esc_html($state['reply'])) .
             '</p></section>';
     }
@@ -308,6 +441,11 @@ add_action('admin_post_et_request_update', function () {
     ];
     if ($status === 'adopted') {
         $next['transferred_at'] = $old['transferred_at'] ?? current_time('mysql', true);
+    }
+    // Keep the dates of every status change for the member's timeline.
+    $next['history'] = is_array($old['history'] ?? null) ? $old['history'] : [];
+    if ($status !== ($old['status'] ?? 'received')) {
+        $next['history'][] = ['status' => $status, 'at' => current_time('mysql', true)];
     }
     $result = $error
         ? new \WP_Error('validation', $error)

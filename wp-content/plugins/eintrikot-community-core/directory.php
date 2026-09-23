@@ -12,6 +12,55 @@ function shared_stations($data) {
         ? $data['stations']
         : [];
 }
+/**
+ * Whether a portal account appears in the member directory.
+ * Automatic: accounts with an EINTRIKOT role are listed, technical accounts (e.g. a pure administrator)
+ * are not. The administration can override this per account ("show" / "hide").
+ */
+function directory_listed_by_role($user) {
+    return (bool) array_intersect((array) $user->roles, [
+        'eintrikot_member',
+        'eintrikot_editor',
+        'eintrikot_board'
+    ]);
+}
+function directory_listed($user) {
+    $choice = profile_data($user->ID)['directory_listing'] ?? '';
+    if ($choice === 'show' || $choice === 'hide') {
+        return $choice === 'show';
+    }
+    return directory_listed_by_role($user);
+}
+
+/** Directory state (search, filters, page) that a profile visit carries along and restores. */
+function directory_state_keys() {
+    return ['q', 'team', 'age_class', 'phase', 'region', 'member_page'];
+}
+function directory_state() {
+    $state = [];
+    foreach (directory_state_keys() as $key) {
+        $value = directory_param($key);
+        if ($value !== '') {
+            $state[$key] = $value;
+        }
+    }
+    return $state;
+}
+/** Back link from a profile: the directory exactly as it was, scrolled to the visited card. */
+function directory_back_url($member_id) {
+    $back = directory_param('back');
+    $args = [];
+    if ($back !== '') {
+        parse_str($back, $parsed);
+        foreach (directory_state_keys() as $key) {
+            if (isset($parsed[$key]) && is_scalar($parsed[$key]) && $parsed[$key] !== '') {
+                $args[$key] = mb_substr(sanitize_text_field((string) $parsed[$key]), 0, 160);
+            }
+        }
+    }
+    return portal_url('members', $args) . '#m-' . (int) $member_id;
+}
+
 function directory_projection($user) {
     $data = profile_data($user->ID);
     $shared = [];
@@ -55,6 +104,9 @@ function render_directory() {
         ])
         as $user
     ) {
+        if (!directory_listed($user)) {
+            continue;
+        }
         $row = directory_projection($user);
         $rows[] = $row;
         foreach ($keys as $key => $label) {
@@ -84,14 +136,27 @@ function render_directory() {
     $total = count($matches);
     $pages = max(1, (int) ceil($total / 25));
     $page = min($pages, max(1, (int) directory_param('member_page')));
-    echo '<div class="directory-heading"><h1>Menschen, die dich verbinden.</h1><p>Unser Netzwerk. Über Teams, Generationen und Orte hinweg.</p></div><form class="directory-search" action="' .
+    $active = array_filter($filters);
+    $listed = count($rows);
+    echo page_head(
+        'Mitglieder',
+        esc_html(
+            $listed .
+                ' ' .
+                ($listed === 1 ? 'Mitglied' : 'Mitglieder') .
+                ' aus Jugend, Damen, Herren und Ehemaligen. Du siehst nur, was jede und jeder teilt.'
+        ),
+        member_search_form($q, $filters),
+        'members'
+    );
+    echo '<form class="directory-filters-form" action="' .
         esc_url(get_permalink((int) get_option('eintrikot_portal_page'))) .
-        '" method="get"><input type="hidden" name="view" value="members"><label class="search-field"><span class="screen-reader-text">Mitglieder suchen</span><input type="search" name="q" value="' .
-        esc_attr($q) .
-        '" placeholder="Name, Ort oder U18"></label><button class="button solid" type="submit">Suchen</button><details class="directory-filters" ' .
-        (array_filter($filters) ? 'open' : '') .
+        '" method="get"><input type="hidden" name="view" value="members">' .
+        ($q !== '' ? '<input type="hidden" name="q" value="' . esc_attr($q) . '">' : '') .
+        '<details class="directory-filters"' .
+        ($active ? ' open' : '') .
         '><summary>Filter' .
-        (array_filter($filters) ? ' · ' . count(array_filter($filters)) : '') .
+        ($active ? ' <span class="filter-count">' . count($active) . '</span>' : '') .
         '</summary><div class="filter-fields">';
     foreach ($keys as $key => $label) {
         natcasesort($options[$key]);
@@ -99,7 +164,7 @@ function render_directory() {
             esc_html($label) .
             '<select name="' .
             esc_attr($key) .
-            '"><option value="">Alle</option>';
+            '" data-autosubmit><option value="">Alle</option>';
         foreach ($options[$key] as $value) {
             echo '<option value="' .
                 esc_attr($value) .
@@ -111,13 +176,44 @@ function render_directory() {
         }
         echo '</select></label>';
     }
-    echo '<button class="button" type="submit">Anwenden</button></div></details>';
-    if ($q !== '' || array_filter($filters)) {
-        echo '<a class="text-link" href="' . esc_url(portal_url('members')) . '">Zurücksetzen</a>';
+    echo '<button class="button filter-apply" type="submit">Anwenden</button></div></details></form>';
+
+    // Active search and filters as chips; each chip removes exactly its own criterion.
+    $state = array_merge(['q' => $q], $filters);
+    $chips = [];
+    if ($q !== '') {
+        $chips[] = ['„' . $q . '“', 'q'];
     }
-    echo '</form><div class="directory-results"><p class="result-count" role="status">' .
-        esc_html($total . ' ' . ($total === 1 ? 'Mitglied' : 'Mitglieder')) .
-        '</p><div class="member-grid">';
+    foreach ($keys as $key => $label) {
+        if ($filters[$key] !== '') {
+            $chips[] = [$label . ': ' . $filters[$key], $key];
+        }
+    }
+    echo '<div class="directory-results"><div class="result-bar"><p class="result-count" role="status">' .
+        esc_html($total . ' ' . ($total === 1 ? 'Treffer' : 'Treffer')) .
+        ($chips ? '' : esc_html(' · alle Mitglieder')) .
+        '</p>';
+    if ($chips) {
+        echo '<ul class="filter-chips" aria-label="Aktive Filter">';
+        foreach ($chips as [$text, $key]) {
+            $without = array_filter(array_merge($state, [$key => '']));
+            echo '<li><a class="chip" href="' .
+                esc_url(portal_url('members', $without)) .
+                '" aria-label="' .
+                esc_attr($text . ' entfernen') .
+                '">' .
+                esc_html($text) .
+                '<span aria-hidden="true">×</span></a></li>';
+        }
+        if (count($chips) > 1) {
+            echo '<li><a class="text-link" href="' .
+                esc_url(portal_url('members')) .
+                '">Alle entfernen</a></li>';
+        }
+        echo '</ul>';
+    }
+    echo '</div><div class="member-grid">';
+    $back = http_build_query(array_filter(array_merge($state, ['member_page' => $page > 1 ? $page : ''])));
     foreach (array_slice($matches, ($page - 1) * 25, 25) as $row) {
         $u = $row['user'];
         $data = $row['shared'];
@@ -126,23 +222,33 @@ function render_directory() {
         if ($data['city'] !== '') {
             $line .= ($line !== '' ? ' · ' : '') . '<b>' . esc_html($data['city']) . '</b>';
         }
-        echo '<a class="et-member" href="' .
-            esc_url(portal_url('member', ['member' => $u->ID])) .
+        echo '<a class="et-member" id="m-' .
+            (int) $u->ID .
+            '" href="' .
+            esc_url(portal_url('member', array_filter(['member' => $u->ID, 'back' => rawurlencode($back)]))) .
             '">' .
             member_avatar($u->ID, $u->display_name) .
             '<span><strong>' .
             esc_html($u->display_name) .
             '</strong>' .
-            ($line !== '' ? '<small>' . $line . '</small>' : '') .
+            ($line !== '' ? '<small>' . $line . '</small>' : '<small>Noch keine Angaben geteilt</small>') .
             '</span><span class="member-arrow" aria-hidden="true">→</span></a>';
     }
-    if (!$total) {
-        echo '<div class="directory-empty"><h2>Hier haben wir niemanden gefunden.</h2><p>Versuche einen anderen Suchbegriff oder setze die Filter zurück.</p></div>';
-    }
     echo '</div>';
+    if (!$total) {
+        echo '<div class="directory-empty"><h2>' .
+            ($q !== ''
+                ? esc_html('Niemand gefunden für „' . $q . '“.')
+                : 'Niemand passt zu diesen Filtern.') .
+            '</h2><p>Prüfe die Schreibweise, suche nach Vor- oder Nachname, Team oder Ort, oder entferne einzelne Filter oben.</p>' .
+            ($chips
+                ? '<a class="button" href="' . esc_url(portal_url('members')) . '">Alle Mitglieder zeigen</a>'
+                : '') .
+            '</div>';
+    }
     if ($pages > 1) {
         echo '<nav class="pagination" aria-label="Mitgliederseiten">';
-        $args = array_merge(['q' => $q], $filters);
+        $args = array_filter(array_merge(['q' => $q], $filters));
         if ($page > 1) {
             echo '<a class="button" href="' .
                 esc_url(portal_url('members', array_merge($args, ['member_page' => $page - 1]))) .
@@ -170,14 +276,16 @@ function member_age($data) {
 }
 function render_member($id) {
     if (!member_access() || !is_portal_user($id)) {
-        echo '<h1>Profil nicht verfügbar.</h1>';
+        echo '<div class="portal-empty"><h1>Profil nicht verfügbar.</h1><p>Dieses Profil gibt es nicht oder es ist nicht freigeschaltet.</p></div>';
         return;
     }
     $u = get_user_by('id', $id);
     $data = profile_data($id);
     echo '<a class="text-link service-back" href="' .
-        esc_url(portal_url('members')) .
-        '">← Mitglieder</a><header class="member-profile-header">' .
+        esc_url(directory_back_url($id)) .
+        '">← ' .
+        (directory_param('back') !== '' ? 'Zurück zur Suche' : 'Mitglieder') .
+        '</a><header class="member-profile-header">' .
         member_avatar($id, $u->display_name) .
         '<div><h1>' .
         esc_html($u->display_name) .

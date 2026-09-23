@@ -154,7 +154,12 @@ function render_infos() {
     if (!member_access()) {
         return;
     }
-    echo '<div class="profile-title"><h1>Neuigkeiten.</h1><p>Mitteilungen aus dem Verein.</p></div>';
+    echo page_head(
+        'Vereinsinfos',
+        'Mitteilungen aus dem Verein. Nur für Mitglieder – öffentliche News stehen auf der Website.',
+        '',
+        'infos'
+    );
     if (current_user_can('eintrikot_edit_infos')) {
         echo '<p><a class="text-link" href="' .
             esc_url(admin_url('post-new.php?post_type=et_info')) .
@@ -168,22 +173,26 @@ function render_infos() {
         'paged' => $page
     ]);
     if (!$query->have_posts()) {
-        echo '<p class="profile-empty">Noch keine Mitteilungen. Neue Vereinsinfos erscheinen hier.</p>';
+        echo '<p class="portal-empty">Noch keine Vereinsinfos. Neue Mitteilungen erscheinen hier und auf deiner Startseite.</p>';
     }
     foreach ($query->posts as $post) {
-        echo '<article class="et-request"><h2>' .
+        echo '<article class="info-entry"><p class="info-date">' .
+            esc_html(get_the_date('j. F Y', $post)) .
+            '</p><h2>' .
             esc_html($post->post_title) .
-            '</h2><small>' .
-            esc_html(get_the_date('d.m.Y', $post)) .
-            '</small>' .
+            '</h2>' .
             wp_kses_post(apply_filters('the_content', $post->post_content)) .
             '</article>';
     }
     if ($page > 1) {
-        echo '<a href="' . esc_url(portal_url('infos', ['info_page' => $page - 1])) . '">← Neuere Infos</a> ';
+        echo '<a class="text-link" href="' .
+            esc_url(portal_url('infos', ['info_page' => $page - 1])) .
+            '">← Neuere Infos</a> ';
     }
     if ($page < $query->max_num_pages) {
-        echo '<a href="' . esc_url(portal_url('infos', ['info_page' => $page + 1])) . '">Ältere Infos →</a>';
+        echo '<a class="text-link" href="' .
+            esc_url(portal_url('infos', ['info_page' => $page + 1])) .
+            '">Ältere Infos →</a>';
     }
 }
 
@@ -192,7 +201,12 @@ function render_events() {
     if (!member_access()) {
         return;
     }
-    echo '<div class="profile-title"><h1>Termine.</h1><p>Die nächsten drei Monate.</p></div>';
+    echo page_head(
+        'Termine',
+        'Die nächsten drei Monate – Treffen, Versammlungen und Geburtstage.',
+        '',
+        'events'
+    );
     if (current_user_can('eintrikot_edit_infos')) {
         echo '<p><a class="text-link" href="' .
             esc_url(admin_url('edit.php?post_type=et_calendar')) .
@@ -200,7 +214,7 @@ function render_events() {
     }
     $items = calendar_items(92);
     if (!$items) {
-        echo '<p class="profile-empty">In den nächsten drei Monaten stehen keine Termine an.</p>';
+        echo '<p class="portal-empty">In den nächsten drei Monaten stehen keine Termine an.</p>';
         return;
     }
     $month = '';

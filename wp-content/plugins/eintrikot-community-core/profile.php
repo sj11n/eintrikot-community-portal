@@ -99,6 +99,30 @@ function section_visibility_switch($group, $data) {
         '</div>';
 }
 
+/** Field-level errors of the last failed save, keyed by field name. */
+function profile_field_errors($set = null) {
+    static $errors = [];
+    if (is_array($set)) {
+        $errors = $set;
+    }
+    return $errors;
+}
+function field_error_attrs($key) {
+    return isset(profile_field_errors()[$key])
+        ? ' aria-invalid="true" aria-describedby="et-' . esc_attr($key) . '-error"'
+        : '';
+}
+function field_error_text($key) {
+    $errors = profile_field_errors();
+    return isset($errors[$key])
+        ? '<span class="field-error" id="et-' .
+                esc_attr($key) .
+                '-error">' .
+                esc_html($errors[$key]) .
+                '</span>'
+        : '';
+}
+
 function profile_field($key, $label, $data) {
     $value = $data[$key] ?? '';
     $options = [
@@ -142,12 +166,13 @@ function profile_field($key, $label, $data) {
             ']" type="' .
             ($key === 'caps' ? 'number' : 'text') .
             '" ' .
-            ($key === 'caps' ? 'min="0" max="999999" step="1"' : 'maxlength="200"') .
+            ($key === 'caps' ? 'min="0" max="999999" step="1" inputmode="numeric"' : 'maxlength="200"') .
+            field_error_attrs($key) .
             ' value="' .
             esc_attr($value) .
             '">';
     }
-    echo '</div>';
+    echo field_error_text($key) . '</div>';
 }
 function station_fields($index, $row) {
     $labels = [
@@ -187,23 +212,30 @@ function render_profile($id) {
     $draft = get_transient('et_profile_form_' . get_current_user_id() . '_' . $id);
     if (is_array($draft)) {
         $data = $draft['data'];
+        profile_field_errors(is_array($draft['fields'] ?? null) ? $draft['fields'] : []);
         delete_transient('et_profile_form_' . get_current_user_id() . '_' . $id);
     }
+    $own = $id === get_current_user_id();
     echo '<a class="text-link service-back" href="' .
         esc_url(portal_url('member', ['member' => $id])) .
-        '">← Profil ansehen</a><div class="profile-title"><h1>' .
-        ($id === get_current_user_id()
-            ? 'Dein Weg. Dein Profil.'
-            : esc_html($user->display_name) . ' bearbeiten.') .
-        '</h1><p>Du entscheidest, was du teilst.</p></div><div class="visibility-intro"><p><strong>So funktioniert die Sichtbarkeit:</strong> Name und Profilbild sehen alle Mitglieder. Jeden weiteren Abschnitt teilst du mit einem Schalter – ausgeschaltet sieht ihn nur die Vereinsverwaltung. Leere Felder erscheinen nirgends. Dein Geburtsdatum bleibt immer privat.</p><a class="text-link" href="' .
+        '">← ' .
+        ($own ? 'Mein Profil ansehen' : 'Profil ansehen') .
+        '</a>' .
+        page_head(
+            $own ? 'Profil bearbeiten' : $user->display_name . ' bearbeiten',
+            $own ? 'Du entscheidest, was du teilst.' : 'Änderungen werden mit Grund protokolliert.',
+            '',
+            $own ? 'account' : 'members'
+        ) .
+        '<div class="visibility-intro"><p><strong>So funktioniert die Sichtbarkeit:</strong> Name und Profilbild sehen alle Mitglieder. Jeden weiteren Abschnitt teilst du mit einem Schalter – ausgeschaltet sieht ihn nur die Vereinsverwaltung. Leere Felder erscheinen nirgends. Dein Geburtsdatum bleibt immer privat.</p><a class="text-link" href="' .
         esc_url(portal_url('member', ['member' => $id])) .
         '">So sehen dich andere →</a></div>';
     if ($draft) {
-        echo '<div class="form-error" role="alert"><strong>Bitte prüfe deine Angaben.</strong><p>' .
+        echo '<div class="form-error" role="alert" tabindex="-1"><strong>Bitte prüfe deine Angaben.</strong><p>' .
             esc_html($draft['message']) .
-            '</p></div>';
+            '</p><p>Deine übrigen Eingaben sind erhalten. Die betroffenen Felder sind markiert.</p></div>';
     }
-    echo '<form class="profile-form" method="post" enctype="multipart/form-data" action="' .
+    echo '<form class="profile-form" data-dirty-check method="post" enctype="multipart/form-data" action="' .
         esc_url(admin_url('admin-post.php')) .
         '">';
     wp_nonce_field('et_profile_' . $id);
@@ -229,13 +261,26 @@ function render_profile($id) {
                 '</div>';
         echo '<div class="form-grid">';
         if ($group === 'Über dich') {
-            echo '<div class="field">' .
+            $has_photo =
+                is_string(get_user_meta($id, 'eintrikot_avatar', true)) &&
+                get_user_meta($id, 'eintrikot_avatar', true) !== '';
+            echo '<div class="field avatar-field"><span class="field-label">Profilbild</span><div class="avatar-row"><button type="button" class="avatar-pick" data-avatar-pick aria-label="Profilbild auswählen und zuschneiden">' .
                 member_avatar($id, $user->display_name) .
-                '<label>Profilbild<input type="file" name="avatar" accept="image/jpeg,image/png,image/webp"></label><small>JPEG, PNG oder WebP, bis 5 MB. Nur im Mitgliederbereich sichtbar.</small><label class="check"><input type="checkbox" name="remove_avatar" value="1" ' .
-                checked(!empty($draft['remove_avatar']), true, false) .
-                '> Bild entfernen</label></div><label class="field">Dein Name<input name="display_name" required maxlength="120" value="' .
+                '<span class="avatar-pick-badge" aria-hidden="true">Ändern</span></button><div class="avatar-actions"><label class="avatar-file">Bild auswählen<input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" data-avatar-input></label>' .
+                ($has_photo
+                    ? '<label class="check"><input type="checkbox" name="remove_avatar" value="1" data-avatar-remove ' .
+                        checked(!empty($draft['remove_avatar']), true, false) .
+                        '> Bild entfernen</label>'
+                    : '') .
+                '</div></div><small>Bild anklicken, auswählen und den Ausschnitt festlegen. JPEG, PNG oder WebP, bis 5 MB. Nur im Mitgliederbereich sichtbar.</small>' .
+                field_error_text('avatar') .
+                '</div><label class="field">Dein Name<input name="display_name" required maxlength="120"' .
+                field_error_attrs('display_name') .
+                ' value="' .
                 esc_attr($draft ? $data['display_name'] ?? $user->display_name : $user->display_name) .
-                '"></label>';
+                '">' .
+                field_error_text('display_name') .
+                '</label>';
         }
         foreach ($fields as $key => $label) {
             profile_field($key, $label, $data);
@@ -245,7 +290,11 @@ function render_profile($id) {
                 esc_attr(wp_date('Y-m-d')) .
                 '" value="' .
                 esc_attr($data['birthday'] ?? '') .
-                '"><small>Bleibt privat. Nur dein Alter kann im Mitgliederprofil erscheinen.</small></label><label class="check"><input type="checkbox" name="show_age" value="1" ' .
+                '"' .
+                field_error_attrs('birthday') .
+                '>' .
+                field_error_text('birthday') .
+                '<small>Bleibt privat. Nur dein Alter kann im Mitgliederprofil erscheinen.</small></label><label class="check"><input type="checkbox" name="show_age" value="1" ' .
                 checked(!empty($data['show_age']), true, false) .
                 '> Mein Alter im Mitgliederprofil anzeigen</label>';
         }
@@ -255,7 +304,9 @@ function render_profile($id) {
             foreach ($data['stations'] ?? [[]] as $i => $row) {
                 station_fields($i, $row);
             }
-            echo '</div><button type="button" class="button" id="add-station">+ Station hinzufügen</button><template id="station-template">';
+            echo '</div>' .
+                field_error_text('stations') .
+                '<button type="button" class="button" id="add-station">+ Station hinzufügen</button><template id="station-template">';
             station_fields('__INDEX__', []);
             echo '</template>';
             if (!empty($data['vita'])) {
@@ -277,10 +328,27 @@ function render_profile($id) {
         '><span>Mein Geburtstag darf mit meinem Namen in den internen Vereinsinfos erscheinen. Das Geburtsjahr wird nicht angezeigt.</span></label><label class="check"><input type="checkbox" name="newsletter" value="1" ' .
         checked($data['newsletter'] ?? true, true, false) .
         '><span>EINTRIKOT-Newsletter erhalten<br><small>Du kannst diese Einstellung jederzeit ändern.</small></span></label></section>';
+    if (manager_access()) {
+        $listing = $data['directory_listing'] ?? '';
+        $auto = directory_listed_by_role($user)
+            ? 'Automatisch: wird angezeigt'
+            : 'Automatisch: wird nicht angezeigt';
+        echo '<section class="form-section"><h2>Verwaltung</h2><label class="field">Im Mitgliederverzeichnis<select name="directory_listing"><option value="">' .
+            esc_html($auto) .
+            '</option><option value="show" ' .
+            selected($listing, 'show', false) .
+            '>Immer anzeigen</option><option value="hide" ' .
+            selected($listing, 'hide', false) .
+            '>Nicht anzeigen</option></select><small>Automatisch erscheinen alle Konten mit EINTRIKOT-Rolle. Technische Konten ohne diese Rolle, etwa ein reines Administrator-Konto, bleiben verborgen – außer du wählst „Immer anzeigen“.</small></label></section>';
+    }
     if ($id !== get_current_user_id()) {
-        echo '<label class="field">Grund der Änderung<textarea name="reason" required minlength="5" maxlength="500">' .
+        echo '<label class="field">Grund der Änderung<textarea name="reason" required minlength="5" maxlength="500"' .
+            field_error_attrs('reason') .
+            '>' .
             esc_textarea($draft['reason'] ?? '') .
-            '</textarea></label>';
+            '</textarea>' .
+            field_error_text('reason') .
+            '</label>';
     }
     if (!empty($draft['conflict'])) {
         echo '<section class="form-section form-error"><h2>Zwischenzeitliche Änderung</h2><p>Oben steht dein Entwurf. Bitte vergleiche ihn mit dem inzwischen gespeicherten Stand.</p><details open><summary>Aktuell gespeicherte Angaben</summary><dl>';
@@ -298,7 +366,8 @@ function render_profile($id) {
         }
         echo '</dl></details><label class="check"><input type="checkbox" name="resolve_conflict" value="1" required> Ich habe den aktuellen Stand geprüft und möchte meinen Entwurf speichern.</label></section>';
     }
-    echo '<div class="save-bar"><button class="button solid" type="submit">Änderungen speichern</button></div></form>';
+    echo '<div class="save-bar"><button class="button solid" type="submit">Änderungen speichern</button><span class="save-state" data-save-state role="status" aria-live="polite"></span></div></form>';
+    echo avatar_cropper_markup();
 }
 function validate_stations($rows) {
     if (!is_array($rows) || count($rows) > 30) {
@@ -338,17 +407,22 @@ function validate_stations($rows) {
     }
     return $result;
 }
-function profile_error($id, $data, $message, $conflict = false) {
+function profile_error($id, $data, $message, $conflict = false, $fields = []) {
     $reason = $_POST['reason'] ?? '';
     $reason = is_scalar($reason) ? sanitize_textarea_field(wp_unslash((string) $reason)) : '';
     set_transient(
         'et_profile_form_' . get_current_user_id() . '_' . $id,
         [
             'data' => $data,
-            'message' => $message . ' Ein ausgewähltes Bild musst du erneut auswählen.',
+            'message' =>
+                $message .
+                (!empty($_FILES['avatar']['name'])
+                    ? ' Das ausgewählte Bild bitte noch einmal auswählen.'
+                    : ''),
             'reason' => $reason,
             'remove_avatar' => !empty($_POST['remove_avatar']),
-            'conflict' => $conflict
+            'conflict' => $conflict,
+            'fields' => $fields
         ],
         300
     );
@@ -456,7 +530,7 @@ add_action('admin_post_et_profile', function () {
         $value = $raw[$key] ?? '';
         $max = long_profile_field($key) ? 4000 : 200;
         if (!is_scalar($value) || mb_strlen(is_scalar($value) ? wp_unslash((string) $value) : '') > $max) {
-            $errors[] = $label . ' bitte prüfen.';
+            $errors[$key] = $label . ' bitte prüfen.';
         }
         $data[$key] = profile_form_text($value, $max);
     }
@@ -474,12 +548,19 @@ add_action('admin_post_et_profile', function () {
     foreach (['display_name' => 120, 'birthday' => 10] as $key => $max) {
         $v = $_POST[$key] ?? '';
         if (!is_scalar($v) || mb_strlen(is_scalar($v) ? wp_unslash((string) $v) : '') > $max) {
-            $errors[] = 'Bitte ' . $key . ' prüfen.';
+            $errors[$key] =
+                $key === 'birthday' ? 'Bitte das Geburtsdatum prüfen.' : 'Bitte deinen Namen prüfen.';
         }
         $data[$key] = profile_form_text($v, $max);
     }
     foreach (['show_age', 'birthday_notice', 'newsletter'] as $key) {
         $data[$key] = isset($_POST[$key]);
+    }
+    // Only the administration decides whether an account is listed in the directory.
+    if (manager_access() && isset($_POST['directory_listing'])) {
+        $data['directory_listing'] = in_array($_POST['directory_listing'], ['show', 'hide'], true)
+            ? $_POST['directory_listing']
+            : '';
     }
     $data['funding_interest'] = in_array($_POST['funding_interest'] ?? '', ['yes', 'no'], true)
         ? $_POST['funding_interest']
@@ -496,10 +577,10 @@ add_action('admin_post_et_profile', function () {
         }
     }
     if (!$data['display_name']) {
-        $errors[] = 'Bitte deinen Namen angeben.';
+        $errors['display_name'] = 'Bitte deinen Namen angeben.';
     }
     if ($data['caps'] !== '' && (!ctype_digit($data['caps']) || strlen($data['caps']) > 6)) {
-        $errors[] = 'Länderspiele müssen eine nichtnegative ganze Zahl sein.';
+        $errors['caps'] = 'Bitte eine ganze Zahl ab 0 eingeben.';
     }
     if ($data['birthday'] !== '') {
         $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $data['birthday'], wp_timezone());
@@ -509,22 +590,22 @@ add_action('admin_post_et_profile', function () {
             $data['birthday'] < '1900-01-01' ||
             $data['birthday'] > wp_date('Y-m-d')
         ) {
-            $errors[] = 'Bitte das Geburtsdatum prüfen.';
+            $errors['birthday'] = 'Bitte das Geburtsdatum prüfen.';
         }
     }
     $stations = validate_stations(wp_unslash($submitted));
     if (is_wp_error($stations)) {
-        $errors[] = $stations->get_error_message();
+        $errors['stations'] = $stations->get_error_message();
     }
     $reason = profile_form_text(
         $_POST['reason'] ?? ($id === get_current_user_id() ? 'Eigene Profilpflege' : ''),
         500
     );
     if ($id !== get_current_user_id() && mb_strlen(trim($reason)) < 5) {
-        $errors[] = 'Bitte den Grund der Änderung angeben.';
+        $errors['reason'] = 'Bitte den Grund der Änderung angeben (mindestens fünf Zeichen).';
     }
     if ($errors) {
-        profile_error($id, $data, implode(' ', $errors));
+        profile_error($id, $data, implode(' ', array_unique($errors)), false, $errors);
     }
     $data['stations'] = $stations;
     if (
@@ -544,7 +625,9 @@ add_action('admin_post_et_profile', function () {
     }
     $avatar = prepare_avatar();
     if (is_wp_error($avatar)) {
-        profile_error($id, $data, $avatar->get_error_message());
+        profile_error($id, $data, $avatar->get_error_message(), false, [
+            'avatar' => $avatar->get_error_message()
+        ]);
     }
     $result = persist_profile($id, $data, $avatar, $reason, $revision);
     if (is_wp_error($result)) {

@@ -21,6 +21,66 @@ function service_groups() {
         'Meine Daten und Kontakt' => ['address', 'bank', 'contact']
     ];
 }
+/** Short explanation under each service entry. */
+function service_hints() {
+    return [
+        'event' => 'Teilnahme an einem EINTRIKOT-Termin',
+        'idea' => 'Ein Projekt, das wir unterstützen sollten',
+        'help' => 'Zeit, Wissen oder Kontakte einbringen',
+        'funding' => 'Freiwillige Jahresspende anfragen oder ändern',
+        'address' => 'Adresse, E-Mail oder Telefon',
+        'bank' => 'Sicherer Weg für neue Kontodaten',
+        'contact' => 'Eine Frage oder ein Anliegen an den Vorstand'
+    ];
+}
+
+function render_service_overview($types) {
+    $hints = service_hints();
+    echo page_head('Service', 'Was können wir für dich tun?', '', 'service');
+    $open = open_member_requests(20);
+    if ($open) {
+        echo '<section class="portal-section"><h2>Deine Anfragen</h2>';
+        render_requests(false);
+        echo '</section>';
+    }
+    foreach (service_groups() as $group => $keys) {
+        echo '<section class="portal-section"><h2>' . esc_html($group) . '</h2><div class="et-services">';
+        foreach ($keys as $key) {
+            echo '<a class="service-card" href="' .
+                esc_url(portal_url('service', ['service' => $key])) .
+                '"><span><strong>' .
+                esc_html($types[$key]) .
+                '</strong><small>' .
+                esc_html($hints[$key] ?? '') .
+                '</small></span><span aria-hidden="true">→</span></a>';
+        }
+        echo '</div></section>';
+    }
+    echo '<section class="portal-section"><h2>Unterlagen</h2>' .
+        service_link(portal_url('documents'), 'Dokumente', 'Satzung, Protokolle und Unterlagen') .
+        '</section>';
+    if (current_user_can('eintrikot_edit_infos') || manager_access()) {
+        echo '<section class="portal-section"><h2>Vereinsarbeit</h2>';
+        if (current_user_can('eintrikot_edit_infos')) {
+            echo service_link(portal_url('editorial'), 'Redaktion', 'News, Vereinsinfos, Kalender');
+        }
+        if (manager_access()) {
+            echo service_link(portal_url('admin'), 'Verwaltung', 'Anfragen, Profile, Protokoll');
+        }
+        echo '</section>';
+    }
+    if (!$open) {
+        echo '<section class="portal-section"><h2>Deine Anfragen</h2>';
+        render_requests(false);
+        echo '</section>';
+    }
+    echo '<section class="portal-section"><h2>Konto</h2>' .
+        service_link(portal_url('profile'), 'Profil bearbeiten') .
+        service_link(home_url('/'), 'Zur öffentlichen Website') .
+        service_link(wp_logout_url(home_url('/')), 'Abmelden') .
+        '</section>';
+}
+
 function render_service() {
     if (!member_access()) {
         return;
@@ -28,23 +88,7 @@ function render_service() {
     $types = service_types();
     $type = isset($_GET['service']) && is_string($_GET['service']) ? sanitize_key($_GET['service']) : '';
     if (!isset($types[$type])) {
-        echo '<a class="text-link service-back" href="' .
-            esc_url(portal_url('more')) .
-            '">← Mehr</a><div class="profile-title"><h1>Service.</h1><p>Was können wir für dich tun?</p></div>';
-        foreach (service_groups() as $group => $keys) {
-            echo '<section class="portal-section"><h2>' . esc_html($group) . '</h2><div class="et-services">';
-            foreach ($keys as $key) {
-                echo '<a class="et-member" href="' .
-                    esc_url(portal_url('service', ['service' => $key])) .
-                    '"><strong>' .
-                    esc_html($types[$key]) .
-                    '</strong><span aria-hidden="true">→</span></a>';
-            }
-            echo '</div></section>';
-        }
-        echo '<section class="portal-section"><h2>Deine Anfragen</h2>';
-        render_requests(false);
-        echo '</section>';
+        render_service_overview($types);
         return;
     }
     $draft = get_transient('et_service_draft_' . get_current_user_id() . '_' . $type);
@@ -52,14 +96,16 @@ function render_service() {
         delete_transient('et_service_draft_' . get_current_user_id() . '_' . $type);
     }
     if ($draft) {
-        echo '<div class="form-error" role="alert">' . esc_html($draft['message']) . '</div>';
+        echo '<div class="form-error" role="alert" tabindex="-1"><strong>Bitte prüfe deine Angaben.</strong><p>' .
+            esc_html($draft['message']) .
+            ' Deine Eingaben sind erhalten.</p></div>';
     }
     ob_start();
     echo '<nav aria-label="Breadcrumb"><a class="text-link service-back" href="' .
         esc_url(portal_url('service')) .
-        '">← Service</a></nav><h1>' .
-        esc_html($types[$type]) .
-        '</h1><form class="et-form" method="post" action="' .
+        '">← Service</a></nav>' .
+        page_head($types[$type], esc_html(service_hints()[$type] ?? ''), '', 'service') .
+        '<form class="et-form" method="post" action="' .
         esc_url(admin_url('admin-post.php')) .
         '">';
     wp_nonce_field('et_service');
@@ -72,7 +118,7 @@ function render_service() {
     if ($type === 'funding') {
         echo '<p>Du kannst einen jährlich wiederkehrenden freiwilligen Förderbeitrag zusätzlich zum Mitgliedsbeitrag anfragen. Der Vorstand prüft die Anfrage und übernimmt sie anschließend in MeinVerein.</p><label>Jährlicher Betrag<select name="amount"><option value="50">50 €</option><option value="100">100 €</option><option value="150">150 €</option><option value="custom">Individueller Betrag</option><option value="0">Freiwilligen Beitrag beenden</option></select></label><label>Individueller Betrag in Euro<input name="custom_amount" type="number" min="1" max="100000" step="0.01"></label><label>Gewünschter Beginn<input type="date" name="effective_date" required min="' .
             esc_attr(wp_date('Y-m-d')) .
-            '"></label><label><input name="confirmed" type="checkbox" value="1" required> Ich beantrage diesen jährlich wiederkehrenden Förderbeitrag. Die Änderung gilt erst nach Prüfung und Übernahme in MeinVerein.</label>';
+            '"></label><label><input name="confirmed" type="checkbox" value="1" required> Ich frage diesen jährlich wiederkehrenden Förderbeitrag an. Verbindlich wird er erst, wenn der Vorstand ihn in MeinVerein übernommen hat.</label>';
     } elseif ($type === 'address') {
         echo '<p>Teile uns deine neuen Kontaktdaten mit. Die Mitgliederverwaltung prüft und übernimmt sie in MeinVerein. Deinen sichtbaren Wohnort kannst du zusätzlich in deinem Profil pflegen.</p>';
         foreach (
@@ -106,14 +152,16 @@ function render_service() {
             (!in_array($type, ['bank', 'funding', 'address'], true) ? 'required minlength="10"' : '') .
             '></textarea></label>';
     }
-    echo '<button class="button solid">Anfrage speichern</button></form>';
+    echo '<p class="form-note">' .
+        esc_html(request_owner_label($type)) .
+        ' kümmert sich darum. Den Stand siehst du danach unter Service und auf deiner Startseite.</p><button class="button solid">Anfrage absenden</button></form>';
     $html = ob_get_clean();
     if ($draft) {
-        $html = restore_service_form($html, $draft['values']);
+        $html = restore_service_form($html, $draft['values'], $draft['field'] ?? '', $draft['message']);
     }
     echo $html;
 }
-function restore_service_form($html, $values) {
+function restore_service_form($html, $values, $field = '', $message = '') {
     $doc = new \DOMDocument();
     $previous = libxml_use_internal_errors(true);
     $doc->loadHTML(
@@ -148,6 +196,24 @@ function restore_service_form($html, $values) {
             }
         }
     }
+    // Mark the field the error belongs to and put the message right next to it.
+    if ($field !== '') {
+        foreach (['input', 'select', 'textarea'] as $tag) {
+            foreach ($doc->getElementsByTagName($tag) as $node) {
+                if ($node->getAttribute('name') !== $field) {
+                    continue;
+                }
+                $node->setAttribute('aria-invalid', 'true');
+                $node->setAttribute('aria-describedby', 'et-field-error');
+                $hint = $doc->createElement('span');
+                $hint->setAttribute('class', 'field-error');
+                $hint->setAttribute('id', 'et-field-error');
+                $hint->appendChild($doc->createTextNode($message));
+                $node->parentNode->insertBefore($hint, $node->nextSibling);
+                break 2;
+            }
+        }
+    }
     $out = '';
     $root = $doc->getElementById('et-form-replay');
     if ($root) {
@@ -157,7 +223,7 @@ function restore_service_form($html, $values) {
     }
     return $out ?: $html;
 }
-function service_error($type, $message) {
+function service_error($type, $message, $field = '') {
     $values = [];
     foreach ($_POST as $key => $value) {
         if (is_scalar($value) && !in_array($key, ['_wpnonce', '_wp_http_referer'], true)) {
@@ -170,7 +236,7 @@ function service_error($type, $message) {
     }
     set_transient(
         'et_service_draft_' . get_current_user_id() . '_' . $type,
-        ['values' => $values, 'message' => $message],
+        ['values' => $values, 'message' => $message, 'field' => sanitize_key($field)],
         300
     );
     wp_safe_redirect(portal_url('service', ['service' => $type]));
@@ -264,7 +330,7 @@ add_action('admin_post_et_service', function () {
     if ($type === 'funding') {
         $choice = post_text('amount', '', 10);
         if (!in_array($choice, ['0', '50', '100', '150', 'custom'], true)) {
-            service_error($type, 'Bitte einen Betrag auswählen.');
+            service_error($type, 'Bitte einen Betrag auswählen.', 'amount');
         }
         $amount = $choice === 'custom' ? str_replace(',', '.', post_text('custom_amount', '', 12)) : $choice;
         if (
@@ -272,7 +338,7 @@ add_action('admin_post_et_service', function () {
             (float) $amount > 100000 ||
             ($choice === 'custom' && (float) $amount <= 0)
         ) {
-            service_error($type, 'Bitte einen gültigen Betrag angeben.');
+            service_error($type, 'Bitte einen gültigen Betrag angeben.', 'custom_amount');
         }
         $date = post_text('effective_date', '', 10);
         $d = \DateTimeImmutable::createFromFormat('!Y-m-d', $date, wp_timezone());
@@ -282,7 +348,7 @@ add_action('admin_post_et_service', function () {
             $date < wp_date('Y-m-d') ||
             post_text('confirmed', '', 1) !== '1'
         ) {
-            service_error($type, 'Bitte Beginn und Bestätigung prüfen.');
+            service_error($type, 'Bitte Beginn und Bestätigung prüfen.', 'effective_date');
         }
         $details = [
             'annual_amount_cents' => (int) round((float) $amount * 100),
@@ -293,7 +359,7 @@ add_action('admin_post_et_service', function () {
             'Jährlicher freiwilliger Förderbeitrag: ' .
             number_format((float) $amount, 2, ',', '.') .
             ' EUR. Gewünschter Beginn: ' .
-            $date .
+            $d->format('d.m.Y') .
             "\n" .
             $message;
     } elseif ($type === 'address') {
@@ -308,14 +374,14 @@ add_action('admin_post_et_service', function () {
         foreach ($labels as $key => $label) {
             $value = post_text($key, '', 200);
             if ($key === 'email' && $value !== '' && !is_email($value)) {
-                service_error($type, 'Bitte eine gültige E-Mail-Adresse angeben.');
+                service_error($type, 'Bitte eine gültige E-Mail-Adresse angeben.', 'email');
             }
             if ($value !== '') {
                 $details[$key] = $value;
             }
         }
         if (!$details) {
-            service_error($type, 'Bitte mindestens eine Änderung angeben.');
+            service_error($type, 'Bitte mindestens eine Änderung angeben.', 'street');
         }
         foreach ($details as $key => $value) {
             $message .= "\n" . $labels[$key] . ': ' . $value;
@@ -323,7 +389,7 @@ add_action('admin_post_et_service', function () {
     } elseif ($type === 'bank') {
         $message = 'Sicheren Änderungsweg für Bankverbindung angefragt.';
     } elseif (mb_strlen($message) < 10) {
-        service_error($type, 'Bitte beschreibe dein Anliegen mit mindestens zehn Zeichen.');
+        service_error($type, 'Bitte beschreibe dein Anliegen mit mindestens zehn Zeichen.', 'message');
     }
     $id = create_service_request($type, $message, $details, $token);
     if (is_wp_error($id)) {

@@ -122,9 +122,13 @@ function caps_stats() {
         return $cached;
     }
     $stats = ['sum' => 0, 'shared' => 0, 'total' => 0];
-    foreach (get_users(['capability' => 'eintrikot_portal', 'fields' => 'ID']) as $id) {
+    // Technical accounts and hidden profiles do not count, just as in the directory.
+    foreach (get_users(['capability' => 'eintrikot_portal']) as $user) {
+        if (!directory_listed($user)) {
+            continue;
+        }
         $stats['total']++;
-        $v = visible_value(profile_data((int) $id), 'caps');
+        $v = visible_value(profile_data($user->ID), 'caps');
         if (is_scalar($v) && $v !== '' && ctype_digit((string) $v)) {
             $stats['sum'] += (int) $v;
             $stats['shared']++;
