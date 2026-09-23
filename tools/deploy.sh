@@ -103,7 +103,50 @@ check_site() {
 }
 
 mkdir -p "$BACKUP_DIR"
+# Jeder Eintrag: "<Elternordner>|<Name>|<had_previous: 1/0>". Wird gefüllt, sobald ein
+# Paket auf dem Server angefasst wurde, damit ein Abbruch es sicher zurücktauschen kann.
 swapped=()
+rolled_back=false
+
+rollback() {
+    [[ "$rolled_back" == true ]] && return 0
+    rolled_back=true
+    ((${#swapped[@]})) || return 0
+    echo "== Zurücktauschen auf die vorherige Fassung"
+    local i entry parent name had_prev ok=true
+    for ((i = ${#swapped[@]} - 1; i >= 0; i--)); do
+        entry="${swapped[$i]}"
+        IFS='|' read -r parent name had_prev <<<"$entry"
+        remote_soft "rm -r -f '$parent/.failed-$name'"
+        if exists "$parent/$name"; then
+            remote_soft "mv '$parent/$name' '$parent/.failed-$name'"
+        fi
+        if [[ "$had_prev" == 1 ]]; then
+            remote_soft "mv '$parent/.previous-$name' '$parent/$name'"
+            if exists "$parent/$name"; then
+                echo "$name: vorherige Fassung wiederhergestellt."
+            else
+                ok=false
+                echo "::error::$name: vorherige Fassung konnte nicht zurückgetauscht werden. Sie liegt unter $parent/.previous-$name bzw. in der Sicherung dieses Laufs."
+            fi
+        else
+            echo "$name: war vorher nicht vorhanden, neue Fassung wieder entfernt."
+        fi
+    done
+    [[ "$ok" == true ]]
+}
+
+# Bricht der Lauf an irgendeiner Stelle nach dem ersten Eingriff ab, wird zurückgetauscht.
+finished=false
+on_exit() {
+    local rc=$?
+    if [[ $rc -ne 0 && "$finished" != true ]]; then
+        rollback || true
+    fi
+    return "$rc"
+}
+trap on_exit EXIT
+
 for pkg in "${PACKAGES[@]}"; do
     src="${pkg%%:*}"
     rel="${pkg##*:}"
@@ -121,36 +164,38 @@ for pkg in "${PACKAGES[@]}"; do
     echo "== $name: neue Fassung hochladen"
     remote_soft "rm -r -f '$next'"
     remote "mirror -R --no-perms --parallel=4 --exclude-glob .DS_Store '$src' '$next'"
+    # Nur für Tests: Einsetzen gezielt scheitern lassen (DEPLOY_FAIL_INJECT=swap:<Name>).
+    [[ "${DEPLOY_FAIL_INJECT:-}" == "swap:$name" ]] && next="$parent/.fehlt-$name"
 
     echo "== $name: Ordner tauschen"
     remote_soft "rm -r -f '$prev'"
     if exists "$live"; then
-        remote "mv '$live' '$prev'; mv '$next' '$live'"
+        if ! remote "mv '$live' '$prev'"; then
+            echo "::error::$name: bisherige Fassung ließ sich nicht beiseitelegen."
+            exit 1
+        fi
+        swapped+=("$parent|$name|1")
     else
-        remote "mv '$next' '$live'"
+        swapped+=("$parent|$name|0")
     fi
-    swapped+=("$parent|$name")
+    if ! remote "mv '$next' '$live'"; then
+        echo "::error::$name: neue Fassung ließ sich nicht einsetzen."
+        exit 1
+    fi
 done
 
 echo "== Seite prüfen"
 sleep 3
 if ! check_site; then
-    echo "== Zurücktauschen auf die vorherige Fassung"
-    for entry in "${swapped[@]}"; do
-        parent="${entry%%|*}"
-        name="${entry##*|}"
-        if exists "$parent/.previous-$name"; then
-            remote_soft "rm -r -f '$parent/.failed-$name'; mv '$parent/$name' '$parent/.failed-$name'; mv '$parent/.previous-$name' '$parent/$name'"
-        fi
-    done
+    rollback || true
     check_site || echo "::error::Auch nach dem Zurücktauschen antwortet die Seite nicht korrekt – bitte sofort prüfen."
     exit 1
 fi
 
 echo "== Aufräumen"
+finished=true
 for entry in "${swapped[@]}"; do
-    parent="${entry%%|*}"
-    name="${entry##*|}"
+    IFS='|' read -r parent name _ <<<"$entry"
     remote_soft "rm -r -f '$parent/.previous-$name' '$parent/.failed-$name'"
 done
 echo "Eingespielt ($STAMP)."

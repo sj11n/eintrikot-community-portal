@@ -25,4 +25,12 @@
             }
         });
     }
+    // A partly shared section keeps its field settings until its switch is flipped.
+    document.querySelectorAll('.visibility-switch input[role="switch"]').forEach((input) => {
+        input.addEventListener('change', () => {
+            const row = input.closest('.visibility-switch-row');
+            row?.querySelector('.visibility-keep')?.remove();
+            row?.querySelector('.visibility-note')?.remove();
+        });
+    });
 })();

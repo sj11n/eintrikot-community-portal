@@ -110,7 +110,7 @@ function render_requests($all) {
             esc_html($row->post_title) .
             '</h3></div><span class="request-status">' .
             esc_html($label) .
-            '</span><span aria-hidden="true">↗</span></a>';
+            '</span><span aria-hidden="true">→</span></a>';
     }
     if ($pages > 1) {
         echo '<nav class="pagination" aria-label="Anfragenseiten">';
