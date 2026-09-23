@@ -92,7 +92,9 @@ function section_visibility_switch($group, $data) {
         ($state === 'all' ? ' checked' : '') .
         '><span class="switch-track" aria-hidden="true"></span><span class="switch-label">Für Mitglieder sichtbar</span></label>' .
         ($state === 'mixed'
-            ? '<small class="visibility-note">Bisher nur teilweise geteilt. Beim Speichern gilt der Schalter für den ganzen Abschnitt.</small>'
+            ? '<input type="hidden" class="visibility-keep" name="section_visibility_keep[' .
+                esc_attr($slug) .
+                ']" value="1"><small class="visibility-note">Bisher teilweise geteilt. Das bleibt so, bis du den Schalter umlegst.</small>'
             : '') .
         '</div>';
 }
@@ -445,7 +447,8 @@ add_action('admin_post_et_profile', function () {
     $data = profile_data($id);
     $raw = $_POST['profile'] ?? [];
     $sections = $_POST['section_visibility'] ?? [];
-    if (!is_array($raw) || !is_array($sections)) {
+    $keep = $_POST['section_visibility_keep'] ?? [];
+    if (!is_array($raw) || !is_array($sections) || !is_array($keep)) {
         wp_die('Ungültige Eingabe.', '', ['response' => 400]);
     }
     $errors = [];
@@ -458,7 +461,11 @@ add_action('admin_post_et_profile', function () {
         $data[$key] = profile_form_text($value, $max);
     }
     // One switch per section sets the visibility of all its fields (and of the DHB-Vita).
+    // Partly shared older sections stay as they are until the member flips the switch.
     foreach (profile_group_slugs() as $group => $slug) {
+        if (($keep[$slug] ?? '') === '1' && section_visibility_state($data, $group) === 'mixed') {
+            continue;
+        }
         $shared = ($sections[$slug] ?? '') === 'members';
         foreach (section_visibility_keys($group) as $key) {
             $data['visibility'][$key] = $shared ? 'members' : 'private';
