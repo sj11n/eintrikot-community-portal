@@ -42,6 +42,7 @@ function portal_nav_section($view) {
         'documents' => 'service',
         'requests' => 'admin',
         'audit' => 'admin',
+        'onboarding' => 'admin',
         'profile' => 'account'
     ];
     return $map[$view] ?? $view;
@@ -246,6 +247,9 @@ add_shortcode('eintrikot_portal', function () {
                 render_requests(true);
             }
             break;
+        case 'onboarding':
+            render_onboarding();
+            break;
         case 'audit':
             echo manager_access() ? '' : $denied;
             if (manager_access()) {
@@ -260,6 +264,11 @@ add_shortcode('eintrikot_portal', function () {
             echo page_head('Verwaltung', 'Anfragen bearbeiten, Profile pflegen, Änderungen nachvollziehen.') .
                 '<section class="portal-section"><h2>Mitgliederservice</h2>' .
                 service_link(portal_url('requests'), 'Service-Anfragen bearbeiten', open_requests_hint()) .
+                service_link(
+                    portal_url('onboarding'),
+                    'Neue Mitglieder aufnehmen',
+                    'Aus MeinVerein übernehmen, Begrüßung und Urkunde senden'
+                ) .
                 service_link(portal_url('members'), 'Mitgliederprofile pflegen') .
                 service_link(audit_url(), 'Änderungsprotokoll öffnen') .
                 '</section>';
