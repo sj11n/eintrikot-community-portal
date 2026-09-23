@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68 64" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14 28 10c2 6 10 6 12 0l8 4 9 10-8 7-4-5v28H23V26l-4 5-8-7z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="344" height="320" viewBox="-12 0 344 320" role="img" aria-labelledby="title">
+  <title id="title">Im Trikot – Eintrikot Brandbook</title>
+  <path d="M120 33C124 58 138 72 160 72s36-14 40-39l32 15 50 29-22 53-34-17v151c0 9-7 16-16 16h-100c-9 0-16-7-16-16V113l-34 17-22-53 50-29z" fill="#000000" stroke="#000000" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M119 161h82" fill="none" stroke="#FFCC4E" stroke-width="13" stroke-linecap="round"/>
+</svg>
