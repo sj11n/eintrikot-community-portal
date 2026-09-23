@@ -61,3 +61,15 @@ add_filter('login_headertext', fn() => 'EINTRIKOT');
 
 // Administration remains available through wp-admin; the public design stays uncluttered.
 add_filter('show_admin_bar', '__return_false');
+
+// Preload the subset WOFF2 so text renders in Montserrat without a visible font swap.
+add_action(
+    'wp_head',
+    function () {
+        echo '<link rel="preload" href="' .
+            esc_url(get_theme_file_uri('assets/montserrat.woff2')) .
+            '" as="font" type="font/woff2" crossorigin>' .
+            "\n";
+    },
+    1
+);
