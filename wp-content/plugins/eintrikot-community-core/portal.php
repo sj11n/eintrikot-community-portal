@@ -100,3 +100,5 @@ require_once __DIR__ . '/directory.php';
 require_once __DIR__ . '/requests.php';
 
 require_once __DIR__ . '/audit.php';
+
+require_once __DIR__ . '/home.php';

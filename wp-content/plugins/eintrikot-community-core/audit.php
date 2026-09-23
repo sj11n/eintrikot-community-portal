@@ -31,7 +31,13 @@ function render_audit() {
     $page = min($page, $pages);
     echo '<a class="text-link service-back" href="' .
         esc_url(portal_url('admin')) .
-        '">← Verwaltung</a><h1>Änderungsprotokoll.</h1><p>Wer hat wann welche Angaben geändert? Dieses Protokoll ist im Portal ausschließlich lesbar.</p>';
+        '">← Verwaltung</a>' .
+        page_head(
+            'Änderungsprotokoll',
+            'Wer hat wann welche Angaben geändert? Das Protokoll ist im Portal nur lesbar.',
+            '',
+            'admin'
+        );
     $rows = $wpdb->get_results(
         $wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}eintrikot_audit ORDER BY id DESC LIMIT 50 OFFSET %d",
