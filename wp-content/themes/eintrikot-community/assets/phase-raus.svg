@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68 64" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14 28 10c2 6 10 6 12 0l8 4 9 10-8 7-4-5v28H23V26l-4 5-8-7z"/><g stroke="#fff" stroke-width="7"><path d="M34 36h28m-7-7 7 7-7 7"/></g><path d="M34 36h28m-7-7 7 7-7 7"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="344" height="320" viewBox="-12 0 344 320" role="img" aria-labelledby="title">
+  <title id="title">Raus aus dem Trikot – Eintrikot Brandbook</title>
+  <path fill="#F1D1DD" d="M120 33C124 58 138 72 160 72s36-14 40-39l32 15 50 29-22 53-34-17v151c0 9-7 16-16 16h-100c-9 0-16-7-16-16V113l-34 17-22-53 50-29z"/>
+  <path d="M226 177v-64l34 17 22-53-50-29-32-15c-4 25-18 39-40 39s-36-14-40-39l-32 15-50 29 22 53 34-17v151c0 9 7 16 16 16h100c9 0 16-7 16-16v-47" fill="none" stroke="#000000" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M250 197h72m-31-31 31 31-31 31" fill="none" stroke="#DA525D" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
