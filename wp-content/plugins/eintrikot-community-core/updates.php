@@ -20,6 +20,12 @@ function content_updates() {
                 'Ersetzt den Platzhaltertext durch Beitrittskriterien, Beitrag, freiwillige Jahresspende, Ablauf und den Beitritts-Button (erscheint erst, wenn unter „Beitritt" ein MeinVerein-Link hinterlegt ist).',
             'run' => __NAMESPACE__ . '\update_join_page'
         ],
+        '0.7-relative-links' => [
+            'title' => 'Interne Links domainunabhängig machen',
+            'text' =>
+                'Wandelt in Seiten, Beiträgen, Vereinsinfos, Navigation und Vorlagenteilen alle Links und Bilder, die auf diese Website zeigen, in relative Adressen um (z. B. „/mitglied-werden/"). Dann funktionieren sie nach dem Umzug auf eine andere Domain unverändert. Links auf andere Websites und sichtbarer Text bleiben unberührt.',
+            'run' => __NAMESPACE__ . '\make_internal_links_relative'
+        ],
         '0.7-vision' => [
             'title' => 'Schreibweise „EINTRIKOT" in der Vision 2030',
             'text' =>
@@ -32,15 +38,6 @@ function content_updates() {
 function applied_content_updates() {
     $done = get_option('eintrikot_content_updates', []);
     return is_array($done) ? $done : [];
-}
-
-/** Makes root-relative links in pattern markup absolute, like the MVP import did. */
-function absolutize_pattern_links($content) {
-    return preg_replace_callback(
-        '/(href|src)="(\/[^"\s]*)"/',
-        fn($m) => $m[1] . '="' . esc_url(home_url(html_entity_decode($m[2]))) . '"',
-        $content
-    );
 }
 
 function pattern_markup($slug) {
@@ -68,10 +65,7 @@ function update_join_page() {
     if (is_wp_error($content)) {
         return $content;
     }
-    $result = wp_update_post(
-        wp_slash(['ID' => $page->ID, 'post_content' => absolutize_pattern_links($content)]),
-        true
-    );
+    $result = wp_update_post(wp_slash(['ID' => $page->ID, 'post_content' => $content]), true);
     return is_wp_error($result) ? $result : 'Seite „Mitglied werden" aktualisiert.';
 }
 
@@ -87,6 +81,64 @@ function update_vision_spelling() {
     }
     $result = wp_update_post(wp_slash(['ID' => $page->ID, 'post_content' => $content]), true);
     return is_wp_error($result) ? $result : 'Schreibweise angepasst.';
+}
+
+/**
+ * Replaces absolute links to this site with root-relative ones.
+ *
+ * Only attribute values are touched: the origin must directly follow a quote or "(",
+ * as in href="…", src="…", "url":"…" (block attributes) or url(…) in inline styles.
+ * Both plain and JSON-escaped slashes are handled. Visible text stays unchanged.
+ */
+function relative_site_links($content, $host) {
+    $h = preg_quote($host, '/');
+    // Bare origin without path, e.g. href="http://example.org" -> href="/".
+    $content = preg_replace('/(["\'])https?:\/\/' . $h . '(?=\1)/i', '$1/', $content);
+    $content = preg_replace('/(["\'(])https?:\/\/' . $h . '(?=\/)/i', '$1', $content);
+    return preg_replace('/(["\'(])https?:\\\\\/\\\\\/' . $h . '(?=\\\\\/)/i', '$1', $content);
+}
+
+function make_internal_links_relative() {
+    $host = wp_parse_url(home_url(), PHP_URL_HOST);
+    $path = (string) wp_parse_url(home_url(), PHP_URL_PATH);
+    if (!$host) {
+        return new \WP_Error('host', 'Adresse der Website nicht ermittelbar.');
+    }
+    if (trim($path, '/') !== '') {
+        return new \WP_Error(
+            'subdir',
+            'WordPress liegt in einem Unterordner; relative Links wären hier nicht sicher.'
+        );
+    }
+    $posts = get_posts([
+        'post_type' => [
+            'page',
+            'post',
+            'et_info',
+            'wp_navigation',
+            'wp_template_part',
+            'wp_template',
+            'wp_block'
+        ],
+        'post_status' => ['publish', 'draft', 'private', 'pending', 'future'],
+        'posts_per_page' => -1,
+        'suppress_filters' => true
+    ]);
+    $changed = 0;
+    foreach ($posts as $post) {
+        $content = relative_site_links($post->post_content, $host);
+        if ($content === $post->post_content) {
+            continue;
+        }
+        $result = wp_update_post(wp_slash(['ID' => $post->ID, 'post_content' => $content]), true);
+        if (is_wp_error($result)) {
+            return $result;
+        }
+        $changed++;
+    }
+    return $changed
+        ? sprintf('%d Inhalte angepasst. Links auf %s sind jetzt relativ.', $changed, $host)
+        : 'Nichts zu ändern – keine absoluten Links auf diese Website gefunden.';
 }
 
 add_action('admin_menu', function () {
