@@ -14,6 +14,13 @@ function service_types() {
         'funding' => 'EINTRIKOT zusätzlich fördern'
     ];
 }
+/** Service types grouped for the overview. Every key must exist in service_types(). */
+function service_groups() {
+    return [
+        'Mitmachen' => ['event', 'idea', 'help', 'funding'],
+        'Meine Daten und Kontakt' => ['address', 'bank', 'contact']
+    ];
+}
 function render_service() {
     if (!member_access()) {
         return;
@@ -21,16 +28,23 @@ function render_service() {
     $types = service_types();
     $type = isset($_GET['service']) && is_string($_GET['service']) ? sanitize_key($_GET['service']) : '';
     if (!isset($types[$type])) {
-        echo '<h1>Service</h1><div class="et-services">';
-        foreach ($types as $key => $label) {
-            echo '<a class="et-member" href="' .
-                esc_url(portal_url('service', ['service' => $key])) .
-                '"><strong>' .
-                esc_html($label) .
-                '</strong><span aria-hidden="true">→</span></a>';
+        echo '<a class="text-link service-back" href="' .
+            esc_url(portal_url('more')) .
+            '">← Mehr</a><div class="profile-title"><h1>Service.</h1><p>Was können wir für dich tun?</p></div>';
+        foreach (service_groups() as $group => $keys) {
+            echo '<section class="portal-section"><h2>' . esc_html($group) . '</h2><div class="et-services">';
+            foreach ($keys as $key) {
+                echo '<a class="et-member" href="' .
+                    esc_url(portal_url('service', ['service' => $key])) .
+                    '"><strong>' .
+                    esc_html($types[$key]) .
+                    '</strong><span aria-hidden="true">→</span></a>';
+            }
+            echo '</div></section>';
         }
-        echo '</div><h2>Deine Anfragen</h2>';
+        echo '<section class="portal-section"><h2>Deine Anfragen</h2>';
         render_requests(false);
+        echo '</section>';
         return;
     }
     $draft = get_transient('et_service_draft_' . get_current_user_id() . '_' . $type);
