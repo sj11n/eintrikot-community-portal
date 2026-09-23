@@ -495,7 +495,7 @@ function send_welcome_mail($to, $first_name, $login, $number, $link, $pdf, $user
     $number_label = member_number_label($number);
     $p = fn($text) => '<p style="margin:0 0 16px;font-size:16px;line-height:1.6">' . $text . '</p>';
     $body =
-        '<div style="background:#edf5f8;padding:24px 12px;font-family:Montserrat,Arial,sans-serif;color:#000"><div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden"><div style="height:10px;background:linear-gradient(90deg,#f1d1dd,#c8e2ee)"></div><div style="padding:28px 28px 8px"><p style="margin:0 0 24px;font-weight:800;font-size:20px;letter-spacing:.02em">EINTRIKOT</p>' .
+        '<div style="background:#edf5f8;padding:24px 12px;font-family:Montserrat,Arial,sans-serif;color:#000"><div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden"><div style="height:10px;background:linear-gradient(90deg,#f1d1dd,#c8e2ee)"></div><div style="padding:28px 28px 8px"><p style="margin:0 0 28px"><img src="cid:eintrikot-logo" width="165" height="42" alt="EINTRIKOT" style="display:block;border:0;width:165px;height:42px"></p>' .
         $p('Hallo ' . esc_html($first_name) . ',') .
         ($existing
             ? $p(
@@ -544,6 +544,14 @@ function send_welcome_mail($to, $first_name, $login, $number, $link, $pdf, $user
         file_put_contents($file, $pdf);
         $attachments[] = $file;
     }
+    // The logo travels inside the mail (no external image, so no blocked picture and no tracking).
+    $logo = __DIR__ . '/assets/logo-mail.png';
+    $embed = function ($mailer) use ($logo) {
+        if (is_readable($logo)) {
+            $mailer->addEmbeddedImage($logo, 'eintrikot-logo', 'eintrikot-logo.png', 'base64', 'image/png');
+        }
+    };
+    add_action('phpmailer_init', $embed);
     $sent = wp_mail(
         $to,
         $existing
@@ -553,6 +561,7 @@ function send_welcome_mail($to, $first_name, $login, $number, $link, $pdf, $user
         $headers,
         $attachments
     );
+    remove_action('phpmailer_init', $embed);
     foreach ($attachments as $file) {
         wp_delete_file($file);
     }
