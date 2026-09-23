@@ -11,7 +11,7 @@ Theme und Plugin werden per GitHub Action auf die Entwicklungsinstallation kopie
 ## Was passiert
 
 - **Prüfen** (`.github/workflows/pruefen.yml`) läuft bei jedem Push und Pull Request: PHP-Syntax unter PHP 8.1, Formatierung, Deploy-Skript `tools/deploy.sh`.
-- **Einspielen** (`.github/workflows/einspielen.yml`) läuft bei jedem Push auf `main`, der Theme oder Plugin ändert, oder von Hand mit Probelauf.
+- **Einspielen** (`.github/workflows/einspielen.yml`) läuft von Hand (mit Probelauf) und – sobald die Variable `AUTO_DEPLOY` auf `true` steht – automatisch bei jedem Push auf `main`, der Theme oder Plugin ändert.
   1. Anmeldung und Zielpfad prüfen. Stimmt etwas nicht, bricht der Lauf ab, ohne etwas zu ändern.
   2. Den aktuellen Stand von Theme und Plugin herunterladen und 30 Tage als Artefakt „sicherung-…" aufbewahren.
   3. Neue Fassung in einen versteckten Nachbarordner hochladen (WordPress ignoriert Ordner mit Punkt).
@@ -37,6 +37,7 @@ Im Environment „entwicklung":
 | Variable | `WP_CONTENT_PATH` | Pfad zu `wp-content`, wie er nach der SFTP-Anmeldung aussieht, z. B. `/eintrikot/wp-content` |
 | Variable | `SITE_URL` | `http://eintrikot.myemmel.com` |
 | Variable | `DEPLOY_PROTOCOL` | optional, `sftp` (Standard) oder `ftps` |
+| Variable | `AUTO_DEPLOY` | erst nach dem ersten erfolgreichen Lauf auf `true` setzen |
 
 Den Pfad findest du mit einem SFTP-Programm (z. B. Cyberduck): anmelden, in den WordPress-Ordner wechseln, Pfad von `wp-content` kopieren.
 
@@ -45,6 +46,7 @@ Den Pfad findest du mit einem SFTP-Programm (z. B. Cyberduck): anmelden, in den 
 1. **Actions → Einspielen → Run workflow**, Branch `main`, „Nur Probelauf" angehakt. Das Protokoll zeigt, welche Dateien sich ändern würden.
 2. Sieht das plausibel aus, denselben Lauf ohne Haken starten.
 3. Danach im WordPress-Backend die Schritte aus `docs/14-paket-1-einspielen.md` ausführen.
+4. Läuft alles, `AUTO_DEPLOY` = `true` setzen. Ab dann spielt jeder Merge nach `main` automatisch ein.
 
 ## Zurücknehmen
 

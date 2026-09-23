@@ -1,8 +1,9 @@
 name: Einspielen
 
 # Spielt Theme und Plugin auf die Entwicklungsinstallation ein.
+# Von Hand unter Actions → Einspielen → Run workflow (mit Probelauf).
 # Automatisch bei jedem Push auf main, der Theme oder Plugin ändert,
-# oder von Hand unter Actions → Einspielen → Run workflow (mit Probelauf).
+# sobald die Repository-Variable AUTO_DEPLOY auf true steht.
 
 on:
   push:
@@ -30,6 +31,8 @@ jobs:
 
   einspielen:
     needs: pruefen
+    # Push-Läufe erst, wenn die Variable AUTO_DEPLOY auf true steht (nach dem ersten erfolgreichen Lauf).
+    if: github.event_name == 'workflow_dispatch' || vars.AUTO_DEPLOY == 'true'
     runs-on: ubuntu-latest
     environment: entwicklung
     timeout-minutes: 20
