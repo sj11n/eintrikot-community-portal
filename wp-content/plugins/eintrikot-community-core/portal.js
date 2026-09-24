@@ -28,6 +28,14 @@
             if (state) state.textContent = 'Nicht gespeicherte Änderungen';
             form.classList.add('is-dirty');
         };
+        // An invalid field inside a closed section: open it so the browser can show its hint.
+        form.addEventListener(
+            'invalid',
+            (e) => {
+                e.target.closest('details')?.setAttribute('open', '');
+            },
+            true,
+        );
         form.addEventListener('input', mark);
         form.addEventListener('change', mark);
         form.addEventListener('submit', () => {

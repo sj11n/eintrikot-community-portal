@@ -1,6 +1,6 @@
 # Aufbau und Pflege
 
-Stand: Theme 0.9, Community Core 0.12 auf http://eintrikot.myemmel.com.
+Stand: Theme 0.9, Community Core 0.13 auf http://eintrikot.myemmel.com.
 
 ## Repository
 
@@ -31,7 +31,7 @@ Nur Theme und Plugin werden eingespielt. Alles andere bleibt im Repository.
 - Navigation: Start · Mitglieder · Vereinsinfos · Termine · Service. Profil, Redaktion und Verwaltung im Konto-Menü.
 - Jeder Bereich hat seine CI-Farbe im Seitenkopf. Avatare ohne Foto zeigen Initialen, Rosé bei Damen, Hellblau bei Herren; neutral grau, wenn der Hockey-Abschnitt nicht geteilt ist.
 - Verzeichnis: Suche über freigegebene Felder und DHB-Stationen, Filter als Chips, „Zurück zur Suche" behält Suche und Position. Automatisch erscheinen nur Konten mit EINTRIKOT-Rolle; die Verwaltung kann pro Konto „Immer anzeigen" oder „Nicht anzeigen" wählen.
-- Profil: DHB-Vita, Beruf, Interessen, Kontakt, Sichtbarkeit pro Abschnitt, Foto mit Zuschnitt. Profilbilder liegen geschützt in den Benutzerdaten, nicht in der Mediathek.
+- Profil: DHB-Vita (Rolle, Team, Altersklasse als Auswahl; Zeitraum), Länderspiele gesamt, Beruf mit Status-Auswahl, Mentoring als Ankreuzfelder („biete an“ / „suche“), Sichtbarkeit pro Abschnitt, Foto mit Zuschnitt. Scheitert das Speichern, bleiben die Eingaben 30 Minuten als Entwurf erhalten, bis sie gespeichert oder verworfen werden. Profilbilder liegen geschützt in den Benutzerdaten, nicht in der Mediathek.
 - Service-Anfragen mit Vorgangsnummer und Verlauf; Bearbeitung durch Vorstand und Admin (docs/07).
 - Änderungsprotokoll unter `/community-protokoll/`, nur lesbar.
 - Geschützte Seiten werden nicht zwischengespeichert (`no-store, private`) und nicht indexiert.

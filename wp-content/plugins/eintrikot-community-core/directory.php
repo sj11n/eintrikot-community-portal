@@ -65,8 +65,7 @@ function directory_projection($user) {
     $data = profile_data($user->ID);
     $shared = [];
     foreach (profile_fields() as $key => $label) {
-        $v = visible_value($data, $key);
-        $shared[$key] = is_scalar($v) ? (string) $v : '';
+        $shared[$key] = profile_value_text($key, visible_value($data, $key));
     }
     $station_words = [];
     foreach (shared_stations($data) as $row) {
@@ -320,9 +319,9 @@ function render_member($id) {
             if (in_array($key, ['team', 'age_class', 'phase', 'city'], true)) {
                 continue;
             }
-            $v = visible_value($data, $key);
-            if (is_scalar($v) && (string) $v !== '') {
-                $values[$key] = [$label, (string) $v];
+            $v = profile_value_text($key, visible_value($data, $key));
+            if ($v !== '') {
+                $values[$key] = [$label, $v];
             }
         }
         $stations = $title === 'Hockey-Lebenslauf' ? shared_stations($data) : [];
