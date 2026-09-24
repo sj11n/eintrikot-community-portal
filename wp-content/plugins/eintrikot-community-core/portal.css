@@ -1908,3 +1908,16 @@
 .et-app input[type='checkbox'] {
     accent-color: #000;
 }
+.et-app .auth-remember-hint {
+    margin: -6px 0 14px;
+    font-size: 13px;
+    color: var(--et-muted, #595959);
+}
+.et-app .logout-others {
+    margin: 0;
+}
+.et-app .logout-others .service-link {
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+}

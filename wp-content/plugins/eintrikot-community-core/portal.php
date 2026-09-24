@@ -106,3 +106,5 @@ require_once __DIR__ . '/home.php';
 require_once __DIR__ . '/certificate.php';
 
 require_once __DIR__ . '/onboarding.php';
+
+require_once __DIR__ . '/login.php';
