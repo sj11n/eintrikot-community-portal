@@ -14,14 +14,6 @@ add_action('after_setup_theme', function () {
     add_theme_support('editor-styles');
     add_editor_style(['assets/mvp.css', 'assets/editor.css', 'assets/refresh.css']);
 });
-add_action('wp_enqueue_scripts', function () {
-    wp_enqueue_style(
-        'eintrikot-community',
-        get_theme_file_uri('assets/site.css'),
-        [],
-        eintrikot_asset_version('assets/site.css')
-    );
-});
 add_action('init', function () {
     register_block_pattern_category('eintrikot', ['label' => 'EINTRIKOT']);
 });
@@ -29,27 +21,25 @@ add_action('init', function () {
 add_action(
     'wp_enqueue_scripts',
     function () {
-        if (is_page_template('mvp-public') || is_page_template('mvp-portal') || is_singular('post')) {
-            wp_dequeue_style('eintrikot-community');
-            wp_enqueue_style(
-                'eintrikot-mvp',
-                get_theme_file_uri('assets/mvp.css'),
-                [],
-                eintrikot_asset_version('assets/mvp.css')
-            );
-            wp_enqueue_style(
-                'eintrikot-wp-adapter',
-                get_theme_file_uri('assets/wordpress.css'),
-                ['eintrikot-mvp'],
-                eintrikot_asset_version('assets/wordpress.css')
-            );
-            wp_enqueue_style(
-                'eintrikot-refresh',
-                get_theme_file_uri('assets/refresh.css'),
-                ['eintrikot-wp-adapter'],
-                eintrikot_asset_version('assets/refresh.css')
-            );
-        }
+        // One stylesheet set for every public view (pages, posts, archives, 404).
+        wp_enqueue_style(
+            'eintrikot-mvp',
+            get_theme_file_uri('assets/mvp.css'),
+            [],
+            eintrikot_asset_version('assets/mvp.css')
+        );
+        wp_enqueue_style(
+            'eintrikot-wp-adapter',
+            get_theme_file_uri('assets/wordpress.css'),
+            ['eintrikot-mvp'],
+            eintrikot_asset_version('assets/wordpress.css')
+        );
+        wp_enqueue_style(
+            'eintrikot-refresh',
+            get_theme_file_uri('assets/refresh.css'),
+            ['eintrikot-wp-adapter'],
+            eintrikot_asset_version('assets/refresh.css')
+        );
     },
     30
 );

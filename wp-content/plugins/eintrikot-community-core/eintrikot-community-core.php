@@ -2,7 +2,7 @@
 /**
  * Plugin Name: EINTRIKOT Community Core
  * Description: Getrennte Einrichtung und Berechtigungen für das EINTRIKOT-Portal. Entwicklungsstand.
- * Version: 0.11.0
+ * Version: 0.12.0
  * Requires PHP: 8.1
  */
 namespace Eintrikot\Community;
@@ -26,15 +26,6 @@ function activate() {
 }
 register_activation_hook(__FILE__, __NAMESPACE__ . '\activate');
 
-function pages() {
-    return [
-        'startseite' => 'Startseite',
-        'verein' => 'Der Verein',
-        'menschen' => 'Menschen',
-        'engagement' => 'Engagement',
-        'unterstuetzen' => 'Unterstützen'
-    ];
-}
 add_action('admin_menu', function () {
     add_menu_page(
         'EINTRIKOT Community',
@@ -44,68 +35,46 @@ add_action('admin_menu', function () {
         __NAMESPACE__ . '\setup_page',
         'dashicons-groups'
     );
+    add_submenu_page(
+        'eintrikot-community-setup',
+        'EINTRIKOT Community',
+        'Übersicht',
+        'manage_options',
+        'eintrikot-community-setup',
+        __NAMESPACE__ . '\setup_page'
+    );
 });
 function setup_page() {
     if (!current_user_can('manage_options')) {
         return;
     }
-    echo '<div class="wrap"><h1>EINTRIKOT Community aufbauen</h1><p>Entwicklungsstand 0.4.0. Dieser Schritt erstellt nur neue Seitenentwürfe. Er veröffentlicht nichts und ändert weder Startseite noch bestehende Inhalte.</p>';
-    if (isset($_GET['et_created'])) {
-        echo '<div class="notice notice-success"><p>Einrichtung geprüft. Die erstellten Seiten findest du unter Seiten → Entwürfe.</p></div>';
-    }
-    echo '<h2>Bearbeitbare Seiten vorbereiten</h2><p>Texte, Cover-Bilder und weitere Bilder werden anschließend direkt im Seiteneditor gepflegt. Öffentliche News werden als normale Beiträge erstellt.</p><form method="post" action="' .
-        esc_url(admin_url('admin-post.php')) .
-        '">';
-    wp_nonce_field('eintrikot_prepare_pages');
-    echo '<input type="hidden" name="action" value="eintrikot_prepare_pages">';
-    submit_button('Seitenentwürfe anlegen');
-    echo '</form><h2>Noch in Umsetzung</h2><p>Profilpflege, Mitgliedersuche und Service-Anfragen sind im Portal vorbereitet. Kalender, redaktionelle Vereinsinfos und der vollständige Abnahmetest folgen.</p></div>';
-}
-add_action('admin_post_eintrikot_prepare_pages', function () {
-    if (!current_user_can('manage_options')) {
-        wp_die('Keine Berechtigung.', '', ['response' => 403]);
-    }
-    check_admin_referer('eintrikot_prepare_pages');
-    $theme = wp_get_theme('eintrikot-community');
-    if (!$theme->exists()) {
-        wp_die('Bitte zuerst das Theme EINTRIKOT Community installieren.');
-    }
-    $created = get_option('eintrikot_draft_pages', []);
-    foreach (pages() as $slug => $title) {
-        if (!empty($created[$slug]) && get_post($created[$slug])) {
-            continue;
-        }
-        $file = $theme->get_stylesheet_directory() . '/patterns/' . $slug . '.php';
-        if (!is_readable($file)) {
-            wp_die('Eine Seitenvorlage fehlt.');
-        }
-        // Read authored block markup, never execute the pattern PHP during setup.
-        $source = file_get_contents($file);
-        $end = strpos($source, '?>');
-        if (false === $end) {
-            wp_die('Ungültige Seitenvorlage.');
-        }
-        $content = trim(substr($source, $end + 2));
-        $id = wp_insert_post(
-            [
-                'post_type' => 'page',
-                'post_status' => 'draft',
-                'post_title' => $title . ' – Community',
-                'post_name' => 'community-' . $slug,
-                'post_content' => wp_slash($content)
-            ],
-            true
+    $links = [
+        'eintrikot-metrics' => ['Kennzahlen', 'Zahlen und Stand-Datum auf der Startseite.'],
+        'eintrikot-join' => ['Beitritt', 'Link zum MeinVerein-Beitritt für „Mitglied werden".'],
+        'eintrikot-onboarding' => [
+            'Aufnahme & Urkunde',
+            'Absender, Signatur, Urkunden-Vorlage und Test-E-Mail.'
+        ],
+        'eintrikot-updates' => ['Aktualisierungen', 'Einzelne, bewusst auszulösende Inhaltsänderungen.']
+    ];
+    echo '<div class="wrap"><h1>EINTRIKOT Community</h1><p>Einstellungen für Website und Mitgliederportal. Texte und Bilder pflegst du unter Seiten und Beiträge, Mitglieder im Portal.</p><ul>';
+    foreach ($links as $slug => [$label, $hint]) {
+        printf(
+            '<li><a href="%s"><strong>%s</strong></a> – %s</li>',
+            esc_url(admin_url('admin.php?page=' . $slug)),
+            esc_html($label),
+            esc_html($hint)
         );
-        if (is_wp_error($id)) {
-            wp_die(esc_html($id->get_error_message()));
-        }
-        $created[$slug] = $id;
-        update_option('eintrikot_draft_pages', $created, false);
     }
-    prepare_portal_page();
-    wp_safe_redirect(admin_url('admin.php?page=eintrikot-community-setup&et_created=1'));
-    exit();
-});
+    $portal = (int) get_option('eintrikot_portal_page');
+    if ($portal) {
+        printf(
+            '<li><a href="%s"><strong>Mitgliederportal öffnen</strong></a></li>',
+            esc_url(get_permalink($portal))
+        );
+    }
+    echo '</ul></div>';
+}
 
 /**
  * Cache-busting version for a plugin asset: changes whenever the file changes.
@@ -117,6 +86,7 @@ function asset_version($file) {
 
 require_once __DIR__ . '/portal.php';
 register_activation_hook(__FILE__, __NAMESPACE__ . '\portal_install');
+register_activation_hook(__FILE__, __NAMESPACE__ . '\prepare_portal_page');
 
 // Upgrades also run when WordPress replaces an already active plugin.
 add_action('admin_init', function () {
@@ -162,15 +132,9 @@ add_action('wp_enqueue_scripts', function () {
     }
 });
 
-require_once __DIR__ . '/site.php';
-
 require_once __DIR__ . '/infos.php';
 
 require_once __DIR__ . '/metrics.php';
-
-require_once __DIR__ . '/release.php';
-
-require_once __DIR__ . '/refine.php';
 
 require_once __DIR__ . '/join.php';
 

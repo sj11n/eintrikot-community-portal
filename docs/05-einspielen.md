@@ -1,11 +1,5 @@
 # Einspielen über GitHub
 
-> **Einmaliger Schritt vor dem ersten Push:** Die beiden Dateien aus `tools/github-workflows/` nach `.github/workflows/` verschieben (der Ordner `.github` ist für Claude gesperrt). Im Terminal im Projektordner:
->
-> ```
-> mkdir -p .github/workflows && git mv tools/github-workflows/*.yml .github/workflows/ && git commit -m "Workflows aktivieren"
-> ```
-
 Theme und Plugin werden per GitHub Action auf die Entwicklungsinstallation kopiert. Die Zugangsdaten liegen ausschließlich als GitHub-Secrets im Repository, nie im Code oder im Chat.
 
 ## Was passiert
@@ -45,8 +39,7 @@ Den Pfad findest du mit einem SFTP-Programm (z. B. Cyberduck): anmelden, in den 
 
 1. **Actions → Einspielen → Run workflow**, Branch `main`, „Nur Probelauf" angehakt. Das Protokoll zeigt, welche Dateien sich ändern würden.
 2. Sieht das plausibel aus, denselben Lauf ohne Haken starten.
-3. Danach im WordPress-Backend die Schritte aus `docs/14-paket-1-einspielen.md` ausführen.
-4. Läuft alles, `AUTO_DEPLOY` = `true` setzen. Ab dann spielt jeder Merge nach `main` automatisch ein.
+3. Läuft alles, `AUTO_DEPLOY` = `true` setzen. Ab dann spielt jeder Merge nach `main` automatisch ein.
 
 ## Zurücknehmen
 
@@ -55,4 +48,4 @@ Den Pfad findest du mit einem SFTP-Programm (z. B. Cyberduck): anmelden, in den 
 
 ## Getestet
 
-Das Skript wurde gegen einen lokalen SFTP-Server geprüft: falscher Pfad und falsches Passwort brechen ohne Änderung ab, Probelauf ändert nichts, ein Lauf spielt Theme und Plugin identisch ein und lädt die Sicherung, eine fehlschlagende Seitenprüfung tauscht automatisch zurück. Ein Lauf gegen STRATO steht noch aus.
+Das Skript wurde gegen einen lokalen SFTP-Server geprüft: falscher Pfad und falsches Passwort brechen ohne Änderung ab, Probelauf ändert nichts, ein Lauf spielt Theme und Plugin identisch ein und lädt die Sicherung, eine fehlschlagende Seitenprüfung tauscht automatisch zurück. Seit September 2026 laufen alle Einspielungen auf STRATO über diesen Weg.

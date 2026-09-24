@@ -1,4 +1,4 @@
-# Aufnahme neuer Mitglieder und Service-Bearbeitung (0.10)
+# Aufnahme, Service-Bearbeitung und Anmeldung
 
 Ausführliche Anleitung für Vorstand und Mitglieder: Claude-Dokument „EINTRIKOT Portal – Handbuch Aufnahme und Service“.
 

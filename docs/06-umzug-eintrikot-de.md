@@ -31,4 +31,4 @@ Community-Aufbau → Aktualisierungen → „Interne Links domainunabhängig mac
 10. **Mail:** Absenderadresse und SMTP-Einstellungen auf die eintrikot.de-Domain prüfen (SPF/DKIM bei STRATO).
 11. **Prüfen:** Startseite, alle Menüpunkte, Anmeldung, Passwort vergessen, Profil speichern, Linkvorschau (LinkedIn Post Inspector), Browser-Konsole ohne „Mixed Content".
 
-Erst nach Schritt 11 echte Mitgliederdaten importieren (siehe docs/03: Echtimport nur auf der HTTPS-Installation).
+Erst nach Schritt 11 echte Mitgliederdaten importieren und Einladungen verschicken (siehe docs/07).
