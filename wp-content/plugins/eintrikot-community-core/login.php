@@ -187,20 +187,45 @@ add_action('lostpassword_form', function () {
 });
 
 /** Shared look of all EINTRIKOT e-mails (the welcome mail uses the same layout). */
+/**
+ * E-mail frame for all EINTRIKOT mails. Light by default; clients with a dark mode that
+ * honour prefers-color-scheme (Apple Mail, iOS, Outlook.com) get a matching dark version with
+ * a white logo. Clients that invert colours themselves (Gmail) still show a readable button,
+ * because it is light blue with black text rather than black.
+ */
 function mail_wrap($inner) {
-    return '<div style="background:#edf5f8;padding:24px 12px;font-family:Montserrat,Arial,sans-serif;color:#000"><div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden"><div style="height:10px;background:linear-gradient(90deg,#f1d1dd,#c8e2ee)"></div><div style="padding:28px 28px 8px"><p style="margin:0 0 28px"><img src="cid:eintrikot-logo" width="165" height="42" alt="EINTRIKOT" style="display:block;border:0;width:165px;height:42px"></p>' .
+    return '<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark"><style>' .
+        ':root{color-scheme:light dark;supported-color-schemes:light dark}' .
+        '@media (prefers-color-scheme:dark){' .
+        '.et-bg{background:#121416!important}.et-card{background:#1f2427!important}' .
+        '.et-text,.et-text p,.et-text h2,.et-text td,.et-text strong,.et-text em{color:#f2f2f2!important}' .
+        '.et-muted,.et-muted a{color:#b9c0c4!important}.et-rule{border-color:#3b4247!important}' .
+        '.et-logo-light{display:none!important}.et-logo-dark{display:block!important;max-height:none!important}}' .
+        '[data-ogsc] .et-logo-light{display:none!important}[data-ogsc] .et-logo-dark{display:block!important;max-height:none!important}' .
+        '[data-ogsc] .et-text,[data-ogsc] .et-text p,[data-ogsc] .et-text h2,[data-ogsc] .et-text td{color:#f2f2f2!important}' .
+        '</style></head><body class="et-bg" style="margin:0;padding:0;background:#edf5f8">' .
+        '<div class="et-bg" style="background:#edf5f8;padding:24px 12px;font-family:Montserrat,Arial,sans-serif;color:#000"><div class="et-card" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden"><div style="height:10px;background:#c8e2ee;background:linear-gradient(90deg,#f1d1dd,#c8e2ee)"></div><div class="et-text" style="padding:28px 28px 8px;color:#000">' .
+        '<div style="margin:0 0 28px"><img class="et-logo-light" src="cid:eintrikot-logo" width="165" height="42" alt="EINTRIKOT" style="display:block;border:0;width:165px;height:42px">' .
+        '<div class="et-logo-dark" style="display:none;max-height:0;overflow:hidden;mso-hide:all"><img src="cid:eintrikot-logo-dark" width="165" height="42" alt="EINTRIKOT" style="display:block;border:0;width:165px;height:42px"></div></div>' .
         $inner .
-        '</div></div></div>';
+        '</div></div></div></body></html>';
 }
 function mail_p($html) {
     return '<p style="margin:0 0 16px;font-size:16px;line-height:1.6">' . $html . '</p>';
 }
+/** Small grey note text. */
+function mail_note($html) {
+    return '<p class="et-muted" style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#595959">' .
+        $html .
+        '</p>';
+}
+/** Button as a table cell with a background colour, so every client shows it (also Outlook). */
 function mail_button($url, $label) {
-    return '<p style="margin:0 0 20px"><a href="' .
+    return '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 24px;border-collapse:separate"><tr><td bgcolor="#c8e2ee" style="background:#c8e2ee;border-radius:999px;border:2px solid #000"><a href="' .
         esc_url($url) .
-        '" style="display:inline-block;background:#000;color:#fff;text-decoration:none;font-weight:700;padding:14px 26px;border-radius:999px">' .
+        '" style="display:inline-block;padding:13px 26px;font-family:Montserrat,Arial,sans-serif;font-size:16px;font-weight:700;line-height:1.2;color:#000000;text-decoration:none;border-radius:999px">' .
         esc_html($label) .
-        '</a></p>';
+        ' →</a></td></tr></table>';
 }
 function mail_headers() {
     $s = function_exists(__NAMESPACE__ . '\onboarding_settings') ? onboarding_settings() : [];
@@ -210,14 +235,23 @@ function mail_headers() {
         !empty($s['reply_to']) ? 'Reply-To: ' . $s['reply_to'] : ''
     ]);
 }
-/** Embeds the logo into the next e-mail that WordPress sends. */
+/** Both logo variants travel inside the mail: no external image, so nothing blocked and no tracking. */
+function mail_embed_logos($mailer) {
+    foreach (
+        ['eintrikot-logo' => 'logo-mail.png', 'eintrikot-logo-dark' => 'logo-mail-white.png']
+        as $cid => $file
+    ) {
+        $path = __DIR__ . '/assets/' . $file;
+        if (is_readable($path)) {
+            $mailer->addEmbeddedImage($path, $cid, $file, 'base64', 'image/png');
+        }
+    }
+}
+/** Embeds the logos into the next e-mail that WordPress sends. */
 function embed_logo_once() {
     $embed = function ($mailer) use (&$embed) {
         remove_action('phpmailer_init', $embed);
-        $logo = __DIR__ . '/assets/logo-mail.png';
-        if (is_readable($logo)) {
-            $mailer->addEmbeddedImage($logo, 'eintrikot-logo', 'eintrikot-logo.png', 'base64', 'image/png');
-        }
+        mail_embed_logos($mailer);
     };
     add_action('phpmailer_init', $embed);
 }
@@ -239,10 +273,10 @@ add_filter(
                     'für dein Konto wurde ein neues Passwort angefordert. Mit diesem Knopf legst du es selbst fest:'
                 ) .
                 mail_button($link, 'Neues Passwort festlegen') .
-                mail_p(
-                    '<span style="font-size:14px;color:#595959">Der Link gilt 24 Stunden und nur einmal. Anmelden kannst du dich danach mit deiner E-Mail-Adresse <strong>' .
+                mail_note(
+                    'Der Link gilt 24 Stunden und nur einmal. Anmelden kannst du dich danach mit deiner E-Mail-Adresse <strong>' .
                         esc_html($user->user_email) .
-                        '</strong>. Hast du nichts angefordert? Dann ignoriere diese E-Mail – dein bisheriges Passwort bleibt gültig. Wir schicken dir nie ein Passwort per E-Mail und fragen auch nie danach.</span>'
+                        '</strong>. Hast du nichts angefordert? Dann ignoriere diese E-Mail – dein bisheriges Passwort bleibt gültig. Wir schicken dir nie ein Passwort per E-Mail und fragen auch nie danach.'
                 ) .
                 mail_signoff()
         );
