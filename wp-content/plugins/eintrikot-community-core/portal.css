@@ -1921,3 +1921,40 @@
     font: inherit;
     color: inherit;
 }
+
+/* 0.13: Auswahlfelder im Profil */
+.et-app .station select {
+    padding: 10px;
+}
+.et-app .check-group {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+.et-app .check-group legend {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding: 0;
+}
+.et-app .check-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 24px;
+}
+.et-app .check-options .check {
+    min-height: 44px;
+    align-items: center;
+}
+.et-app .check-options .check input {
+    margin-top: 0;
+}
+@media (max-width: 700px) {
+    .et-app .check-options {
+        grid-template-columns: 1fr;
+    }
+}
+.et-app .form-section > h3 {
+    margin-top: 36px;
+}

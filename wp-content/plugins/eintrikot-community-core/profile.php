@@ -15,12 +15,11 @@ function profile_groups() {
             'age_class' => 'Altersklasse',
             'phase' => 'Trikotphase',
             'hockey' => 'Ein besonderer Moment oder eine Geschichte',
-            'caps' => 'Länderspiele gesamt',
-            'youth_caps' => 'Länderspiele nach Altersklasse'
+            'caps' => 'Länderspiele gesamt'
         ],
         'Abseits des Platzes' => ['hobbies' => 'Hobbys', 'other_sport' => 'Sport neben Hockey'],
         'Beruf & Ausbildung' => [
-            'job' => 'Beruf / Position',
+            'job' => 'Beruf / Tätigkeit',
             'employer' => 'Unternehmen / Organisation',
             'industry' => 'Branche',
             'employment' => 'Beruflicher Status',
@@ -30,8 +29,9 @@ function profile_groups() {
             'education_period' => 'Zeitraum der Ausbildung'
         ],
         'Interessen & Mitmachen' => [
-            'mentoring' => 'Mentoring: anbieten oder suchen?',
-            'support' => 'Events, Sponsoring, Karrieretipps, Praktika oder Jobs',
+            'mentoring_offer' => 'Das biete ich anderen Mitgliedern an',
+            'mentoring_seek' => 'Dabei wünsche ich mir Unterstützung',
+            'support' => 'Mehr dazu (optional)',
             'contribution' => 'So möchte ich mich bei EINTRIKOT einbringen'
         ]
     ];
@@ -41,6 +41,72 @@ function profile_fields() {
 }
 function long_profile_field($key) {
     return in_array($key, ['hockey', 'support', 'contribution'], true);
+}
+/** Fixed choices for single-select profile fields. */
+function profile_choice_options() {
+    return [
+        'team' => ['Damen', 'Herren'],
+        'phase' => ['Aktuell', 'Ehemalig'],
+        'age_class' => ['U16', 'U18', 'U21', 'A-Nationalteam', 'Masters'],
+        'employment' => [
+            'Schule',
+            'Ausbildung',
+            'Studium',
+            'Angestellt',
+            'Selbstständig / Unternehmer:in',
+            'Im Ruhestand',
+            'Sonstiges'
+        ]
+    ];
+}
+/** Multiple-choice fields (checkboxes): stored key => label. */
+function profile_list_options() {
+    $topics = [
+        'mentoring' => 'Mentoring (regelmäßiger Austausch)',
+        'career' => 'Karriere- und Bewerbungstipps',
+        'dual' => 'Sport mit Studium oder Beruf verbinden',
+        'internship' => 'Praktikum',
+        'jobs' => 'Jobs und Berufseinstieg',
+        'network' => 'Kontakte in eine Branche'
+    ];
+    return ['mentoring_offer' => $topics, 'mentoring_seek' => $topics];
+}
+function profile_list_field($key) {
+    return isset(profile_list_options()[$key]);
+}
+/** Readable text of a profile value: labels for multiple choice, the value itself otherwise. */
+function profile_value_text($key, $value) {
+    if (profile_list_field($key)) {
+        $labels = profile_list_options()[$key];
+        return implode(
+            ', ',
+            array_map(
+                fn($v) => $labels[$v],
+                array_filter((array) $value, fn($v) => is_string($v) && isset($labels[$v]))
+            )
+        );
+    }
+    return is_scalar($value) ? (string) $value : '';
+}
+/** Fixed choices for the DHB-Vita stations. */
+function station_options() {
+    return [
+        'role' => [
+            'Spieler/in',
+            'Kapitän/in',
+            'Trainer/in',
+            'Co-Trainer/in',
+            'Torwarttrainer/in',
+            'Athletiktrainer/in',
+            'Teammanager/in',
+            'Physiotherapeut/in',
+            'Mannschaftsarzt/-ärztin',
+            'Video- und Spielanalyse',
+            'Betreuer/in'
+        ],
+        'organisation' => ['Damen', 'Herren'],
+        'age_class' => ['U16', 'U18', 'U21', 'A-Nationalteam', 'A-Nationalteam Halle', 'Masters']
+    ];
 }
 function profile_revision($id) {
     return hash(
@@ -73,13 +139,17 @@ function section_visibility_keys($group) {
 /** 'all' when every field of the section is shared with members, 'none', or 'mixed' (older profiles). */
 function section_visibility_state($data, $group) {
     $shared = 0;
-    $keys = section_visibility_keys($group);
-    foreach ($keys as $key) {
-        if (($data['visibility'][$key] ?? 'private') === 'members') {
+    $known = 0;
+    foreach (section_visibility_keys($group) as $key) {
+        if (!isset($data['visibility'][$key])) {
+            continue; // Field added later: follows the section switch.
+        }
+        $known++;
+        if ($data['visibility'][$key] === 'members') {
             $shared++;
         }
     }
-    return $shared === 0 ? 'none' : ($shared === count($keys) ? 'all' : 'mixed');
+    return $shared === 0 ? 'none' : ($shared === $known ? 'all' : 'mixed');
 }
 
 /** One switch per section instead of a selector per field. Off = only the club administration sees it. */
@@ -125,11 +195,26 @@ function field_error_text($key) {
 
 function profile_field($key, $label, $data) {
     $value = $data[$key] ?? '';
-    $options = [
-        'team' => ['Damen', 'Herren'],
-        'phase' => ['Aktuell', 'Ehemalig'],
-        'age_class' => ['U16', 'U18', 'U21', 'A-Nationalteam', 'Masters']
-    ];
+    $options = profile_choice_options();
+    if (profile_list_field($key)) {
+        $chosen = array_filter((array) $value, 'is_string');
+        echo '<fieldset class="field full check-group"><legend>' .
+            esc_html($label) .
+            '</legend><div class="check-options">';
+        foreach (profile_list_options()[$key] as $option => $text) {
+            echo '<label class="check"><input type="checkbox" name="profile[' .
+                esc_attr($key) .
+                '][]" value="' .
+                esc_attr($option) .
+                '"' .
+                checked(in_array($option, $chosen, true), true, false) .
+                '> ' .
+                esc_html($text) .
+                '</label>';
+        }
+        echo '</div>' . field_error_text($key) . '</fieldset>';
+        return;
+    }
     echo '<div class="field ' .
         (long_profile_field($key) ? 'full' : '') .
         '"><label for="et-' .
@@ -167,6 +252,7 @@ function profile_field($key, $label, $data) {
             ($key === 'caps' ? 'number' : 'text') .
             '" ' .
             ($key === 'caps' ? 'min="0" max="999999" step="1" inputmode="numeric"' : 'maxlength="200"') .
+            ($key === 'job' ? ' placeholder="z. B. Ärztin, Vertriebsleiter, Lehrerin"' : '') .
             field_error_attrs($key) .
             ' value="' .
             esc_attr($value) .
@@ -174,31 +260,70 @@ function profile_field($key, $label, $data) {
     }
     echo field_error_text($key) . '</div>';
 }
+/** Maps earlier free text of a station onto the fixed choices where that is unambiguous. */
+function station_choice($key, $value) {
+    $choices = station_options()[$key] ?? null;
+    if (!$choices || $value === '' || in_array($value, $choices, true)) {
+        return $value;
+    }
+    $lower = mb_strtolower($value);
+    foreach ($choices as $choice) {
+        if ($lower === mb_strtolower($choice)) {
+            return $choice;
+        }
+    }
+    $patterns = [
+        'role' => [
+            'Co-Trainer/in' => '/co-?trainer/u',
+            'Torwarttrainer/in' => '/torwart\w*trainer/u',
+            'Athletiktrainer/in' => '/athletik/u',
+            'Kapitän/in' => '/kapitän/u',
+            'Trainer/in' => '/^(chef|bundes|head)?-?trainer(in)?$/u',
+            'Spieler/in' => '/^spieler(in)?$/u'
+        ],
+        'organisation' => [
+            'Damen' => '/damen|frauen|mädchen|weiblich/u',
+            'Herren' => '/herren|männer|jungen|männlich/u'
+        ],
+        'age_class' => ['A-Nationalteam Halle' => '/halle/u', 'Masters' => '/master|^[oü]\s?\d{2}/u']
+    ];
+    $hits = array_keys(array_filter($patterns[$key] ?? [], fn($re) => preg_match($re, $lower)));
+    return count($hits) === 1 ? $hits[0] : $value;
+}
 function station_fields($index, $row) {
     $labels = [
         'role' => 'Rolle',
-        'organisation' => 'Team / Organisation',
+        'organisation' => 'Team',
         'age_class' => 'Altersklasse',
         'from' => 'Von',
         'to' => 'Bis'
     ];
+    $options = station_options();
     echo '<div class="station">';
     foreach ($labels as $key => $label) {
-        echo '<label class="field">' .
-            esc_html($label) .
-            '<input name="stations[' .
-            $index .
-            '][' .
-            $key .
-            ']" type="' .
-            (in_array($key, ['from', 'to'], true) ? 'number' : 'text') .
-            '" ' .
-            (in_array($key, ['from', 'to'], true) ? 'min="1900" max="2100"' : 'maxlength="160"') .
-            ' value="' .
-            esc_attr($row[$key] ?? '') .
-            '" ' .
-            ($key === 'to' ? 'placeholder="laufend"' : '') .
-            '></label>';
+        $value = station_choice($key, (string) ($row[$key] ?? ''));
+        $name = 'stations[' . $index . '][' . $key . ']';
+        echo '<label class="field">' . esc_html($label);
+        if (isset($options[$key])) {
+            $choices = $options[$key];
+            if ($value !== '' && !in_array($value, $choices, true)) {
+                $choices[] = $value; // Earlier free text stays selectable until changed.
+            }
+            echo '<select name="' . esc_attr($name) . '"><option value="">Bitte wählen</option>';
+            foreach ($choices as $choice) {
+                echo '<option ' . selected($value, $choice, false) . '>' . esc_html($choice) . '</option>';
+            }
+            echo '</select>';
+        } else {
+            echo '<input name="' .
+                esc_attr($name) .
+                '" type="number" min="1900" max="2100" inputmode="numeric" value="' .
+                esc_attr($value) .
+                '"' .
+                ($key === 'to' ? ' placeholder="laufend"' : '') .
+                '>';
+        }
+        echo '</label>';
     }
     echo '<button type="button" class="text-reset remove-station">Entfernen</button></div>';
 }
@@ -209,11 +334,20 @@ function render_profile($id) {
     }
     $user = get_user_by('id', $id);
     $data = profile_data($id);
-    $draft = get_transient('et_profile_form_' . get_current_user_id() . '_' . $id);
+    $draft_key = 'et_profile_form_' . get_current_user_id() . '_' . $id;
+    if (isset($_GET['discard'])) {
+        delete_transient($draft_key);
+        delete_transient('et_profile_conflict_' . get_current_user_id() . '_' . $id);
+    }
+    // A draft from a failed save stays until it is saved or discarded, so a reload loses nothing.
+    $draft = get_transient($draft_key);
     if (is_array($draft)) {
         $data = $draft['data'];
         profile_field_errors(is_array($draft['fields'] ?? null) ? $draft['fields'] : []);
-        delete_transient('et_profile_form_' . get_current_user_id() . '_' . $id);
+    }
+    // Earlier free-text mentoring answer moves into "Mehr dazu" and is saved there next time.
+    if (is_string($data['mentoring'] ?? null) && trim($data['mentoring']) !== '') {
+        $data['support'] = trim(($data['support'] ?? '') . "\n" . $data['mentoring']);
     }
     $own = $id === get_current_user_id();
     echo '<a class="text-link service-back" href="' .
@@ -233,7 +367,14 @@ function render_profile($id) {
     if ($draft) {
         echo '<div class="form-error" role="alert" tabindex="-1"><strong>Bitte prüfe deine Angaben.</strong><p>' .
             esc_html($draft['message']) .
-            '</p><p>Deine übrigen Eingaben sind erhalten. Die betroffenen Felder sind markiert.</p></div>';
+            '</p><p>Deine Eingaben sind noch nicht gespeichert, aber erhalten. Die betroffenen Felder sind markiert. Korrigieren und erneut speichern – oder <a href="' .
+            esc_url(
+                portal_url($id === get_current_user_id() ? 'profile' : 'edit-member', [
+                    'member' => $id,
+                    'discard' => 1
+                ])
+            ) .
+            '">Eingaben verwerfen</a>.</p></div>';
     }
     echo '<form class="profile-form" data-dirty-check method="post" enctype="multipart/form-data" action="' .
         esc_url(admin_url('admin-post.php')) .
@@ -300,7 +441,7 @@ function render_profile($id) {
         }
         echo '</div>';
         if ($group === 'Hockey-Lebenslauf') {
-            echo '<h3>DHB-Vita</h3><p>Deine Rollen und Stationen im Nationalteam. Bei einer laufenden Station bleibt „Bis“ leer.</p><div id="stations">';
+            echo '<h3>DHB-Vita</h3><p>Deine Rollen und Stationen im Nationalteam, zum Beispiel „Spieler/in · Damen · U21 · 2008–2010“. Bei einer laufenden Station bleibt „Bis“ leer.</p><div id="stations">';
             foreach ($data['stations'] ?? [[]] as $i => $row) {
                 station_fields($i, $row);
             }
@@ -366,10 +507,12 @@ function render_profile($id) {
         }
         echo '</dl></details><label class="check"><input type="checkbox" name="resolve_conflict" value="1" required> Ich habe den aktuellen Stand geprüft und möchte meinen Entwurf speichern.</label></section>';
     }
-    echo '<div class="save-bar"><button class="button solid" type="submit">Änderungen speichern</button><span class="save-state" data-save-state role="status" aria-live="polite"></span></div></form>';
+    echo '<div class="save-bar"><button class="button solid" type="submit">Änderungen speichern</button><span class="save-state" data-save-state role="status" aria-live="polite">' .
+        ($draft ? 'Noch nicht gespeichert – bitte die markierten Felder prüfen' : '') .
+        '</span></div></form>';
     echo avatar_cropper_markup();
 }
-function validate_stations($rows) {
+function validate_stations($rows, $legacy = []) {
     if (!is_array($rows) || count($rows) > 30) {
         return new \WP_Error('stations', 'Bitte maximal 30 DHB-Stationen angeben.');
     }
@@ -390,10 +533,19 @@ function validate_stations($rows) {
             continue;
         }
         if (!$clean['role'] || !$clean['organisation']) {
-            return new \WP_Error(
-                'stations',
-                'Bitte bei jeder DHB-Station Rolle und Team / Organisation angeben.'
-            );
+            return new \WP_Error('stations', 'Bitte bei jeder DHB-Station Rolle und Team angeben.');
+        }
+        foreach (station_options() as $key => $choices) {
+            if (
+                $clean[$key] !== '' &&
+                !in_array($clean[$key], $choices, true) &&
+                !in_array($clean[$key], $legacy[$key] ?? [], true)
+            ) {
+                return new \WP_Error(
+                    'stations',
+                    'Bitte bei den DHB-Stationen eine Auswahl aus der Liste treffen.'
+                );
+            }
         }
         foreach (['from', 'to'] as $year) {
             if ($clean[$year] !== '' && !preg_match('/^(19|20)\d{2}$|^2100$/D', $clean[$year])) {
@@ -424,7 +576,7 @@ function profile_error($id, $data, $message, $conflict = false, $fields = []) {
             'conflict' => $conflict,
             'fields' => $fields
         ],
-        300
+        1800
     );
     if ($conflict) {
         set_transient('et_profile_conflict_' . get_current_user_id() . '_' . $id, true, 600);
@@ -526,14 +678,36 @@ add_action('admin_post_et_profile', function () {
         wp_die('Ungültige Eingabe.', '', ['response' => 400]);
     }
     $errors = [];
+    $previous = $data;
     foreach (profile_fields() as $key => $label) {
+        if (profile_list_field($key)) {
+            $picked = $raw[$key] ?? [];
+            $allowed = array_keys(profile_list_options()[$key]);
+            $data[$key] = is_array($picked)
+                ? array_values(
+                    array_intersect($allowed, array_map('strval', array_filter($picked, 'is_scalar')))
+                )
+                : [];
+            continue;
+        }
         $value = $raw[$key] ?? '';
         $max = long_profile_field($key) ? 4000 : 200;
         if (!is_scalar($value) || mb_strlen(is_scalar($value) ? wp_unslash((string) $value) : '') > $max) {
             $errors[$key] = $label . ' bitte prüfen.';
         }
         $data[$key] = profile_form_text($value, $max);
+        $choices = profile_choice_options()[$key] ?? null;
+        if (
+            $choices &&
+            $data[$key] !== '' &&
+            !in_array($data[$key], $choices, true) &&
+            $data[$key] !== ($previous[$key] ?? '')
+        ) {
+            $errors[$key] = $label . ': bitte eine Auswahl aus der Liste treffen.';
+        }
     }
+    // The earlier free-text mentoring answer was shown in "Mehr dazu" and is saved there now.
+    unset($data['mentoring']);
     // One switch per section sets the visibility of all its fields (and of the DHB-Vita).
     // Partly shared older sections stay as they are until the member flips the switch.
     foreach (profile_group_slugs() as $group => $slug) {
@@ -593,7 +767,15 @@ add_action('admin_post_et_profile', function () {
             $errors['birthday'] = 'Bitte das Geburtsdatum prüfen.';
         }
     }
-    $stations = validate_stations(wp_unslash($submitted));
+    $legacy = [];
+    foreach (is_array($previous['stations'] ?? null) ? $previous['stations'] : [] as $row) {
+        foreach (array_keys(station_options()) as $key) {
+            if (is_array($row) && is_string($row[$key] ?? null) && $row[$key] !== '') {
+                $legacy[$key][] = $row[$key];
+            }
+        }
+    }
+    $stations = validate_stations(wp_unslash($submitted), $legacy);
     if (is_wp_error($stations)) {
         $errors['stations'] = $stations->get_error_message();
     }
@@ -634,6 +816,7 @@ add_action('admin_post_et_profile', function () {
         profile_error($id, $data, $result->get_error_message(), $result->get_error_code() === 'conflict');
     }
     delete_transient('et_profile_conflict_' . get_current_user_id() . '_' . $id);
+    delete_transient('et_profile_form_' . get_current_user_id() . '_' . $id);
     wp_safe_redirect(
         portal_url($id === get_current_user_id() ? 'profile' : 'member', ['member' => $id, 'saved' => 1])
     );

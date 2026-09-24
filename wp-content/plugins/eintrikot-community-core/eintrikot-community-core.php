@@ -2,7 +2,7 @@
 /**
  * Plugin Name: EINTRIKOT Community Core
  * Description: Getrennte Einrichtung und Berechtigungen für das EINTRIKOT-Portal. Entwicklungsstand.
- * Version: 0.12.0
+ * Version: 0.13.0
  * Requires PHP: 8.1
  */
 namespace Eintrikot\Community;
@@ -90,10 +90,10 @@ register_activation_hook(__FILE__, __NAMESPACE__ . '\prepare_portal_page');
 
 // Upgrades also run when WordPress replaces an already active plugin.
 add_action('admin_init', function () {
-    if (current_user_can('manage_options') && get_option('eintrikot_schema_version') !== '0.4.0') {
+    if (current_user_can('manage_options') && get_option('eintrikot_schema_version') !== '0.13.0') {
         activate();
         portal_install();
-        update_option('eintrikot_schema_version', '0.4.0', false);
+        update_option('eintrikot_schema_version', '0.13.0', false);
     }
 });
 function prepare_portal_page() {
