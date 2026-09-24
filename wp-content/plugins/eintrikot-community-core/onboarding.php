@@ -92,7 +92,7 @@ function onboarding_settings_page() {
     submit_button('Speichern');
     echo '</form><h2>Test</h2><form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
     wp_nonce_field('et_onboarding_test');
-    echo '<input type="hidden" name="action" value="et_onboarding_test"><p>Schickt dir das Begrüßungsschreiben mit einer Muster-Urkunde. Der Link darin ist ein Platzhalter.</p>';
+    echo '<input type="hidden" name="action" value="et_onboarding_test"><p>Schickt dir das Begrüßungsschreiben mit einer Muster-Urkunde. Der Knopf darin führt zur Seite „Passwort vergessen“.</p>';
     submit_button('Test-E-Mail an mich senden', 'secondary');
     echo '</form></div>';
 }
@@ -169,7 +169,7 @@ add_action('admin_post_et_onboarding_test', function () {
         first_name($me->display_name) ?: 'Vorname',
         $me->user_email,
         '999',
-        home_url('/#test-link'),
+        wp_lostpassword_url(),
         certificate_ready()
             ? jpeg_to_pdf(certificate_jpeg($me->display_name, '999', wp_date('Y-m-d')), 'Muster')
             : ''
@@ -493,44 +493,56 @@ function send_welcome_mail($to, $first_name, $login, $number, $link, $pdf, $user
     $s = onboarding_settings();
     $portal = get_permalink((int) get_option('eintrikot_portal_page')) ?: home_url('/');
     $number_label = member_number_label($number);
-    $p = fn($text) => '<p style="margin:0 0 16px;font-size:16px;line-height:1.6">' . $text . '</p>';
-    $body =
-        '<div style="background:#edf5f8;padding:24px 12px;font-family:Montserrat,Arial,sans-serif;color:#000"><div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden"><div style="height:10px;background:linear-gradient(90deg,#f1d1dd,#c8e2ee)"></div><div style="padding:28px 28px 8px"><p style="margin:0 0 28px"><img src="cid:eintrikot-logo" width="165" height="42" alt="EINTRIKOT" style="display:block;border:0;width:165px;height:42px"></p>' .
-        $p('Hallo ' . esc_html($first_name) . ',') .
-        ($existing
-            ? $p(
-                'unser neues Mitgliederportal ist da. Dort findest du ab sofort andere Mitglieder, Vereinsinfos und Termine – und dein eigenes Profil.'
+    $p = __NAMESPACE__ . '\mail_p';
+    $test = $user_id === 0 && !$existing;
+    $rule = 'padding:10px 0;border-top:1px solid #e4e4e4';
+    $body = mail_wrap(
+        ($test
+            ? mail_note(
+                '<strong>Test-E-Mail.</strong> So sieht die Begrüßung für neue Mitglieder aus. Der Knopf führt hier zur Seite „Passwort vergessen“, im echten Versand direkt zum persönlichen Link.'
             )
-            : $p(
-                'willkommen bei EINTRIKOT – schön, dass du dabei bist. Im Anhang findest du deine persönliche Mitgliedsurkunde' .
-                    ($number_label !== ''
-                        ? ' mit deiner Mitgliedsnummer <strong>' . esc_html($number_label) . '</strong>'
-                        : '') .
-                    '.'
-            )) .
-        $p('<em>Du hast das Trikot getragen. Jetzt trägst du es weiter.</em>') .
-        '<h2 style="margin:28px 0 12px;font-size:18px">Dein Zugang zum Mitgliederportal</h2>' .
-        $p(
-            'Im Portal findest du andere Mitglieder, Vereinsinfos und Termine. Dein Profil pflegst du selbst – du entscheidest, was andere Mitglieder sehen.'
-        ) .
-        '<table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 20px;font-size:15px"><tr><td style="padding:10px 0;border-top:1px solid #e4e4e4;color:#595959;width:40%">Benutzername</td><td style="padding:10px 0;border-top:1px solid #e4e4e4"><strong>' .
-        esc_html($login) .
-        '</strong></td></tr><tr><td style="padding:10px 0;border-top:1px solid #e4e4e4;border-bottom:1px solid #e4e4e4;color:#595959">Passwort</td><td style="padding:10px 0;border-top:1px solid #e4e4e4;border-bottom:1px solid #e4e4e4">legst du selbst fest</td></tr></table>' .
-        '<p style="margin:0 0 20px"><a href="' .
-        esc_url($link) .
-        '" style="display:inline-block;background:#000;color:#fff;text-decoration:none;font-weight:700;padding:14px 26px;border-radius:999px">Passwort festlegen</a></p>' .
-        $p(
-            '<span style="font-size:14px;color:#595959">Der Link gilt ' .
-                INVITE_VALID_DAYS .
-                ' Tage und nur einmal. Danach meldest du dich hier an: <a href="' .
-                esc_url($portal) .
-                '" style="color:#000">' .
-                esc_html(preg_replace('#^https?://#', '', $portal)) .
-                '</a>. Ist der Link abgelaufen, klicke dort auf „Passwort vergessen?“. Wir schicken dir nie ein Passwort per E-Mail und fragen auch nie danach.</span>'
-        ) .
-        $p('Fragen? Antworte einfach auf diese E-Mail.') .
-        $p('Liebe Grüße<br>' . nl2br(esc_html($s['signature'])) . '<br>für EINTRIKOT e.V.') .
-        '</div></div></div>';
+            : '') .
+            $p('Hallo ' . esc_html($first_name) . ',') .
+            ($existing
+                ? $p(
+                    'unser neues Mitgliederportal ist da. Dort findest du ab sofort andere Mitglieder, Vereinsinfos und Termine – und dein eigenes Profil.'
+                )
+                : $p(
+                    'willkommen bei EINTRIKOT – schön, dass du dabei bist. Im Anhang findest du deine persönliche Mitgliedsurkunde' .
+                        ($number_label !== ''
+                            ? ' mit deiner Mitgliedsnummer <strong>' . esc_html($number_label) . '</strong>'
+                            : '') .
+                        '.'
+                )) .
+            $p('<em>Du hast das Trikot getragen. Jetzt trägst du es weiter.</em>') .
+            '<h2 style="margin:28px 0 12px;font-size:18px">Dein Zugang zum Mitgliederportal</h2>' .
+            $p(
+                'Im Portal findest du andere Mitglieder, Vereinsinfos und Termine. Dein Profil pflegst du selbst – du entscheidest, was andere Mitglieder sehen.'
+            ) .
+            '<table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 20px;font-size:15px"><tr><td class="et-rule et-muted" style="' .
+            $rule .
+            ';color:#595959;width:40%">Benutzername</td><td class="et-rule" style="' .
+            $rule .
+            '"><strong>' .
+            esc_html($login) .
+            '</strong></td></tr><tr><td class="et-rule et-muted" style="' .
+            $rule .
+            ';border-bottom:1px solid #e4e4e4;color:#595959">Passwort</td><td class="et-rule" style="' .
+            $rule .
+            ';border-bottom:1px solid #e4e4e4">legst du selbst fest</td></tr></table>' .
+            mail_button($link, 'Passwort festlegen') .
+            mail_note(
+                'Der Link gilt ' .
+                    INVITE_VALID_DAYS .
+                    ' Tage und nur einmal. Danach meldest du dich hier an: <a href="' .
+                    esc_url($portal) .
+                    '" style="color:inherit">' .
+                    esc_html(preg_replace('#^https?://#', '', $portal)) .
+                    '</a>. Ist der Link abgelaufen, klicke dort auf „Passwort vergessen?“. Wir schicken dir nie ein Passwort per E-Mail und fragen auch nie danach.'
+            ) .
+            $p('Fragen? Antworte einfach auf diese E-Mail.') .
+            $p('Liebe Grüße<br>' . nl2br(esc_html($s['signature'])) . '<br>für EINTRIKOT e.V.')
+    );
     $headers = [
         'Content-Type: text/html; charset=UTF-8',
         'From: ' . $s['from_name'] . ' <' . get_option('admin_email') . '>',
@@ -544,13 +556,8 @@ function send_welcome_mail($to, $first_name, $login, $number, $link, $pdf, $user
         file_put_contents($file, $pdf);
         $attachments[] = $file;
     }
-    // The logo travels inside the mail (no external image, so no blocked picture and no tracking).
-    $logo = __DIR__ . '/assets/logo-mail.png';
-    $embed = function ($mailer) use ($logo) {
-        if (is_readable($logo)) {
-            $mailer->addEmbeddedImage($logo, 'eintrikot-logo', 'eintrikot-logo.png', 'base64', 'image/png');
-        }
-    };
+    // Both logo variants travel inside the mail (no external image, so nothing blocked and no tracking).
+    $embed = __NAMESPACE__ . '\mail_embed_logos';
     add_action('phpmailer_init', $embed);
     $sent = wp_mail(
         $to,
