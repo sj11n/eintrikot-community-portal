@@ -24,3 +24,12 @@ Die Vorlage (A4, ohne Name, Nummer, Datum, mit Unterschriften) wird unter Commun
 ## Service-Bearbeitung
 
 Statt eines Status-Menüs hat jede Anfrage Schaltflächen für den nächsten Schritt (In Prüfung nehmen, Erledigt bzw. In MeinVerein übernommen, Ablehnen, Wieder öffnen, Nur Texte speichern), eine Aufgabenbeschreibung je Anfrageart und die strukturierten Angaben (Adresse, Betrag, Beginn). Die Liste startet mit „Offen“ und zeigt Zahlen je Status.
+
+## Anmeldung und Passwort (0.11)
+
+- **Angemeldet bleiben:** Haken ist vorausgewählt. Mit Haken 90 Tage (Vorstand, Redaktion, Admins: 14 Tage), ohne Haken bis der Browser geschlossen wird.
+- **Auf allen anderen Geräten abmelden:** Service → Konto.
+- **Passwort vergessen:** einmaliger Link per EINTRIKOT-Mail, 24 Stunden gültig. Die Seite sagt immer „Wenn diese Adresse bei uns hinterlegt ist …“, auch bei unbekannten Adressen. Höchstens 3 Anfragen pro Stunde und Konto. Nach dem Festlegen werden alle Sitzungen beendet und das Mitglied bekommt eine Bestätigungsmail. Eine erfolgreiche Anmeldung macht offene Links ungültig (WordPress-Standard).
+- **Passwort-Raten:** 5 Fehlversuche je Konto und Anschluss → 15 Minuten gesperrt; eine gemeinsame Fehlermeldung für falsche E-Mail und falsches Passwort.
+- **Härtung:** XML-RPC aus, Benutzerliste der REST-Schnittstelle und Autorenseiten für Gäste gesperrt, keine Benutzer-Sitemap.
+- **Mit HTTPS (eintrikot.de):** WordPress setzt die Anmelde-Cookies dann automatisch als „secure“; zusätzlich HTTPS-Weiterleitung einschalten. Zweite Stufe (Authenticator-App) für Vorstand und Admins ist vorbereitet als Empfehlung, aber bewusst noch nicht eingerichtet.

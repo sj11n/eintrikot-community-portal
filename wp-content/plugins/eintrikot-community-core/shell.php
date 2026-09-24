@@ -184,13 +184,17 @@ add_shortcode('eintrikot_portal', function () {
         $form = is_user_logged_in()
             ? '<p>Dein Konto ist noch nicht für das Mitgliederportal freigeschaltet.</p>'
             : wp_login_form([
-                'echo' => false,
-                'redirect' => portal_url(),
-                'label_username' => 'Benutzername oder E-Mail-Adresse',
-                'label_password' => 'Passwort',
-                'label_log_in' => 'Anmelden',
-                'label_remember' => 'Angemeldet bleiben'
-            ]);
+                    'echo' => false,
+                    'redirect' => portal_url(),
+                    'label_username' => 'E-Mail-Adresse',
+                    'label_password' => 'Passwort',
+                    'label_log_in' => 'Anmelden',
+                    'label_remember' => 'Angemeldet bleiben',
+                    'value_remember' => true
+                ]) .
+                '<p class="auth-remember-hint">Mit Haken bleibst du auf diesem Gerät ' .
+                REMEMBER_DAYS_MEMBER .
+                ' Tage angemeldet. Auf fremden oder gemeinsam genutzten Geräten den Haken bitte entfernen.</p>';
         return '<div class="et-app"><header class="header">' .
             portal_brand() .
             '</header><main class="auth"><div class="auth-inner"><h1>Willkommen zurück.</h1><p>Dein Zugang zum EINTRIKOT-Mitgliederbereich.</p>' .
