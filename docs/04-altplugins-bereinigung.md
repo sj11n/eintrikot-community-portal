@@ -29,12 +29,13 @@ Zusätzlich öffentlich: `/sample-page/`, `/welcome-to-http-eintrikot-myemmel-co
    - „Passwort vergessen?" führt auf die WordPress-Seite, nicht auf `/password-reset/`.
    - Abmelden funktioniert.
 5. **Altseiten in den Papierkorb** (nicht endgültig löschen): login, register, account, user, members, password-reset, logout, sample-page, welcome-to-…; Beitrag „Hello world!".
-6. **Permalinks neu speichern.** Einstellungen → Permalinks → „Änderungen speichern" (ohne Änderung).
-7. **Eine Woche beobachten**, dann deaktivierte Plugins löschen. Vor dem Löschen von Ultimate Member Schritt 3 erneut prüfen.
+6. **Alte Vorlagenteile entfernen:** Design → Editor → Muster → Vorlagenteile: „Header" und „Footer" (die alten, in der Datenbank gespeicherten) löschen. Das Theme nutzt nur noch „Kopfzeile" und „Fußzeile". Nach dem Deaktivieren von The Events Calendar auch dessen Vorlagen „archive-events" und „single-event".
+7. **Permalinks neu speichern.** Einstellungen → Permalinks → „Änderungen speichern" (ohne Änderung).
+8. **Eine Woche beobachten**, dann deaktivierte Plugins löschen. Vor dem Löschen von Ultimate Member Schritt 3 erneut prüfen.
 
 ## Erwartetes Ergebnis
 
-Startseite vorher: 75 Anfragen, ca. 1,7 MB. Nach Bereinigung und Schrift-Subset (Branch `refactor/code-formatierung`): grob 15–20 Anfragen und unter 300 KB. Nachmessen in Chrome → Entwicklertools → Netzwerk.
+Startseite vorher: 75 Anfragen, ca. 1,7 MB. Nach Bereinigung: grob 15–20 Anfragen und unter 300 KB. Nachmessen in Chrome → Entwicklertools → Netzwerk.
 
 ## Offene Entscheidung
 

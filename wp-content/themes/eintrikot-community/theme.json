@@ -102,13 +102,13 @@
   },
   "templateParts": [
     {
-      "name": "header",
-      "title": "Header",
+      "name": "mvp-header",
+      "title": "Kopfzeile",
       "area": "header"
     },
     {
-      "name": "footer",
-      "title": "Footer",
+      "name": "mvp-footer",
+      "title": "Fußzeile",
       "area": "footer"
     }
   ],
