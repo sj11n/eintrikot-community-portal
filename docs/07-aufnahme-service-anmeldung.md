@@ -2,6 +2,12 @@
 
 Ausführliche Anleitung für Vorstand und Mitglieder: Claude-Dokument „EINTRIKOT Portal – Handbuch Aufnahme und Service“.
 
+## Mitglied werden (0.14)
+
+Der Antrag selbst läuft über den digitalen Mitgliedsantrag von WISO MeinVerein (Link unter Community-Aufbau → Beitritt). Vor dem Absprung öffnet „Jetzt Mitglied werden“ ein Hinweisfenster: neues Fenster bei MeinVerein, benötigt werden nur Name und E-Mail (Anschrift, Geburtsdatum usw. pflegt das Mitglied später in der App), IBAN-Abfrage auch bei „Rechnung“ („Überspringen“ wählen), Tipps zum versteckten Knopf auf manchen Handys (Safari statt Chrome auf dem iPhone, Computer), danach Prüfung durch den Vorstand und Zugangsdaten zur App. Die Urkunde wird bewusst nicht angekündigt. MeinVerein öffnet sich in einem neuen Tab; ohne JavaScript führt der Knopf direkt zum Antrag.
+
+Unter Community-Aufbau → Beitritt steht pro Monat, wie oft das Hinweisfenster geöffnet und wie oft „weiter zum Antrag“ gewählt wurde. Anonym, ohne Cookies; wiederholte Klicks derselben Verbindung innerhalb einer Stunde zählen einmal.
+
 ## Aufnahme
 
 1. In MeinVerein die neuen Mitglieder filtern und als Excel exportieren (am besten nur Vorname, Nachname, E-Mail, Mitgliedsnummer, Eintrittsdatum).
