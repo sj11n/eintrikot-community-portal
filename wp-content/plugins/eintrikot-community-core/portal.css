@@ -2028,3 +2028,40 @@
     margin: 0;
     padding: 0;
 }
+
+/* 0.16: Social-Media-Links im Profil */
+.et-app .social-links {
+    list-style: none;
+    display: flex;
+    gap: 10px;
+    margin: 12px 0 0;
+    padding: 0;
+}
+.et-app .social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: #fff;
+}
+.et-app .social-link:hover,
+.et-app .social-link:focus-visible {
+    border-color: #000;
+}
+.et-app .social-link img {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+.et-app .social-fallback {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 0 12px;
+    border-radius: 999px;
+}
+.et-app .social-link:has(.social-fallback) {
+    border-radius: 999px;
+}

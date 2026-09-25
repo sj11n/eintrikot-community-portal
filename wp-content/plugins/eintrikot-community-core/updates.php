@@ -25,6 +25,12 @@ function content_updates() {
                 'Wandelt in Seiten, Beiträgen, Vereinsinfos, Navigation und Vorlagenteilen alle Links und Bilder, die auf diese Website zeigen, in relative Adressen um (z. B. „/mitglied-werden/"). Dann funktionieren sie nach dem Umzug auf eine andere Domain unverändert. Links auf andere Websites und sichtbarer Text bleiben unberührt.',
             'run' => __NAMESPACE__ . '\make_internal_links_relative'
         ],
+        '0.16-datenschutz' => [
+            'title' => 'Datenschutzerklärung aktualisieren',
+            'text' =>
+                'Ersetzt den Inhalt der Seite „Datenschutz" durch die Datenschutzerklärung für www.eintrikot.de (Stand September 2026: STRATO, WISO MeinVerein, Google Workspace, EINTRIKOT-App, Minderjährige). Die bisherige Fassung bleibt als Revision erhalten.',
+            'run' => __NAMESPACE__ . '\\update_privacy_page'
+        ],
         '0.7-vision' => [
             'title' => 'Schreibweise „EINTRIKOT" in der Vision 2030',
             'text' =>
@@ -83,6 +89,26 @@ function update_join_page() {
     }
     $result = wp_update_post(wp_slash(['ID' => $page->ID, 'post_content' => $content]), true);
     return is_wp_error($result) ? $result : 'Seite „Mitglied werden" aktualisiert.';
+}
+
+function update_privacy_page() {
+    $page = get_page_by_path('datenschutz');
+    if (!$page) {
+        return new \WP_Error('missing', 'Die Seite „Datenschutz" wurde nicht gefunden.');
+    }
+    $content = pattern_markup('mvp-datenschutz');
+    if (is_wp_error($content)) {
+        return $content;
+    }
+    if (page_fingerprint($page->post_content) === page_fingerprint($content)) {
+        return 'Nichts zu ändern – die Seite entspricht bereits der neuen Fassung.';
+    }
+    // Legal text: always replaced as a whole; WordPress keeps the previous version as a revision.
+    $result = wp_update_post(wp_slash(['ID' => $page->ID, 'post_content' => $content]), true);
+    if (!is_wp_error($result) && (int) get_option('wp_page_for_privacy_policy') !== $page->ID) {
+        update_option('wp_page_for_privacy_policy', $page->ID);
+    }
+    return is_wp_error($result) ? $result : 'Datenschutzerklärung aktualisiert.';
 }
 
 function update_vision_spelling() {
