@@ -20,6 +20,9 @@ function profile_data($id) {
     return is_array($v) ? $v : [];
 }
 function visible_value($data, $key) {
+    if (minor_hides($data, $key)) {
+        return ''; // Youth rules: see consent.php.
+    }
     return ($data['visibility'][$key] ?? 'private') === 'members' ? $data[$key] ?? '' : '';
 }
 function log_change($target, $field, $before, $after, $reason) {
@@ -108,3 +111,5 @@ require_once __DIR__ . '/certificate.php';
 require_once __DIR__ . '/onboarding.php';
 
 require_once __DIR__ . '/login.php';
+
+require_once __DIR__ . '/consent.php';

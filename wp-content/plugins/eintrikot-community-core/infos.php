@@ -139,7 +139,7 @@ function calendar_items($days = 30) {
     }
     foreach (get_users(['capability' => 'eintrikot_portal', 'fields' => 'all']) as $user) {
         $data = profile_data($user->ID);
-        if (empty($data['birthday_notice']) || empty($data['birthday'])) {
+        if (empty($data['birthday_notice']) || empty($data['birthday']) || is_minor_data($data)) {
             continue;
         }
         $date = upcoming_date($data['birthday'], true, $today);

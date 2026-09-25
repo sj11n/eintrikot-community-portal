@@ -124,7 +124,7 @@ function join_dialog_markup($url) {
         ],
         [
             'Das brauchst du',
-            'Nur deinen Namen und deine E-Mail-Adresse – für Lastschrift oder Spende zusätzlich deine IBAN. Alles Weitere ergänzt du später in der EINTRIKOT-App.'
+            'Nur deinen Namen, deine E-Mail-Adresse und dein Geburtsdatum – für Lastschrift oder Spende zusätzlich deine IBAN. Alles Weitere ergänzt du später in der EINTRIKOT-App.'
         ],
         [
             'Zur IBAN',
@@ -136,7 +136,7 @@ function join_dialog_markup($url) {
         ],
         [
             'Danach',
-            'Der Vorstand prüft deinen Antrag. Anschließend bekommst du per E-Mail deine Zugangsdaten zur EINTRIKOT-App. Alles Weitere läuft dort.'
+            'Der Vorstand prüft deinen Antrag. Anschließend bekommst du per E-Mail deine Zugangsdaten zur EINTRIKOT-App. Bist du unter 18, bitten wir dich vorher noch um die E-Mail-Adresse deiner Eltern – sie stimmen kurz zu.'
         ]
     ];
     $list = '';

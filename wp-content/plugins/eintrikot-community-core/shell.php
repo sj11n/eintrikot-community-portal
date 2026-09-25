@@ -180,6 +180,10 @@ function portal_shell($content, $view) {
 }
 
 add_shortcode('eintrikot_portal', function () {
+    // Parental consent pages work without an account (see consent.php).
+    if (current_view() === 'consent') {
+        return render_consent();
+    }
     if (!member_access()) {
         $form = is_user_logged_in()
             ? '<p>Dein Konto ist noch nicht für das Mitgliederportal freigeschaltet.</p>'
