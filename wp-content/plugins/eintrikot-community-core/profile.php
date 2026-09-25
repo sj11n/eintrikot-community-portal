@@ -427,17 +427,26 @@ function render_profile($id) {
             profile_field($key, $label, $data);
         }
         if ($group === 'Über dich') {
+            $minor_locked = is_minor_data(profile_data($id)) && !manager_access();
             echo '<label class="field">Geburtsdatum<input type="date" name="birthday" min="1900-01-01" max="' .
                 esc_attr(wp_date('Y-m-d')) .
                 '" value="' .
                 esc_attr($data['birthday'] ?? '') .
                 '"' .
                 field_error_attrs('birthday') .
+                ($minor_locked ? ' readonly' : '') .
                 '>' .
                 field_error_text('birthday') .
-                '<small>Bleibt privat. Nur dein Alter kann im Mitgliederprofil erscheinen.</small></label><label class="check"><input type="checkbox" name="show_age" value="1" ' .
-                checked(!empty($data['show_age']), true, false) .
-                '> Mein Alter im Mitgliederprofil anzeigen</label>';
+                '<small>' .
+                ($minor_locked
+                    ? 'Bleibt privat. Änderungen bitte über die Vereinsverwaltung.'
+                    : 'Bleibt privat. Nur dein Alter kann im Mitgliederprofil erscheinen.') .
+                '</small></label>' .
+                (is_minor_data($data)
+                    ? '<p class="minor-note">Solange du unter 18 bist, sehen andere Mitglieder nur deinen Namen, dein Team, deine Altersklasse und deine Region. Ab deinem 18. Geburtstag entscheidest du selbst über alle Angaben.</p>'
+                    : '<label class="check"><input type="checkbox" name="show_age" value="1" ' .
+                        checked(!empty($data['show_age']), true, false) .
+                        '> Mein Alter im Mitgliederprofil anzeigen</label>');
         }
         echo '</div>';
         if ($group === 'Hockey-Lebenslauf') {
@@ -726,6 +735,11 @@ add_action('admin_post_et_profile', function () {
                 $key === 'birthday' ? 'Bitte das Geburtsdatum prüfen.' : 'Bitte deinen Namen prüfen.';
         }
         $data[$key] = profile_form_text($v, $max);
+    }
+    // Under 18 the birthday decides the youth rules; only the administration changes it.
+    if (is_minor_data($previous) && !manager_access()) {
+        $data['birthday'] = $previous['birthday'];
+        unset($errors['birthday']);
     }
     foreach (['show_age', 'birthday_notice', 'newsletter'] as $key) {
         $data[$key] = isset($_POST[$key]);

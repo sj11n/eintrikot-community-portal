@@ -201,7 +201,8 @@ function import_fields() {
         'joined' => [
             'Eintrittsdatum',
             ['eintrittsdatum', 'eintritt', 'eintrittam', 'mitgliedseit', 'beitrittsdatum', 'beitritt']
-        ]
+        ],
+        'birthday' => ['Geburtsdatum', ['geburtsdatum', 'geburtstag', 'geboren', 'geborenam', 'birthday']]
     ];
 }
 
@@ -337,7 +338,7 @@ function import_date($value) {
 }
 
 /**
- * Keeps only the five columns we need. Returns ['headers'=>[], 'map'=>[], 'rows'=>[[field=>value]]].
+ * Keeps only the six columns we need. Returns ['headers'=>[], 'map'=>[], 'rows'=>[[field=>value]]].
  *
  * @param array<int,array<int,string>> $rows
  * @param array<string,int|string> $map field => column index (or '' to detect)
@@ -400,6 +401,13 @@ function import_check($rows) {
         $row['email'] = strtolower(sanitize_email($row['email']));
         $row['number'] = preg_replace('/\D/', '', $row['number']);
         $row['joined'] = import_date($row['joined']);
+        $row['birthday'] = import_date($row['birthday'] ?? '');
+        if (
+            $row['birthday'] !== '' &&
+            ($row['birthday'] < '1900-01-01' || $row['birthday'] > wp_date('Y-m-d'))
+        ) {
+            $row['birthday'] = '';
+        }
         $row['status'] = 'new';
         $row['reason'] = '';
         if ($row['first_name'] === '' && $row['last_name'] === '') {
@@ -440,6 +448,10 @@ function create_member_account($row) {
     update_user_meta($id, 'eintrikot_member_number', $row['number']);
     update_user_meta($id, 'eintrikot_joined', $row['joined']);
     update_user_meta($id, 'eintrikot_source', 'meinverein');
+    // The birthday stays private; only the member decides whether the age is shown.
+    if (($row['birthday'] ?? '') !== '') {
+        update_user_meta($id, 'eintrikot_profile', ['birthday' => $row['birthday']]);
+    }
     log_change(
         $id,
         'account',
@@ -455,6 +467,16 @@ function send_invitation($user_id) {
     $user = get_user_by('id', $user_id);
     if (!$user || !user_can($user, 'eintrikot_portal')) {
         return new \WP_Error('invite', 'Kein Portalkonto.');
+    }
+    // Under 18: first the parents (the welcome follows after their consent).
+    if (consent_pending($user_id)) {
+        $sent =
+            consent_state($user_id) === 'parent'
+                ? send_consent_parent_mail($user_id)
+                : send_consent_kid_mail($user_id);
+        return $sent
+            ? true
+            : new \WP_Error('invite', 'E-Mail an ' . $user->user_email . ' konnte nicht verschickt werden.');
     }
     $key = get_password_reset_key($user);
     if (is_wp_error($key)) {
@@ -643,6 +665,10 @@ add_filter(
 /* ---------- Portal view: Verwaltung → Neue Mitglieder aufnehmen ---------- */
 
 function invite_state($user_id) {
+    $consent = consent_pending($user_id) ? consent_label($user_id) : null;
+    if ($consent && get_user_meta($user_id, 'eintrikot_invited_at', true)) {
+        return [$consent[0] === 'overdue' ? 'expired' : 'consent', $consent[1]];
+    }
     if (get_user_meta($user_id, 'eintrikot_activated_at', true)) {
         return [
             'active',
@@ -699,7 +725,7 @@ function render_onboarding() {
     }
 
     // Step 1: upload.
-    echo '<section class="portal-section onboarding-step"><h2><span class="step-no">1</span> Export aus MeinVerein hochladen</h2><ol class="onboarding-howto"><li>In MeinVerein die neuen Mitglieder filtern (zum Beispiel Eintritt seit der letzten Aufnahme).</li><li>Die Liste als Excel exportieren. Am besten nur die Spalten Vorname, Nachname, E-Mail, Mitgliedsnummer und Eintrittsdatum.</li><li>Die Datei hier hochladen. Alle anderen Spalten werden ignoriert und nicht gespeichert.</li></ol><form class="et-form" method="post" enctype="multipart/form-data" action="' .
+    echo '<section class="portal-section onboarding-step"><h2><span class="step-no">1</span> Export aus MeinVerein hochladen</h2><ol class="onboarding-howto"><li>In MeinVerein die neuen Mitglieder filtern (zum Beispiel Eintritt seit der letzten Aufnahme).</li><li>Die Liste als Excel exportieren. Am besten nur die Spalten Vorname, Nachname, E-Mail, Mitgliedsnummer, Eintrittsdatum und Geburtsdatum.</li><li>Die Datei hier hochladen. Alle anderen Spalten werden ignoriert und nicht gespeichert.</li></ol><form class="et-form" method="post" enctype="multipart/form-data" action="' .
         esc_url(admin_url('admin-post.php')) .
         '">';
     wp_nonce_field('et_import_upload');
@@ -748,7 +774,7 @@ function render_onboarding() {
             esc_url(admin_url('admin-post.php')) .
             '">';
         wp_nonce_field('et_import_create');
-        echo '<input type="hidden" name="action" value="et_import_create"><div class="table-scroll"><table class="import-table"><thead><tr><th scope="col"><span class="screen-reader-text">Übernehmen</span></th><th scope="col">Name</th><th scope="col">E-Mail</th><th scope="col">Nr.</th><th scope="col">Eintritt</th><th scope="col">Status</th></tr></thead><tbody>';
+        echo '<input type="hidden" name="action" value="et_import_create"><div class="table-scroll"><table class="import-table"><thead><tr><th scope="col"><span class="screen-reader-text">Übernehmen</span></th><th scope="col">Name</th><th scope="col">E-Mail</th><th scope="col">Nr.</th><th scope="col">Eintritt</th><th scope="col">Geburtsdatum</th><th scope="col">Status</th></tr></thead><tbody>';
         foreach ($rows as $i => $r) {
             $ok = $r['status'] === 'new';
             echo '<tr class="is-' .
@@ -770,6 +796,11 @@ function render_onboarding() {
                 '</td><td>' .
                 esc_html($r['joined'] ? wp_date('d.m.Y', strtotime($r['joined'] . ' 12:00')) : '–') .
                 '</td><td>' .
+                esc_html($r['birthday'] ? wp_date('d.m.Y', strtotime($r['birthday'] . ' 12:00')) : '–') .
+                (is_minor_data(['birthday' => $r['birthday']])
+                    ? ' <span class="request-status status-review">unter 18</span>'
+                    : '') .
+                '</td><td>' .
                 ($ok
                     ? '<span class="request-status status-adopted">Neu</span>'
                     : '<span class="request-status status-' .
@@ -781,7 +812,7 @@ function render_onboarding() {
         }
         echo '</tbody></table></div>';
         if ($new) {
-            echo '<fieldset class="import-choice"><legend>Was soll passieren?</legend><label class="check"><input type="radio" name="invite" value="now" checked><span>Konten anlegen und Begrüßung mit Urkunde und Zugangslink sofort senden (höchstens ' .
+            echo '<fieldset class="import-choice"><legend>Was soll passieren?</legend><label class="check"><input type="radio" name="invite" value="now" checked><span>Konten anlegen und Begrüßung mit Urkunde und Zugangslink sofort senden – bei Mitgliedern unter 18 zuerst die Bitte um Zustimmung der Eltern (höchstens ' .
                 INVITE_BATCH .
                 ' auf einmal, der Rest wird unten zum Nachsenden angeboten)</span></label><label class="check"><input type="radio" name="invite" value="later"><span>Nur Konten anlegen, Begrüßung später senden</span></label><label class="check"><input type="radio" name="invite" value="existing"><span>Bestandsmitglieder, die ihre Urkunde schon haben: Konten anlegen, später nur den Portalzugang schicken (ohne Urkunde)</span></label></fieldset><button class="button solid">Ausgewählte übernehmen</button>';
         }
@@ -828,9 +859,13 @@ function render_onboarding() {
             esc_html(member_number_label(get_user_meta($u->ID, 'eintrikot_member_number', true))) .
             '</td><td><span class="request-status status-' .
             esc_attr(
-                ['active' => 'adopted', 'invited' => 'review', 'expired' => 'rejected', 'open' => 'received'][
-                    $state
-                ]
+                [
+                    'active' => 'adopted',
+                    'invited' => 'review',
+                    'consent' => 'review',
+                    'expired' => 'rejected',
+                    'open' => 'received'
+                ][$state]
             ) .
             '">' .
             esc_html($label) .
@@ -840,6 +875,9 @@ function render_onboarding() {
                     esc_url(portal_url('certificate', ['member' => $u->ID])) .
                     '" target="_blank" rel="noopener">Urkunde</a>'
                 : '');
+        if (consent_pending($u->ID)) {
+            echo consent_manual_form($u->ID);
+        }
         if ($state !== 'active') {
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             wp_nonce_field('et_invite');
@@ -888,7 +926,7 @@ add_action('admin_post_et_import_upload', function () {
             ? array_map(fn($v) => is_scalar($v) && $v !== '' ? absint($v) : '', wp_unslash($_POST['map']))
             : [];
     $import = import_extract($rows, array_intersect_key($map, import_fields()));
-    // Only the five fields are kept, for 30 minutes, for this administrator.
+    // Only these six fields are kept, for 30 minutes, for this administrator.
     set_transient('et_import_' . get_current_user_id(), $import, 30 * MINUTE_IN_SECONDS);
     $missing = array_keys(array_filter($import['map'], fn($v) => $v === ''));
     $labels = array_map(fn($f) => import_fields()[$f][0], array_intersect($missing, ['email', 'last_name']));

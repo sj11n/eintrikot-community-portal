@@ -8,7 +8,9 @@ function directory_param($key) {
     return is_scalar($v) ? mb_substr(sanitize_text_field(wp_unslash((string) $v)), 0, 160) : '';
 }
 function shared_stations($data) {
-    return ($data['visibility']['stations'] ?? 'private') === 'members' && is_array($data['stations'] ?? null)
+    return !minor_hides($data, 'stations') &&
+        ($data['visibility']['stations'] ?? 'private') === 'members' &&
+        is_array($data['stations'] ?? null)
         ? $data['stations']
         : [];
 }
@@ -25,6 +27,9 @@ function directory_listed_by_role($user) {
     ]);
 }
 function directory_listed($user) {
+    if (!minor_listed($user->ID)) {
+        return false;
+    }
     $choice = profile_data($user->ID)['directory_listing'] ?? '';
     if ($choice === 'show' || $choice === 'hide') {
         return $choice === 'show';
@@ -264,7 +269,12 @@ function render_directory() {
     echo '</div>';
 }
 function member_age($data) {
-    if (empty($data['show_age']) || empty($data['birthday']) || !is_string($data['birthday'])) {
+    if (
+        empty($data['show_age']) ||
+        empty($data['birthday']) ||
+        !is_string($data['birthday']) ||
+        is_minor_data($data)
+    ) {
         return null;
     }
     $birth = \DateTimeImmutable::createFromFormat('!Y-m-d', $data['birthday'], wp_timezone());

@@ -9,6 +9,7 @@ Zusammenfassung der Festlegungen von Björn Emmerling (September 2026). Ergänzt
 - Produktion: WordPress auf STRATO-Shared-Hosting. Kein Node-, Vercel-, Supabase- oder Headless-System.
 - Keine Bank- oder Beitragsdaten, keine vollständige Mitgliederdatenbank, keine Zugangsdaten im Repository. Das Repository ist öffentlich lesbar.
 - Echte Mitgliederdaten und Einladungen erst auf eintrikot.de mit HTTPS.
+- Der Mitgliedsantrag läuft über den digitalen Antrag von MeinVerein (Name, E-Mail, Geburtsdatum, ggf. IBAN). Alles Weitere pflegt das Mitglied im Portal; das Portal ist der einzige Kontaktpunkt für Mitglieder.
 
 ## Marke
 
@@ -23,7 +24,7 @@ Zusammenfassung der Festlegungen von Björn Emmerling (September 2026). Ergänzt
 - Navigation: Der Verein, Engagement, News, Partner; Menschen (Vorstand/Beirat) über Der Verein. Kein öffentliches Mitgliederverzeichnis.
 - Hero-Bezeichnungen „Danas" und „Honamas" bleiben unverändert. Vision und Mission im Wortlaut des Whitepapers 2.0 (Oktober 2025).
 - Kennzahlen im Backend pflegbar, mit Stand-Datum. „Länderspiele" ist eine automatische Summe der für Mitglieder freigegebenen Angaben und erscheint erst ab 60 % Profilen mit Angabe. Spendenaufkommen nicht als Fördervolumen bezeichnen.
-- Mitglied werden: ab einem Länderspiel in einem DHB-Nationalteam, auch Jugend. Beitrag 50 € pro Jahr ab 32 Jahren, darunter beitragsfrei. Zusätzlich eine freiwillige Jahresspende (50/100/150 € oder frei), klar als Spende gekennzeichnet. Ohne hinterlegten MeinVerein-Link kein Beitritts-Button.
+- Mitglied werden: ab einem Länderspiel in einem DHB-Nationalteam, auch Jugend. Beitrag 50 € pro Jahr ab 32 Jahren; bis einschließlich 31 Jahre beitragsfrei. Zusätzlich eine freiwillige Jahresspende (50/100/150 € oder frei), klar als Spende gekennzeichnet. Ohne hinterlegten MeinVerein-Link kein Beitritts-Button.
 - News sind normale WordPress-Beiträge; Startseite zeigt die drei neuesten.
 - Kein Tracking ohne Einwilligung. Falls Statistik gewünscht: cookielose Lösung.
 
@@ -31,7 +32,7 @@ Zusammenfassung der Festlegungen von Björn Emmerling (September 2026). Ergänzt
 
 - Nur für angemeldete Mitglieder. Rollen: Mitglied, Redaktion, Vorstand, Administrator; Rechte werden serverseitig geprüft.
 - Profil: alle Angaben freiwillig, Sichtbarkeit pro Abschnitt. Geburtsdatum bleibt privat, Alter optional. Private Angaben dürfen weder über Treffer noch Filter oder Zähler sichtbar werden.
-- Unter 18: im Verzeichnis nur Name, Team, Altersklasse und Region; kein Alter, Wohnort, Kontakt oder Geburtstag. Optionaler Jugendmodus: nur Name und Team. Ab 18 automatisch Erwachsenenregeln.
+- Unter 18: Beitritt nur mit Zustimmung eines Elternteils (Einholung über das Portal, siehe docs/07). Andere Mitglieder sehen nur Name, Team, Altersklasse und Region; kein Alter, Wohnort, keine weiteren Angaben, kein Geburtstag in den Vereinsinfos. Ins Verzeichnis nur, wenn die Eltern es erlauben. Ab 18 automatisch Erwachsenenregeln. Ohne Geburtsdatum gelten die Erwachsenenregeln.
 - Kontakt: „Kontakt aufnehmen" per E-Mail über das Portal (Empfängeradresse verborgen, pro Profil abschaltbar) und freiwillig geteilte Kontaktfelder.
 - Service-Anfragen werden gespeichert und manuell bearbeitet. Bankwechsel ohne IBAN im Portal. Förderbeitrag ist bis zur Übernahme in MeinVerein nur „angefragt".
 - Benachrichtigungen an eine im Backend einstellbare Adresse; Mitglieder erhalten bei Rückmeldungen eine E-Mail. Versand nur über `wp_mail` und ein SMTP-Plugin mit STRATO-Postfach.
