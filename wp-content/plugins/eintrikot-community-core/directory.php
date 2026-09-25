@@ -70,6 +70,9 @@ function directory_projection($user) {
     $data = profile_data($user->ID);
     $shared = [];
     foreach (profile_fields() as $key => $label) {
+        if (social_field($key)) {
+            continue; // Links are not searched.
+        }
         $shared[$key] = profile_value_text($key, visible_value($data, $key));
     }
     $station_words = [];
@@ -268,6 +271,33 @@ function render_directory() {
     }
     echo '</div>';
 }
+/** Shared social profiles as a row of network logos; nothing when no link is shared. */
+function social_links($data) {
+    $items = '';
+    foreach (social_networks() as $key => [$label]) {
+        $url = visible_value($data, $key);
+        if (!is_string($url) || !str_starts_with($url, 'https://')) {
+            continue;
+        }
+        $file = 'assets/social/' . $key . '.svg';
+        $icon = is_readable(__DIR__ . '/' . $file)
+            ? '<img src="' . esc_url(plugins_url($file, __FILE__)) . '" alt="" width="24" height="24">'
+            : '<span class="social-fallback" aria-hidden="true">' . esc_html($label) . '</span>';
+        $items .=
+            '<li><a class="social-link social-' .
+            esc_attr($key) .
+            '" href="' .
+            esc_url($url) .
+            '" target="_blank" rel="noopener noreferrer nofollow" aria-label="' .
+            esc_attr($label . ' (öffnet ' . $label . ')') .
+            '" title="' .
+            esc_attr($label) .
+            '">' .
+            $icon .
+            '</a></li>';
+    }
+    return $items ? '<ul class="social-links">' . $items . '</ul>' : '';
+}
 function member_age($data) {
     if (
         empty($data['show_age']) ||
@@ -313,7 +343,7 @@ function render_member($id) {
     if ($city !== '') {
         echo ($meta ? ' · ' : '') . '<strong>' . esc_html($city) . '</strong>';
     }
-    echo '</p></div>';
+    echo '</p>' . social_links($data) . '</div>';
     if (manager_access() || $id === get_current_user_id()) {
         echo '<a class="button" href="' .
             esc_url(
@@ -326,7 +356,7 @@ function render_member($id) {
     foreach (profile_groups() as $title => $fields) {
         $values = [];
         foreach ($fields as $key => $label) {
-            if (in_array($key, ['team', 'age_class', 'phase', 'city'], true)) {
+            if (in_array($key, ['team', 'age_class', 'phase', 'city'], true) || social_field($key)) {
                 continue;
             }
             $v = profile_value_text($key, visible_value($data, $key));

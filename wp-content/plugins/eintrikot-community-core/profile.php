@@ -33,6 +33,11 @@ function profile_groups() {
             'mentoring_seek' => 'Dabei wünsche ich mir Unterstützung',
             'support' => 'Mehr dazu (optional)',
             'contribution' => 'So möchte ich mich bei EINTRIKOT einbringen'
+        ],
+        'Social Media' => [
+            'linkedin' => 'LinkedIn',
+            'facebook' => 'Facebook',
+            'instagram' => 'Instagram'
         ]
     ];
 }
@@ -88,6 +93,49 @@ function profile_value_text($key, $value) {
     }
     return is_scalar($value) ? (string) $value : '';
 }
+/** Social networks a member can link: key => [label, allowed hosts, example]. */
+function social_networks() {
+    return [
+        'linkedin' => ['LinkedIn', ['linkedin.com'], 'https://www.linkedin.com/in/dein-name'],
+        'facebook' => ['Facebook', ['facebook.com', 'fb.com'], 'https://www.facebook.com/dein.name'],
+        'instagram' => ['Instagram', ['instagram.com'], 'https://www.instagram.com/deinname']
+    ];
+}
+function social_field($key) {
+    return isset(social_networks()[$key]);
+}
+/**
+ * A profile link as https URL on the network's own domain, or '' for empty input.
+ * Instagram and Facebook also accept a plain user name ("@name").
+ * Returns false when the input is not a link to that network.
+ */
+function social_url($key, $value) {
+    $value = trim((string) $value);
+    if ($value === '') {
+        return '';
+    }
+    [, $hosts] = social_networks()[$key];
+    if (
+        in_array($key, ['instagram', 'facebook'], true) &&
+        preg_match('/^@?([A-Za-z0-9._]{1,60})$/', $value, $m)
+    ) {
+        return 'https://www.' . $hosts[0] . '/' . $m[1];
+    }
+    if (!preg_match('#^https?://#i', $value)) {
+        $value = 'https://' . $value;
+    }
+    $parts = wp_parse_url($value);
+    $host = strtolower($parts['host'] ?? '');
+    $ok = false;
+    foreach ($hosts as $allowed) {
+        $ok = $ok || $host === $allowed || str_ends_with($host, '.' . $allowed);
+    }
+    if (!$ok || empty($parts['path']) || $parts['path'] === '/') {
+        return false;
+    }
+    return esc_url_raw('https://' . $host . $parts['path'], ['https']);
+}
+
 /** Fixed choices for the DHB-Vita stations. */
 function station_options() {
     return [
@@ -123,7 +171,8 @@ function profile_group_slugs() {
         'Hockey-Lebenslauf' => 'hockey',
         'Abseits des Platzes' => 'leisure',
         'Beruf & Ausbildung' => 'career',
-        'Interessen & Mitmachen' => 'interests'
+        'Interessen & Mitmachen' => 'interests',
+        'Social Media' => 'social'
     ];
 }
 
@@ -249,10 +298,15 @@ function profile_field($key, $label, $data) {
             '" name="profile[' .
             esc_attr($key) .
             ']" type="' .
-            ($key === 'caps' ? 'number' : 'text') .
+            ($key === 'caps' ? 'number' : (social_field($key) ? 'url' : 'text')) .
             '" ' .
             ($key === 'caps' ? 'min="0" max="999999" step="1" inputmode="numeric"' : 'maxlength="200"') .
             ($key === 'job' ? ' placeholder="z. B. Ärztin, Vertriebsleiter, Lehrerin"' : '') .
+            (social_field($key)
+                ? ' inputmode="url" autocapitalize="off" spellcheck="false" placeholder="' .
+                    esc_attr(social_networks()[$key][2]) .
+                    '"'
+                : '') .
             field_error_attrs($key) .
             ' value="' .
             esc_attr($value) .
@@ -386,10 +440,12 @@ function render_profile($id) {
         esc_attr(profile_revision($id)) .
         '">';
     foreach (profile_groups() as $group => $fields) {
-        $extra = in_array($group, ['Beruf & Ausbildung', 'Interessen & Mitmachen'], true);
+        $extra = in_array($group, ['Beruf & Ausbildung', 'Interessen & Mitmachen', 'Social Media'], true);
         $state = section_visibility_state($data, $group);
         echo $extra
-            ? '<details class="form-section profile-extra"><summary>' .
+            ? '<details class="form-section profile-extra"' .
+                (array_intersect_key(profile_field_errors(), $fields) ? ' open' : '') .
+                '><summary>' .
                 esc_html($group) .
                 '<span class="visibility-badge">' .
                 ($state === 'all' ? 'sichtbar' : ($state === 'mixed' ? 'teilweise' : 'privat')) .
@@ -705,6 +761,19 @@ add_action('admin_post_et_profile', function () {
             $errors[$key] = $label . ' bitte prüfen.';
         }
         $data[$key] = profile_form_text($value, $max);
+        if (social_field($key)) {
+            $url = social_url($key, $data[$key]);
+            if ($url === false) {
+                $errors[$key] =
+                    $label .
+                    ': bitte den Link zu deinem Profil eingeben, z. B. ' .
+                    social_networks()[$key][2] .
+                    '.';
+            } else {
+                $data[$key] = $url;
+            }
+            continue;
+        }
         $choices = profile_choice_options()[$key] ?? null;
         if (
             $choices &&
