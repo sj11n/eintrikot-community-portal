@@ -1,6 +1,6 @@
 # Aufbau und Pflege
 
-Stand: Theme 0.9, Community Core 0.13 auf http://eintrikot.myemmel.com.
+Stand: Theme 0.9.1, Community Core 0.16 auf http://eintrikot.myemmel.com.
 
 ## Repository
 
@@ -24,7 +24,8 @@ Nur Theme und Plugin werden eingespielt. Alles andere bleibt im Repository.
 - **Seiten:** öffentliche Texte und Bilder. Hero und Bildplätze sind Cover- bzw. Bildblöcke; Bild über die Mediathek ersetzen, Ausschnitt über den Fokuspunkt.
 - **Beiträge:** öffentliche News. Die Startseite zeigt die drei neuesten, die News-Seite neun pro Seite.
 - **Vereinsinfos:** interne Mitteilungen im Portal. **EINTRIKOT Kalender:** Termine und Jahrestage.
-- **Community-Aufbau:** Kennzahlen (mit Stand-Datum), Beitritt (MeinVerein-Link), Aufnahme & Urkunde, Aktualisierungen (u. a. „Interne Links domainunabhängig machen" vor dem Umzug).
+- **Community-Aufbau:** Kennzahlen (mit Stand-Datum), Beitritt (MeinVerein-Link), Aufnahme & Urkunde, Aktualisierungen (u. a. „Interne Links domainunabhängig machen" vor dem Umzug, „Datenschutzerklärung aktualisieren").
+- **Datenschutz:** Der Text liegt als Vorlage `patterns/mvp-datenschutz.php`. Bei Änderungen an Diensten, Abläufen oder Speicherfristen muss er angepasst werden. Speicherfristen, die der Code umsetzt: Änderungsprotokoll und abgeschlossene Service-Anfragen 24 Monate (`retention.php`), Nachweis der Elternzustimmung bis drei Jahre nach dem 18. Geburtstag (`consent.php`). Beim Geburtsdatum protokolliert das Änderungsprotokoll nur „geändert". Die Newsletter-Einstellung ist standardmäßig aus (Einwilligung).
 
 ## Mitgliederportal
 

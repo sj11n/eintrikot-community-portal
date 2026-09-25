@@ -476,7 +476,7 @@ function render_profile($id) {
         '">Förderanfrage vorbereiten →</a></section><section class="form-section"><h2>In Verbindung bleiben</h2><label class="check"><input type="checkbox" name="birthday_notice" value="1" ' .
         checked(!empty($data['birthday_notice']), true, false) .
         '><span>Mein Geburtstag darf mit meinem Namen in den internen Vereinsinfos erscheinen. Das Geburtsjahr wird nicht angezeigt.</span></label><label class="check"><input type="checkbox" name="newsletter" value="1" ' .
-        checked($data['newsletter'] ?? true, true, false) .
+        checked(!empty($data['newsletter']), true, false) .
         '><span>EINTRIKOT-Newsletter erhalten<br><small>Du kannst diese Einstellung jederzeit ändern.</small></span></label></section>';
     if (manager_access()) {
         $listing = $data['directory_listing'] ?? '';

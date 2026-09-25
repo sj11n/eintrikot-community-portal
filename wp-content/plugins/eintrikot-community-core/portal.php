@@ -27,6 +27,11 @@ function visible_value($data, $key) {
 }
 function log_change($target, $field, $before, $after, $reason) {
     global $wpdb;
+    // Sensitive values are only noted as changed, never stored in the log.
+    if (in_array($field, ['birthday'], true)) {
+        $before = $before === null || $before === '' ? null : 'hinterlegt';
+        $after = $after === null || $after === '' ? 'entfernt' : 'geändert';
+    }
     return $wpdb->insert(
         $wpdb->prefix . 'eintrikot_audit',
         [
@@ -113,3 +118,5 @@ require_once __DIR__ . '/onboarding.php';
 require_once __DIR__ . '/login.php';
 
 require_once __DIR__ . '/consent.php';
+
+require_once __DIR__ . '/retention.php';

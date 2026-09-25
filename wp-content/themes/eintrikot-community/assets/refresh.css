@@ -208,3 +208,28 @@
         gap: 20px;
     }
 }
+
+/* Rechtstexte: ruhige Abstände zwischen Absätzen, Listen und Zwischenüberschriften */
+.entry-content .legal-content h2,
+.editor-styles-wrapper .legal-content h2 {
+    margin: 48px 0 16px;
+}
+.entry-content .legal-content h3,
+.editor-styles-wrapper .legal-content h3 {
+    margin: 28px 0 10px;
+    font-size: 20px;
+}
+.entry-content .legal-content ul,
+.editor-styles-wrapper .legal-content ul {
+    margin: 0 0 18px;
+    padding-left: 22px;
+}
+.entry-content .legal-content li + li,
+.editor-styles-wrapper .legal-content li + li {
+    margin-top: 6px;
+}
+.entry-content .legal-content a,
+.editor-styles-wrapper .legal-content a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
