@@ -398,7 +398,14 @@ function render_member($id) {
                     esc_html($row['role'] ?? '') .
                     '</strong><p>' .
                     esc_html(
-                        implode(' · ', array_filter([$row['organisation'] ?? '', $row['age_class'] ?? '']))
+                        implode(
+                            ' · ',
+                            array_filter([
+                                $row['position'] ?? '',
+                                $row['organisation'] ?? '',
+                                $row['age_class'] ?? ''
+                            ])
+                        )
                     ) .
                     '</p></div></li>';
             }

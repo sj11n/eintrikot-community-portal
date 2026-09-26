@@ -7,8 +7,9 @@ Zusammenfassung der Festlegungen von Björn Emmerling (September 2026). Ergänzt
 - MeinVerein bleibt führend für Mitgliedschaft, Beiträge, SEPA, Spenden und Verwaltung. Das Portal übernimmt nichts automatisch; Änderungen werden dort von Hand übernommen.
 - Tippspiel und bisherige Next.js-App sind getrennte Projekte und bleiben unverändert.
 - Produktion: WordPress auf STRATO-Shared-Hosting. Kein Node-, Vercel-, Supabase- oder Headless-System.
-- Keine Bank- oder Beitragsdaten, keine vollständige Mitgliederdatenbank, keine Zugangsdaten im Repository. Das Repository ist öffentlich lesbar.
+- Keine Bankdaten, keine vollständige Mitgliederdatenbank, keine Zugangsdaten im Repository. Das Repository ist öffentlich lesbar. Im Portal stehen nur die Beträge (Jahresbeitrag nach Regel, Jahresspende laut MeinVerein), sichtbar für Mitglied und Verwaltung.
 - Echte Mitgliederdaten und Einladungen erst auf eintrikot.de mit HTTPS.
+- Umstieg von NDAlumni: Bestandsmitglieder durchlaufen keinen neuen Beitritt. Sie bekommen eine Umstiegsmail mit Zugang und der Bitte, ihr Profil zu prüfen. Die Migration ist so vollständig wie möglich: Profilangaben aus NDAlumni werden privat übernommen, Newsletter nur per neuem Opt-in, Profilbilder vorerst leer. Gründungsmitglieder haben das Eintrittsdatum 23.09.2025; kein Eintritt nach dem SEPA-Mandatsdatum. Ab wann neue Importe den vollen Ablauf mit Urkunde bekommen, legt Björn fest.
 - Der Mitgliedsantrag läuft über den digitalen Antrag von MeinVerein (Name, E-Mail, Geburtsdatum, ggf. IBAN). Alles Weitere pflegt das Mitglied im Portal; das Portal ist der einzige Kontaktpunkt für Mitglieder.
 
 ## Marke

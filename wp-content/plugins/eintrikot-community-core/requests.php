@@ -554,6 +554,17 @@ add_action('admin_post_et_request_update', function () {
         exit();
     }
     delete_transient($conflict_key);
+    // An adopted donation request is now binding in MeinVerein: show the new amount in the profile.
+    if ($kind === 'funding' && $status === 'adopted' && ($old['status'] ?? '') !== 'adopted') {
+        $details = get_post_meta($id, 'et_details', true);
+        if (is_array($details) && isset($details['annual_amount_cents'])) {
+            set_member_donation(
+                (int) $row->post_author,
+                (string) (int) $details['annual_amount_cents'],
+                'Spenden-Anfrage #' . $id . ' in MeinVerein übernommen'
+            );
+        }
+    }
     wp_safe_redirect(portal_url('request', ['request' => $id, 'saved' => 1]));
     exit();
 });

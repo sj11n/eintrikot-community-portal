@@ -5,7 +5,8 @@
  *
  * Grundsätze:
  * - MeinVerein bleibt führend. Übernommen werden nur Vorname, Nachname, E-Mail,
- *   Mitgliedsnummer und Eintrittsdatum; alle anderen Spalten werden nicht gespeichert.
+ *   Mitgliedsnummer, Eintrittsdatum, Geburtsdatum und Jahresspende; alle anderen
+ *   Spalten werden nicht gespeichert.
  * - Es wird nie ein Passwort verschickt. Der Link ist einmalig und 14 Tage gültig
  *   (WordPress-Passwort-Link); das Mitglied legt sein Passwort selbst fest.
  */
@@ -17,6 +18,13 @@ if (!defined('ABSPATH')) {
 const INVITE_VALID_DAYS = 14;
 const INVITE_BATCH = 25;
 const MIN_PASSWORD_LENGTH = 10;
+/** Founding day of EINTRIKOT e. V.: nobody can have joined earlier. */
+const FOUNDING_DATE = '2025-09-23';
+/**
+ * Preselected choice in the import. 'existing' while the current members move over from
+ * NDAlumni (portal access only, no certificate); later 'now' for the full welcome.
+ */
+const IMPORT_DEFAULT = 'existing';
 
 /* ---------- Settings (WordPress admin) ---------- */
 
@@ -92,8 +100,7 @@ function onboarding_settings_page() {
     submit_button('Speichern');
     echo '</form><h2>Test</h2><form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
     wp_nonce_field('et_onboarding_test');
-    echo '<input type="hidden" name="action" value="et_onboarding_test"><p>Schickt dir das Begrüßungsschreiben mit einer Muster-Urkunde. Der Knopf darin führt zur Seite „Passwort vergessen“.</p>';
-    submit_button('Test-E-Mail an mich senden', 'secondary');
+    echo '<input type="hidden" name="action" value="et_onboarding_test"><p>Schickt dir eine Mail zur Ansicht. Der Knopf darin führt zur Seite „Passwort vergessen“.</p><p><button class="button" name="kind" value="welcome">Begrüßung neuer Mitglieder (mit Muster-Urkunde)</button> <button class="button" name="kind" value="existing">Umstiegsmail für Bestandsmitglieder</button></p>';
     echo '</form></div>';
 }
 
@@ -164,15 +171,18 @@ add_action('admin_post_et_onboarding_test', function () {
     }
     check_admin_referer('et_onboarding_test');
     $me = wp_get_current_user();
+    $existing = ($_POST['kind'] ?? '') === 'existing';
     $result = send_welcome_mail(
         $me->user_email,
         first_name($me->display_name) ?: 'Vorname',
         $me->user_email,
         '999',
         wp_lostpassword_url(),
-        certificate_ready()
+        certificate_ready() && !$existing
             ? jpeg_to_pdf(certificate_jpeg($me->display_name, '999', wp_date('Y-m-d')), 'Muster')
-            : ''
+            : '',
+        0,
+        $existing
     );
     wp_safe_redirect(
         admin_url(
@@ -202,7 +212,12 @@ function import_fields() {
             'Eintrittsdatum',
             ['eintrittsdatum', 'eintritt', 'eintrittam', 'mitgliedseit', 'beitrittsdatum', 'beitritt']
         ],
-        'birthday' => ['Geburtsdatum', ['geburtsdatum', 'geburtstag', 'geboren', 'geborenam', 'birthday']]
+        'birthday' => ['Geburtsdatum', ['geburtsdatum', 'geburtstag', 'geboren', 'geborenam', 'birthday']],
+        // Optional. In our MeinVerein setup the donation sits in "Individuelles Feld 1".
+        'donation' => [
+            'Jahresspende',
+            ['jahresspende', 'zusatzbeitrag', 'spende', 'forderbeitrag', 'individuellesfeld1']
+        ]
     ];
 }
 
@@ -338,7 +353,7 @@ function import_date($value) {
 }
 
 /**
- * Keeps only the six columns we need. Returns ['headers'=>[], 'map'=>[], 'rows'=>[[field=>value]]].
+ * Keeps only the columns we need. Returns ['headers'=>[], 'map'=>[], 'rows'=>[[field=>value]]].
  *
  * @param array<int,array<int,string>> $rows
  * @param array<string,int|string> $map field => column index (or '' to detect)
@@ -408,6 +423,10 @@ function import_check($rows) {
         ) {
             $row['birthday'] = '';
         }
+        $donation = str_replace([',', '€', ' '], ['.', '', ''], (string) ($row['donation'] ?? ''));
+        $row['donation'] = preg_match('/^\d{1,6}(?:\.\d{1,2})?$/D', $donation)
+            ? (string) (int) round((float) $donation * 100)
+            : '';
         $row['status'] = 'new';
         $row['reason'] = '';
         if ($row['first_name'] === '' && $row['last_name'] === '') {
@@ -416,6 +435,11 @@ function import_check($rows) {
             [$row['status'], $row['reason']] = ['invalid', 'E-Mail fehlt oder ist ungültig'];
         } elseif (isset($seen[$row['email']])) {
             [$row['status'], $row['reason']] = ['invalid', 'E-Mail kommt in der Datei doppelt vor'];
+        } elseif ($row['joined'] !== '' && $row['joined'] < FOUNDING_DATE) {
+            [$row['status'], $row['reason']] = [
+                'invalid',
+                'Eintritt vor der Gründung (23.09.2025) – bitte in MeinVerein korrigieren'
+            ];
         } elseif (email_exists($row['email']) || username_exists($row['email'])) {
             [$row['status'], $row['reason']] = ['exists', 'Schon im Portal'];
         } elseif ($row['number'] !== '' && isset($numbers[(string) (int) $row['number']])) {
@@ -448,6 +472,10 @@ function create_member_account($row) {
     update_user_meta($id, 'eintrikot_member_number', $row['number']);
     update_user_meta($id, 'eintrikot_joined', $row['joined']);
     update_user_meta($id, 'eintrikot_source', 'meinverein');
+    if (($row['donation'] ?? '') !== '') {
+        update_user_meta($id, 'eintrikot_donation_cents', $row['donation']);
+        update_user_meta($id, 'eintrikot_donation_updated', wp_date('Y-m-d'));
+    }
     // The birthday stays private; only the member decides whether the age is shown.
     if (($row['birthday'] ?? '') !== '') {
         update_user_meta($id, 'eintrikot_profile', ['birthday' => $row['birthday']]);
@@ -456,7 +484,11 @@ function create_member_account($row) {
         $id,
         'account',
         null,
-        ['Mitgliedsnummer' => $row['number'], 'Eintritt' => $row['joined']],
+        array_filter([
+            'Mitgliedsnummer' => $row['number'],
+            'Eintritt' => $row['joined'],
+            'Jahresspende' => ($row['donation'] ?? '') !== '' ? euro_text($row['donation']) : ''
+        ]),
         'Aufnahme aus MeinVerein'
     );
     return $id;
@@ -516,19 +548,30 @@ function send_welcome_mail($to, $first_name, $login, $number, $link, $pdf, $user
     $portal = get_permalink((int) get_option('eintrikot_portal_page')) ?: home_url('/');
     $number_label = member_number_label($number);
     $p = __NAMESPACE__ . '\mail_p';
-    $test = $user_id === 0 && !$existing;
+    $test = $user_id === 0;
     $rule = 'padding:10px 0;border-top:1px solid #e4e4e4';
     $body = mail_wrap(
         ($test
             ? mail_note(
-                '<strong>Test-E-Mail.</strong> So sieht die Begrüßung für neue Mitglieder aus. Der Knopf führt hier zur Seite „Passwort vergessen“, im echten Versand direkt zum persönlichen Link.'
+                '<strong>Test-E-Mail.</strong> So sieht ' .
+                    ($existing
+                        ? 'die Umstiegsmail für Bestandsmitglieder'
+                        : 'die Begrüßung für neue Mitglieder') .
+                    ' aus. Der Knopf führt hier zur Seite „Passwort vergessen“, im echten Versand direkt zum persönlichen Link.'
             )
             : '') .
             $p('Hallo ' . esc_html($first_name) . ',') .
             ($existing
                 ? $p(
-                    'unser neues Mitgliederportal ist da. Dort findest du ab sofort andere Mitglieder, Vereinsinfos und Termine – und dein eigenes Profil.'
-                )
+                        'EINTRIKOT zieht um: Wir verlassen NDAlumni und haben jetzt ein eigenes Mitgliederportal. Dort findest du ab sofort andere Mitglieder, Vereinsinfos und Termine – und dein Profil. Deine Mitgliedschaft läuft unverändert weiter; Beitrag und Jahresspende verwalten wir jetzt in MeinVerein.'
+                    ) .
+                    '<h2 style="margin:28px 0 12px;font-size:18px">Bitte prüfe dein Profil</h2>' .
+                    $p(
+                        'Deine Angaben aus NDAlumni haben wir übernommen: Beruf, Hockey-Stationen, Interessen und Links. Alles ist zunächst nur für dich und die Mitgliederverwaltung sichtbar. Schau bitte einmal drüber, ergänze, was fehlt, und entscheide pro Abschnitt, was andere Mitglieder sehen. Erst dann erscheinst du mit mehr als deinem Namen im Mitgliederverzeichnis.'
+                    ) .
+                    $p(
+                        'Den Newsletter bekommst du im neuen Portal nur, wenn du ihn in deinem Profil einschaltest.'
+                    )
                 : $p(
                     'willkommen bei EINTRIKOT – schön, dass du dabei bist. Im Anhang findest du deine persönliche Mitgliedsurkunde' .
                         ($number_label !== ''
@@ -536,11 +579,13 @@ function send_welcome_mail($to, $first_name, $login, $number, $link, $pdf, $user
                             : '') .
                         '.'
                 )) .
-            $p('<em>Du hast das Trikot getragen. Jetzt trägst du es weiter.</em>') .
+            ($existing ? '' : $p('<em>Du hast das Trikot getragen. Jetzt trägst du es weiter.</em>')) .
             '<h2 style="margin:28px 0 12px;font-size:18px">Dein Zugang zum Mitgliederportal</h2>' .
-            $p(
-                'Im Portal findest du andere Mitglieder, Vereinsinfos und Termine. Dein Profil pflegst du selbst – du entscheidest, was andere Mitglieder sehen.'
-            ) .
+            ($existing
+                ? $p('Lege zuerst dein Passwort fest. Danach landest du direkt in deinem Profil.')
+                : $p(
+                    'Im Portal findest du andere Mitglieder, Vereinsinfos und Termine. Dein Profil pflegst du selbst – du entscheidest, was andere Mitglieder sehen.'
+                )) .
             '<table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 20px;font-size:15px"><tr><td class="et-rule et-muted" style="' .
             $rule .
             ';color:#595959;width:40%">Benutzername</td><td class="et-rule" style="' .
@@ -654,7 +699,13 @@ add_filter(
             user_can($user, 'eintrikot_portal') &&
             !user_can($user, 'edit_posts')
         ) {
-            return (int) get_option('eintrikot_portal_page') ? portal_url() : $redirect;
+            if (!(int) get_option('eintrikot_portal_page')) {
+                return $redirect;
+            }
+            // Profiles taken over from NDAlumni: first stop is the profile, until it has been saved once.
+            return get_user_meta($user->ID, 'eintrikot_review', true) === 'pending'
+                ? portal_url('profile')
+                : portal_url();
         }
         return $redirect;
     },
@@ -725,7 +776,7 @@ function render_onboarding() {
     }
 
     // Step 1: upload.
-    echo '<section class="portal-section onboarding-step"><h2><span class="step-no">1</span> Export aus MeinVerein hochladen</h2><ol class="onboarding-howto"><li>In MeinVerein die neuen Mitglieder filtern (zum Beispiel Eintritt seit der letzten Aufnahme).</li><li>Die Liste als Excel exportieren. Am besten nur die Spalten Vorname, Nachname, E-Mail, Mitgliedsnummer, Eintrittsdatum und Geburtsdatum.</li><li>Die Datei hier hochladen. Alle anderen Spalten werden ignoriert und nicht gespeichert.</li></ol><form class="et-form" method="post" enctype="multipart/form-data" action="' .
+    echo '<section class="portal-section onboarding-step"><h2><span class="step-no">1</span> Export aus MeinVerein hochladen</h2><ol class="onboarding-howto"><li>In MeinVerein die neuen Mitglieder filtern (zum Beispiel Eintritt seit der letzten Aufnahme).</li><li>Die Liste als Excel exportieren. Am besten nur die Spalten Vorname, Nachname, E-Mail, Mitgliedsnummer, Eintrittsdatum, Geburtsdatum und Jahresspende (bei uns „Individuelles Feld 1“).</li><li>Die Datei hier hochladen. Alle anderen Spalten werden ignoriert und nicht gespeichert.</li></ol><form class="et-form" method="post" enctype="multipart/form-data" action="' .
         esc_url(admin_url('admin-post.php')) .
         '">';
     wp_nonce_field('et_import_upload');
@@ -774,7 +825,7 @@ function render_onboarding() {
             esc_url(admin_url('admin-post.php')) .
             '">';
         wp_nonce_field('et_import_create');
-        echo '<input type="hidden" name="action" value="et_import_create"><div class="table-scroll"><table class="import-table"><thead><tr><th scope="col"><span class="screen-reader-text">Übernehmen</span></th><th scope="col">Name</th><th scope="col">E-Mail</th><th scope="col">Nr.</th><th scope="col">Eintritt</th><th scope="col">Geburtsdatum</th><th scope="col">Status</th></tr></thead><tbody>';
+        echo '<input type="hidden" name="action" value="et_import_create"><div class="table-scroll"><table class="import-table"><thead><tr><th scope="col"><span class="screen-reader-text">Übernehmen</span></th><th scope="col">Name</th><th scope="col">E-Mail</th><th scope="col">Nr.</th><th scope="col">Eintritt</th><th scope="col">Geburtsdatum</th><th scope="col">Jahresspende</th><th scope="col">Status</th></tr></thead><tbody>';
         foreach ($rows as $i => $r) {
             $ok = $r['status'] === 'new';
             echo '<tr class="is-' .
@@ -801,6 +852,8 @@ function render_onboarding() {
                     ? ' <span class="request-status status-review">unter 18</span>'
                     : '') .
                 '</td><td>' .
+                esc_html(($r['donation'] ?? '') !== '' ? euro_text($r['donation']) : '–') .
+                '</td><td>' .
                 ($ok
                     ? '<span class="request-status status-adopted">Neu</span>'
                     : '<span class="request-status status-' .
@@ -812,19 +865,25 @@ function render_onboarding() {
         }
         echo '</tbody></table></div>';
         if ($new) {
-            echo '<fieldset class="import-choice"><legend>Was soll passieren?</legend><label class="check"><input type="radio" name="invite" value="now" checked><span>Konten anlegen und Begrüßung mit Urkunde und Zugangslink sofort senden – bei Mitgliedern unter 18 zuerst die Bitte um Zustimmung der Eltern (höchstens ' .
+            echo '<fieldset class="import-choice"><legend>Was soll passieren?</legend><label class="check"><input type="radio" name="invite" value="now"' .
+                checked(IMPORT_DEFAULT, 'now', false) .
+                '><span>Konten anlegen und Begrüßung mit Urkunde und Zugangslink sofort senden – bei Mitgliedern unter 18 zuerst die Bitte um Zustimmung der Eltern (höchstens ' .
                 INVITE_BATCH .
-                ' auf einmal, der Rest wird unten zum Nachsenden angeboten)</span></label><label class="check"><input type="radio" name="invite" value="later"><span>Nur Konten anlegen, Begrüßung später senden</span></label><label class="check"><input type="radio" name="invite" value="existing"><span>Bestandsmitglieder, die ihre Urkunde schon haben: Konten anlegen, später nur den Portalzugang schicken (ohne Urkunde)</span></label></fieldset><button class="button solid">Ausgewählte übernehmen</button>';
+                ' auf einmal, der Rest wird unten zum Nachsenden angeboten)</span></label><label class="check"><input type="radio" name="invite" value="later"><span>Nur Konten anlegen, Begrüßung später senden</span></label><label class="check"><input type="radio" name="invite" value="existing"' .
+                checked(IMPORT_DEFAULT, 'existing', false) .
+                '><span>Bestandsmitglieder (Umstieg von NDAlumni): Konten anlegen, später nur den Portalzugang mit der Bitte schicken, das Profil zu prüfen (ohne Urkunde)</span></label></fieldset><button class="button solid">Ausgewählte übernehmen</button>';
         }
         echo '</form></section>';
     }
+
+    render_ndalumni_step();
 
     // Step 3: status of all accounts from MeinVerein.
     $members = get_users([
         'meta_key' => 'eintrikot_member_number',
         'orderby' => 'registered',
         'order' => 'DESC',
-        'number' => 200
+        'number' => 1000
     ]);
     $open = array_filter($members, fn($u) => invite_state($u->ID)[0] === 'open');
     echo '<section class="portal-section onboarding-step"><h2><span class="step-no">3</span> Einladungen</h2>';

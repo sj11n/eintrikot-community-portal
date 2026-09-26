@@ -1,6 +1,6 @@
 # Aufbau und Pflege
 
-Stand: Theme 0.9.1, Community Core 0.16.1 auf http://eintrikot.myemmel.com.
+Stand: Theme 0.9.1, Community Core 0.17 auf http://eintrikot.myemmel.com.
 
 ## Repository
 
@@ -25,7 +25,7 @@ Nur Theme und Plugin werden eingespielt. Alles andere bleibt im Repository.
 - **Beiträge:** öffentliche News. Die Startseite zeigt die drei neuesten, die News-Seite neun pro Seite.
 - **Vereinsinfos:** interne Mitteilungen im Portal. **EINTRIKOT Kalender:** Termine und Jahrestage.
 - **Community-Aufbau:** Kennzahlen (mit Stand-Datum), Beitritt (MeinVerein-Link), Aufnahme & Urkunde, Aktualisierungen (u. a. „Interne Links domainunabhängig machen" vor dem Umzug, „Datenschutzerklärung aktualisieren").
-- **Datenschutz:** Der Text liegt als Vorlage `patterns/mvp-datenschutz.php`. Bei Änderungen an Diensten, Abläufen oder Speicherfristen muss er angepasst werden. Speicherfristen, die der Code umsetzt: Änderungsprotokoll und abgeschlossene Service-Anfragen 24 Monate (`retention.php`), Nachweis der Elternzustimmung bis drei Jahre nach dem 18. Geburtstag (`consent.php`). Beim Geburtsdatum protokolliert das Änderungsprotokoll nur „geändert". Die Newsletter-Einstellung ist standardmäßig aus (Einwilligung).
+- **Datenschutz:** Der Text liegt als Vorlage `patterns/mvp-datenschutz.php`. Bei Änderungen an Diensten, Abläufen oder Speicherfristen muss er angepasst werden. Übernahme aus NDAlumni und Jahresspende sind in 5.2 und 5.9 beschrieben. Speicherfristen, die der Code umsetzt: Änderungsprotokoll und abgeschlossene Service-Anfragen 24 Monate (`retention.php`), Nachweis der Elternzustimmung bis drei Jahre nach dem 18. Geburtstag (`consent.php`). Beim Geburtsdatum protokolliert das Änderungsprotokoll nur „geändert". Die Newsletter-Einstellung ist standardmäßig aus (Einwilligung).
 
 ## Mitgliederportal
 
@@ -33,8 +33,10 @@ Nur Theme und Plugin werden eingespielt. Alles andere bleibt im Repository.
 - Jeder Bereich hat seine CI-Farbe im Seitenkopf. Avatare ohne Foto zeigen Initialen, Rosé bei Damen, Hellblau bei Herren; neutral grau, wenn der Hockey-Abschnitt nicht geteilt ist.
 - Verzeichnis: Suche über freigegebene Felder und DHB-Stationen, Filter als Chips, „Zurück zur Suche" behält Suche und Position. Automatisch erscheinen nur Konten mit EINTRIKOT-Rolle; die Verwaltung kann pro Konto „Immer anzeigen" oder „Nicht anzeigen" wählen.
 - Profil: DHB-Vita (Rolle, Team, Altersklasse als Auswahl; Zeitraum), Länderspiele gesamt, Beruf mit Status-Auswahl, Mentoring als Ankreuzfelder („biete an“ / „suche“), Sichtbarkeit pro Abschnitt, Foto mit Zuschnitt. Scheitert das Speichern, bleiben die Eingaben 30 Minuten als Entwurf erhalten, bis sie gespeichert oder verworfen werden. Profilbilder liegen geschützt in den Benutzerdaten, nicht in der Mediathek.
-- Social Media: Links zu LinkedIn, Facebook und Instagram im Abschnitt „Social Media“ (eigener Sichtbarkeitsschalter), angezeigt im Profilkopf nur bei vorhandenem Link. Erlaubt sind nur Links auf die jeweilige Domain; bei Instagram und Facebook auch „@name“. Die Logos liegen als `assets/social/linkedin.svg`, `facebook.svg`, `instagram.svg` im Plugin (offizielle Dateien aus den Markenportalen der Netzwerke); fehlt eine Datei, steht der Name des Netzwerks.
-- Mitgliedsnummer und Eintrittsdatum: kommen aus dem Import (MeinVerein) und stehen im eigenen Profil sowie im Profil für die Verwaltung („Mitgliedsnummer 0042 · Mitglied seit …“); andere Mitglieder sehen sie nicht. Korrektur nur durch die Verwaltung im Abschnitt Verwaltung des Profils, eindeutig pro Konto, mit Eintrag im Änderungsprotokoll.
+- Social-Media-Links zu LinkedIn, Facebook und Instagram im Abschnitt „Social Media“ (eigener Sichtbarkeitsschalter), angezeigt im Profilkopf nur bei vorhandenem Link. Erlaubt sind nur Links auf die jeweilige Domain; bei Instagram und Facebook auch „@name“. Die Logos liegen als `assets/social/linkedin.svg`, `facebook.svg`, `instagram.svg` im Plugin (offizielle Dateien aus den Markenportalen der Netzwerke); fehlt eine Datei, steht der Name des Netzwerks.
+- Mitgliedschaft: Mitgliedsnummer, Eintrittsdatum, Jahresbeitrag und Jahresspende kommen aus dem Import (MeinVerein) und stehen nur im eigenen Profil und für die Verwaltung; andere Mitglieder sehen sie nicht. Korrektur durch die Verwaltung im Abschnitt Verwaltung des Profils, protokolliert (docs/07).
+- DHB-Vita: pro Station optional die Position (Vorschläge Tor, Abwehr, Mittelfeld, Sturm), durchsuchbar. Länderspiele sind Freitext; für die Kennzahl zählt die erste Zahl („185 (A-Kader)“ → 185).
+- Social Media: Name beim Netzwerk genügt („@name“ bei Instagram/Facebook, „name“ bei LinkedIn) oder ein Link.
 - Service-Anfragen mit Vorgangsnummer und Verlauf; Bearbeitung durch Vorstand und Admin (docs/07).
 - Änderungsprotokoll unter `/community-protokoll/`, nur lesbar.
 - Geschützte Seiten werden nicht zwischengespeichert (`no-store, private`) und nicht indexiert.

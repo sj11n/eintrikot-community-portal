@@ -129,8 +129,9 @@ function caps_stats() {
         }
         $stats['total']++;
         $v = visible_value(profile_data($user->ID), 'caps');
-        if (is_scalar($v) && $v !== '' && ctype_digit((string) $v)) {
-            $stats['sum'] += (int) $v;
+        $n = is_scalar($v) ? caps_number((string) $v) : null;
+        if ($n !== null) {
+            $stats['sum'] += $n;
             $stats['shared']++;
         }
     }
@@ -138,6 +139,10 @@ function caps_stats() {
     return $stats;
 }
 
+/** The number a caps entry starts with ("185 (A-Kader)" → 185, "über 25" → 25), or null. */
+function caps_number($text) {
+    return preg_match('/(\d{1,6})/', $text, $m) ? (int) $m[1] : null;
+}
 /** Public caps total, or null while too few profiles share the value. */
 function caps_public_total() {
     $stats = caps_stats();
