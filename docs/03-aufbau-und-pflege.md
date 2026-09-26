@@ -1,6 +1,6 @@
 # Aufbau und Pflege
 
-Stand: Theme 0.9.1, Community Core 0.16 auf http://eintrikot.myemmel.com.
+Stand: Theme 0.9.1, Community Core 0.16.1 auf http://eintrikot.myemmel.com.
 
 ## Repository
 
@@ -34,6 +34,7 @@ Nur Theme und Plugin werden eingespielt. Alles andere bleibt im Repository.
 - Verzeichnis: Suche über freigegebene Felder und DHB-Stationen, Filter als Chips, „Zurück zur Suche" behält Suche und Position. Automatisch erscheinen nur Konten mit EINTRIKOT-Rolle; die Verwaltung kann pro Konto „Immer anzeigen" oder „Nicht anzeigen" wählen.
 - Profil: DHB-Vita (Rolle, Team, Altersklasse als Auswahl; Zeitraum), Länderspiele gesamt, Beruf mit Status-Auswahl, Mentoring als Ankreuzfelder („biete an“ / „suche“), Sichtbarkeit pro Abschnitt, Foto mit Zuschnitt. Scheitert das Speichern, bleiben die Eingaben 30 Minuten als Entwurf erhalten, bis sie gespeichert oder verworfen werden. Profilbilder liegen geschützt in den Benutzerdaten, nicht in der Mediathek.
 - Social Media: Links zu LinkedIn, Facebook und Instagram im Abschnitt „Social Media“ (eigener Sichtbarkeitsschalter), angezeigt im Profilkopf nur bei vorhandenem Link. Erlaubt sind nur Links auf die jeweilige Domain; bei Instagram und Facebook auch „@name“. Die Logos liegen als `assets/social/linkedin.svg`, `facebook.svg`, `instagram.svg` im Plugin (offizielle Dateien aus den Markenportalen der Netzwerke); fehlt eine Datei, steht der Name des Netzwerks.
+- Mitgliedsnummer und Eintrittsdatum: kommen aus dem Import (MeinVerein) und stehen im eigenen Profil sowie im Profil für die Verwaltung („Mitgliedsnummer 0042 · Mitglied seit …“); andere Mitglieder sehen sie nicht. Korrektur nur durch die Verwaltung im Abschnitt Verwaltung des Profils, eindeutig pro Konto, mit Eintrag im Änderungsprotokoll.
 - Service-Anfragen mit Vorgangsnummer und Verlauf; Bearbeitung durch Vorstand und Admin (docs/07).
 - Änderungsprotokoll unter `/community-protokoll/`, nur lesbar.
 - Geschützte Seiten werden nicht zwischengespeichert (`no-store, private`) und nicht indexiert.
@@ -44,7 +45,7 @@ Isoliertes WordPress mit SQLite und synthetischen Testmitgliedern (Rollen Mitgli
 
 ## Offen
 
-- Urkunden-Vorlage hochladen; Anzeigename und Verzeichnis-Einstellung des eigenen Kontos.
+- Eigenes Mitgliedskonto für Björn (Nr. 1, Rolle Vorstand) neben dem technischen Admin-Konto.
 - Altplugins und Altseiten bereinigen (docs/04).
 - Umzug auf eintrikot.de mit HTTPS und SMTP (docs/06), danach Einladungen.
 - Geschützte Dokumentenablage, Newsletter, zweite Anmeldestufe für Vorstand und Admins, Datenschutzerklärung.

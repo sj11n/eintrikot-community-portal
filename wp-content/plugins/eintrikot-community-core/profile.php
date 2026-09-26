@@ -93,6 +93,21 @@ function profile_value_text($key, $value) {
     }
     return is_scalar($value) ? (string) $value : '';
 }
+/** "Mitgliedsnummer 0001 · Mitglied seit 23.09.2025" for the member and the administration. */
+function membership_line($user_id) {
+    $number = member_number_label(get_user_meta($user_id, 'eintrikot_member_number', true));
+    $joined = (string) get_user_meta($user_id, 'eintrikot_joined', true);
+    $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $joined, wp_timezone());
+    $parts = [];
+    if ($number !== '') {
+        $parts[] = 'Mitgliedsnummer <strong>' . esc_html($number) . '</strong>';
+    }
+    if ($date && $date->format('Y-m-d') === $joined) {
+        $parts[] = 'Mitglied seit ' . esc_html($date->format('d.m.Y'));
+    }
+    return $parts ? '<p class="membership-line">' . implode(' · ', $parts) . '</p>' : '';
+}
+
 /** Social networks a member can link: key => [label, allowed hosts, example]. */
 function social_networks() {
     return [
@@ -415,6 +430,11 @@ function render_profile($id) {
             '',
             $own ? 'account' : 'members'
         ) .
+        (membership_line($id) !== ''
+            ? '<div class="membership-box">' .
+                membership_line($id) .
+                '<small>Aus der Mitgliederverwaltung. Änderungen bitte über den Vorstand.</small></div>'
+            : '') .
         '<div class="visibility-intro"><p><strong>So funktioniert die Sichtbarkeit:</strong> Name und Profilbild sehen alle Mitglieder. Jeden weiteren Abschnitt teilst du mit einem Schalter – ausgeschaltet sieht ihn nur die Vereinsverwaltung. Leere Felder erscheinen nirgends. Dein Geburtsdatum bleibt immer privat.</p><a class="text-link" href="' .
         esc_url(portal_url('member', ['member' => $id])) .
         '">So sehen dich andere →</a></div>';
@@ -545,7 +565,21 @@ function render_profile($id) {
             selected($listing, 'show', false) .
             '>Immer anzeigen</option><option value="hide" ' .
             selected($listing, 'hide', false) .
-            '>Nicht anzeigen</option></select><small>Automatisch erscheinen alle Konten mit EINTRIKOT-Rolle. Technische Konten ohne diese Rolle, etwa ein reines Administrator-Konto, bleiben verborgen – außer du wählst „Immer anzeigen“.</small></label></section>';
+            '>Nicht anzeigen</option></select><small>Automatisch erscheinen alle Konten mit EINTRIKOT-Rolle. Technische Konten ohne diese Rolle, etwa ein reines Administrator-Konto, bleiben verborgen – außer du wählst „Immer anzeigen“.</small></label><div class="form-grid"><label class="field">Mitgliedsnummer<input name="member_number" inputmode="numeric" pattern="[0-9]{1,6}" maxlength="6" value="' .
+            esc_attr((string) get_user_meta($id, 'eintrikot_member_number', true)) .
+            '"' .
+            field_error_attrs('member_number') .
+            '>' .
+            field_error_text('member_number') .
+            '<small>Wie in MeinVerein. Wird für die Urkunde verwendet.</small></label><label class="field">Eintrittsdatum<input type="date" name="joined" max="' .
+            esc_attr(wp_date('Y-m-d')) .
+            '" value="' .
+            esc_attr((string) get_user_meta($id, 'eintrikot_joined', true)) .
+            '"' .
+            field_error_attrs('joined') .
+            '>' .
+            field_error_text('joined') .
+            '</label></div></section>';
     }
     if ($id !== get_current_user_id()) {
         echo '<label class="field">Grund der Änderung<textarea name="reason" required minlength="5" maxlength="500"' .
@@ -813,6 +847,29 @@ add_action('admin_post_et_profile', function () {
     foreach (['show_age', 'birthday_notice', 'newsletter'] as $key) {
         $data[$key] = isset($_POST[$key]);
     }
+    // Membership number and entry date come from MeinVerein; only the administration corrects them.
+    $membership = null;
+    if (manager_access() && isset($_POST['member_number'], $_POST['joined'])) {
+        $number = preg_replace('/\D/', '', (string) wp_unslash($_POST['member_number']));
+        $joined = sanitize_text_field(wp_unslash((string) $_POST['joined']));
+        if ($number !== '' && (strlen($number) > 6 || (int) $number < 1)) {
+            $errors['member_number'] = 'Bitte eine Mitgliedsnummer von 1 bis 999999 eingeben.';
+        } elseif ($number !== '') {
+            foreach (get_users(['meta_key' => 'eintrikot_member_number', 'fields' => 'ID']) as $other) {
+                if (
+                    (int) $other !== $id &&
+                    (int) get_user_meta($other, 'eintrikot_member_number', true) === (int) $number
+                ) {
+                    $errors['member_number'] = 'Diese Mitgliedsnummer hat schon ein anderes Konto.';
+                }
+            }
+        }
+        $d = \DateTimeImmutable::createFromFormat('!Y-m-d', $joined, wp_timezone());
+        if ($joined !== '' && (!$d || $d->format('Y-m-d') !== $joined || $joined > wp_date('Y-m-d'))) {
+            $errors['joined'] = 'Bitte das Eintrittsdatum prüfen.';
+        }
+        $membership = ['number' => $number, 'joined' => $joined];
+    }
     // Only the administration decides whether an account is listed in the directory.
     if (manager_access() && isset($_POST['directory_listing'])) {
         $data['directory_listing'] = in_array($_POST['directory_listing'], ['show', 'hide'], true)
@@ -895,6 +952,21 @@ add_action('admin_post_et_profile', function () {
         ]);
     }
     $result = persist_profile($id, $data, $avatar, $reason, $revision);
+    if (!is_wp_error($result) && $membership) {
+        foreach (['number' => 'eintrikot_member_number', 'joined' => 'eintrikot_joined'] as $key => $meta) {
+            $old = (string) get_user_meta($id, $meta, true);
+            if ($old !== $membership[$key]) {
+                update_user_meta($id, $meta, $membership[$key]);
+                log_change(
+                    $id,
+                    $meta === 'eintrikot_joined' ? 'joined' : 'member_number',
+                    $old,
+                    $membership[$key],
+                    $reason
+                );
+            }
+        }
+    }
     if (is_wp_error($result)) {
         profile_error($id, $data, $result->get_error_message(), $result->get_error_code() === 'conflict');
     }

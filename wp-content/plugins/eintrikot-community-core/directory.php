@@ -343,7 +343,10 @@ function render_member($id) {
     if ($city !== '') {
         echo ($meta ? ' · ' : '') . '<strong>' . esc_html($city) . '</strong>';
     }
-    echo '</p>' . social_links($data) . '</div>';
+    echo '</p>' .
+        ($id === get_current_user_id() || manager_access() ? membership_line($id) : '') .
+        social_links($data) .
+        '</div>';
     if (manager_access() || $id === get_current_user_id()) {
         echo '<a class="button" href="' .
             esc_url(

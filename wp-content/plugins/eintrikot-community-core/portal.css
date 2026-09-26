@@ -2065,3 +2065,22 @@
 .et-app .social-link:has(.social-fallback) {
     border-radius: 999px;
 }
+
+/* Mitgliedsnummer und Eintritt (nur für das Mitglied und die Verwaltung) */
+.et-app .membership-line {
+    margin: 8px 0 0;
+    font-size: 14px;
+}
+.et-app .membership-box {
+    background: #edf5f8;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 0 0 24px;
+}
+.et-app .membership-box .membership-line {
+    margin: 0 0 4px;
+    font-size: 16px;
+}
+.et-app .membership-box small {
+    color: #555;
+}

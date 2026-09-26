@@ -55,7 +55,10 @@ function render_audit() {
             ' · ' .
             esc_html(wp_date('d.m.Y H:i', strtotime($row->created_at . ' UTC'))) .
             '</small><h2>' .
-            esc_html(profile_fields()[$row->field] ?? $row->field) .
+            esc_html(
+                (profile_fields() + ['member_number' => 'Mitgliedsnummer', 'joined' => 'Eintrittsdatum', 'directory_listing' => 'Verzeichnis-Einstellung'])[$row->field] ??
+                    $row->field
+            ) .
             '</h2><p>Geändert von ' .
             esc_html($actor ? $actor->display_name : 'Benutzer #' . $row->actor) .
             ' · Mitglied: ' .
