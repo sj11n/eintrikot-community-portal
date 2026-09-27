@@ -226,7 +226,30 @@ function normalize_header($text) {
 }
 
 /** Rows of the first worksheet of an .xlsx file (array of arrays), or WP_Error. */
-function read_xlsx($path) {
+/** Sheet names of a workbook in order, [] if unreadable. */
+function xlsx_sheet_names($path) {
+    if (!class_exists('\ZipArchive')) {
+        return [];
+    }
+    $zip = new \ZipArchive();
+    if ($zip->open($path) !== true) {
+        return [];
+    }
+    $workbook = simplexml_load_string(
+        (string) $zip->getFromName('xl/workbook.xml'),
+        'SimpleXMLElement',
+        LIBXML_NONET
+    );
+    $zip->close();
+    $names = [];
+    foreach ($workbook ? $workbook->sheets->sheet : [] as $sheet) {
+        $names[] = (string) $sheet['name'];
+    }
+    return $names;
+}
+
+/** Rows of the first sheet, or of the sheet with this name. */
+function read_xlsx($path, $sheet_name = '') {
     if (!class_exists('\ZipArchive')) {
         return new \WP_Error(
             'import',
@@ -261,8 +284,18 @@ function read_xlsx($path) {
         'SimpleXMLElement',
         LIBXML_NONET
     );
-    if ($workbook && $rels && isset($workbook->sheets->sheet[0])) {
-        $rid = (string) $workbook->sheets->sheet[0]->attributes(
+    $pick = 0;
+    foreach ($workbook ? $workbook->sheets->sheet : [] as $i => $candidate) {
+        if ($sheet_name !== '' && (string) $candidate['name'] === $sheet_name) {
+            break;
+        }
+        $pick++;
+    }
+    if ($sheet_name === '' || !isset($workbook->sheets->sheet[$pick])) {
+        $pick = 0;
+    }
+    if ($workbook && $rels && isset($workbook->sheets->sheet[$pick])) {
+        $rid = (string) $workbook->sheets->sheet[$pick]->attributes(
             'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
         )->id;
         foreach ($rels->Relationship as $rel) {
@@ -494,11 +527,29 @@ function create_member_account($row) {
     return $id;
 }
 
+/**
+ * Invitations (welcome, switch mail, parents' consent) only on the real domain with HTTPS,
+ * so no member gets a link to the test site. The local test sets EINTRIKOT_TEST_INVITES.
+ */
+function invitations_open() {
+    if (defined('EINTRIKOT_TEST_INVITES') && EINTRIKOT_TEST_INVITES) {
+        return true;
+    }
+    $host = (string) wp_parse_url(home_url(), PHP_URL_HOST);
+    return str_starts_with(home_url(), 'https://') && preg_match('/(^|\.)eintrikot\.de$/', $host);
+}
+
 /** Sends the welcome letter with certificate and a personal set-password link. */
 function send_invitation($user_id) {
     $user = get_user_by('id', $user_id);
     if (!$user || !user_can($user, 'eintrikot_portal')) {
         return new \WP_Error('invite', 'Kein Portalkonto.');
+    }
+    if (!invitations_open()) {
+        return new \WP_Error(
+            'invite',
+            'Einladungen gehen erst nach dem Umzug auf eintrikot.de mit HTTPS raus. Es wurde nichts verschickt.'
+        );
     }
     // Under 18: first the parents (the welcome follows after their consent).
     if (consent_pending($user_id)) {
@@ -864,7 +915,13 @@ function render_onboarding() {
                 '</td></tr>';
         }
         echo '</tbody></table></div>';
-        if ($new) {
+        $nda = get_transient($key . '_nda');
+        if (is_array($nda)) {
+            echo '<p class="portal-success">Die Datei enthält auch das NDAlumni-Blatt: Profilangaben für <strong>' .
+                count($nda['people']) .
+                '</strong> Personen werden beim Übernehmen ergänzt – nur leere Felder, alles privat.</p>';
+        }
+        if ($new || is_array($nda)) {
             echo '<fieldset class="import-choice"><legend>Was soll passieren?</legend><label class="check"><input type="radio" name="invite" value="now"' .
                 checked(IMPORT_DEFAULT, 'now', false) .
                 '><span>Konten anlegen und Begrüßung mit Urkunde und Zugangslink sofort senden – bei Mitgliedern unter 18 zuerst die Bitte um Zustimmung der Eltern (höchstens ' .
@@ -887,6 +944,9 @@ function render_onboarding() {
     ]);
     $open = array_filter($members, fn($u) => invite_state($u->ID)[0] === 'open');
     echo '<section class="portal-section onboarding-step"><h2><span class="step-no">3</span> Einladungen</h2>';
+    if (!invitations_open()) {
+        echo '<p class="review-notice">Einladungen und Umstiegsmails sind gesperrt, bis das Portal auf eintrikot.de mit HTTPS läuft. Konten und Profile lassen sich schon vorbereiten.</p>';
+    }
     if (!$members) {
         echo '<p class="portal-empty">Noch keine Konten aus MeinVerein angelegt.</p></section>';
         return;
@@ -972,13 +1032,30 @@ add_action('admin_post_et_import_upload', function () {
         onboarding_notice(false, 'Bitte eine Excel- oder CSV-Datei bis 3 MB auswählen.');
     }
     $name = strtolower((string) ($file['name'] ?? ''));
+    // Migration file: one workbook with the MeinVerein sheet and the NDAlumni sheet ("Import_Roh").
+    $sheets = str_ends_with($name, '.xlsx') ? xlsx_sheet_names($file['tmp_name']) : [];
+    $nda_sheet = current(array_filter($sheets, fn($n) => preg_match('/ndalumni|import_roh/i', $n))) ?: '';
+    $mv_sheet =
+        current(array_filter($sheets, fn($n) => preg_match('/wiso|meinverein|mein verein/i', $n))) ?: '';
     $rows = str_ends_with($name, '.xlsx')
-        ? read_xlsx($file['tmp_name'])
+        ? read_xlsx($file['tmp_name'], $mv_sheet)
         : (str_ends_with($name, '.csv')
             ? read_csv($file['tmp_name'])
             : new \WP_Error('import', 'Bitte eine .xlsx- oder .csv-Datei hochladen.'));
     if (is_wp_error($rows)) {
         onboarding_notice(false, $rows->get_error_message());
+    }
+    delete_transient('et_import_' . get_current_user_id() . '_nda');
+    if ($nda_sheet !== '') {
+        $nda_rows = read_xlsx($file['tmp_name'], $nda_sheet);
+        if (!is_wp_error($nda_rows)) {
+            // Only the mapped portal values are kept (30 minutes), never the sheet itself.
+            set_transient(
+                'et_import_' . get_current_user_id() . '_nda',
+                nda_map($nda_rows),
+                30 * MINUTE_IN_SECONDS
+            );
+        }
     }
     $map =
         isset($_POST['map']) && is_array($_POST['map'])
@@ -1028,15 +1105,25 @@ add_action('admin_post_et_import_create', function () {
         if ($existing) {
             update_user_meta($id, 'eintrikot_invite_type', 'existing');
         }
-        if ($invite && $invited < INVITE_BATCH) {
+        if ($invite && $invited < INVITE_BATCH && invitations_open()) {
             $result = send_invitation($id);
             is_wp_error($result) ? ($errors[] = $result->get_error_message()) : $invited++;
         }
     }
     delete_transient('et_import_' . get_current_user_id());
+    // Profile values from the NDAlumni sheet of the same file, for new and existing accounts.
+    $nda = get_transient('et_import_' . get_current_user_id() . '_nda');
+    $profiles = 0;
+    if (is_array($nda)) {
+        $profiles = nda_apply(nda_plan($nda));
+        delete_transient('et_import_' . get_current_user_id() . '_nda');
+    }
     onboarding_notice(
         !$errors,
-        $created .
+        ($profiles
+            ? 'Profilangaben aus NDAlumni für ' . $profiles . ' Mitglieder übernommen (privat). '
+            : '') .
+            $created .
             ' ' .
             ($created === 1 ? 'Konto' : 'Konten') .
             ' angelegt, ' .
@@ -1053,10 +1140,16 @@ add_action('admin_post_et_invite', function () {
         wp_die('Keine Berechtigung.', '', ['response' => 403]);
     }
     check_admin_referer('et_invite');
+    if (!invitations_open()) {
+        onboarding_notice(
+            false,
+            'Einladungen gehen erst nach dem Umzug auf eintrikot.de mit HTTPS raus. Es wurde nichts verschickt.'
+        );
+    }
     $ids = [];
     if (($_POST['scope'] ?? '') === 'open') {
         foreach (
-            get_users(['meta_key' => 'eintrikot_member_number', 'fields' => 'ID', 'number' => 500])
+            get_users(['meta_key' => 'eintrikot_member_number', 'fields' => 'ID', 'number' => 1000])
             as $id
         ) {
             if (invite_state((int) $id)[0] === 'open') {

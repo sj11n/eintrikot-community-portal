@@ -319,47 +319,67 @@ function nda_profile($r, &$notes) {
     return $d;
 }
 
-/** Preview: which accounts get which fields. Only empty portal fields are filled. */
-function nda_plan($rows) {
+/**
+ * Portal values per person from the export, before looking at accounts:
+ * people => [emails, name, data, donation (cents or empty)], notes => counts.
+ */
+function nda_map($rows) {
     [, $records] = nda_records($rows);
-    $notes = [];
-    $plan = ['users' => [], 'unmatched' => [], 'fields' => [], 'donations' => 0];
+    $out = ['people' => [], 'notes' => []];
     foreach ($records as $r) {
-        $user = null;
+        $emails = [];
         foreach (['bevorzugteemailadresse', 'emailadresseprivat', 'emailgeschaftlich'] as $col) {
             $email = strtolower(sanitize_email($r[$col] ?? ''));
-            if ($email !== '' && ($user = get_user_by('email', $email))) {
+            if ($email !== '') {
+                $emails[] = $email;
+            }
+        }
+        $donation = str_replace(',', '.', nda_text($r['zusatzbeitrag'] ?? ''));
+        $out['people'][] = [
+            'emails' => array_values(array_unique($emails)),
+            'name' => trim(nda_text($r['vorname'] ?? '') . ' ' . nda_text($r['nachname'] ?? '')),
+            'data' => nda_profile($r, $out['notes']),
+            'donation' => preg_match('/^\d{1,6}(?:\.\d{1,2})?$/D', $donation)
+                ? (string) (int) round((float) $donation * 100)
+                : ''
+        ];
+    }
+    return $out;
+}
+
+/** Which accounts get which fields. Only empty portal fields are filled. */
+function nda_plan($mapped) {
+    $plan = ['users' => [], 'unmatched' => [], 'fields' => [], 'donations' => 0, 'donations_paid' => 0];
+    foreach ($mapped['people'] as $person) {
+        $user = null;
+        foreach ($person['emails'] as $email) {
+            if ($user = get_user_by('email', $email)) {
                 break;
             }
         }
-        $name = trim(nda_text($r['vorname'] ?? '') . ' ' . nda_text($r['nachname'] ?? ''));
         if (!$user) {
-            $plan['unmatched'][] = $name ?: '(ohne Namen)';
+            $plan['unmatched'][] = $person['name'] ?: '(ohne Namen)';
             continue;
         }
-        $data = nda_profile($r, $notes);
         $current = profile_data($user->ID);
         $fill = [];
-        foreach ($data as $key => $value) {
+        foreach ($person['data'] as $key => $value) {
             $has = $current[$key] ?? null;
             if ($has === null || $has === '' || $has === []) {
                 $fill[$key] = $value;
                 $plan['fields'][$key] = ($plan['fields'][$key] ?? 0) + 1;
             }
         }
-        $donation = str_replace(',', '.', nda_text($r['zusatzbeitrag'] ?? ''));
-        $cents = preg_match('/^\d{1,6}(?:\.\d{1,2})?$/D', $donation)
-            ? (string) (int) round((float) $donation * 100)
-            : '';
+        $cents = $person['donation'];
         if ($cents !== '' && member_donation($user->ID) === '') {
             $plan['donations']++;
-            $plan['donations_paid'] = ($plan['donations_paid'] ?? 0) + ((int) $cents > 0 ? 1 : 0);
+            $plan['donations_paid'] += (int) $cents > 0 ? 1 : 0;
         } else {
             $cents = '';
         }
         $plan['users'][$user->ID] = ['fill' => $fill, 'donation' => $cents];
     }
-    $plan['notes'] = $notes;
+    $plan['notes'] = $mapped['notes'];
     arsort($plan['fields']);
     return $plan;
 }
@@ -418,7 +438,7 @@ function nda_field_label($key) {
 /** Section in "Neue Mitglieder aufnehmen". */
 function render_ndalumni_step() {
     $plan = get_transient('et_ndalumni_' . get_current_user_id());
-    echo '<section class="portal-section onboarding-step" id="ndalumni"><h2><span class="step-no">+</span> Profile aus NDAlumni übernehmen</h2><p>Einmalig für den Umstieg: Nach dem MeinVerein-Import die Mitgliederliste aus NDAlumni (Excel oder CSV, alle Spalten) hochladen. Das Portal findet die Konten über die E-Mail-Adresse und ergänzt nur leere Felder. Alles bleibt privat, bis das Mitglied sein Profil geprüft und freigegeben hat. Bank- und Mandatsdaten, Anschrift und Telefon werden nicht gelesen.</p><form class="et-form" method="post" enctype="multipart/form-data" action="' .
+    echo '<section class="portal-section onboarding-step" id="ndalumni"><h2><span class="step-no">+</span> Profile aus NDAlumni übernehmen</h2><p>Einmalig für den Umstieg. Enthält die Import-Datei oben ein Blatt „Import_Roh“ (NDAlumni), passiert das automatisch mit. Sonst hier nach dem MeinVerein-Import die Mitgliederliste aus NDAlumni (Excel oder CSV, alle Spalten) hochladen. Das Portal findet die Konten über die E-Mail-Adresse und ergänzt nur leere Felder. Alles bleibt privat, bis das Mitglied sein Profil geprüft und freigegeben hat. Bank- und Mandatsdaten, Anschrift und Telefon werden nicht gelesen.</p><form class="et-form" method="post" enctype="multipart/form-data" action="' .
         esc_url(admin_url('admin-post.php')) .
         '">';
     wp_nonce_field('et_ndalumni_upload');
@@ -491,7 +511,7 @@ add_action('admin_post_et_ndalumni_upload', function () {
         );
     }
     // Only the planned portal values are kept, never the uploaded file.
-    set_transient('et_ndalumni_' . get_current_user_id(), nda_plan($rows), 30 * MINUTE_IN_SECONDS);
+    set_transient('et_ndalumni_' . get_current_user_id(), nda_plan(nda_map($rows)), 30 * MINUTE_IN_SECONDS);
     wp_safe_redirect(portal_url('onboarding') . '#ndalumni');
     exit();
 });
