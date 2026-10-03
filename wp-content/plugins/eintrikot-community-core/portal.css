@@ -2131,3 +2131,32 @@
     font-size: 13px;
     color: #595959;
 }
+
+/* 0.17: LinkedIn-Logo im Profil und in der Mitgliederliste */
+.et-app a.et-member strong {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.et-app a.et-member .member-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.et-app .member-linkedin {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+}
+.et-app .social-link.social-linkedin {
+    gap: 8px;
+    padding: 0 16px 0 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 650;
+}
+.et-app .social-link .social-name {
+    line-height: 1;
+}

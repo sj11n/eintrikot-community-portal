@@ -235,8 +235,16 @@ function render_directory() {
             esc_url(portal_url('member', array_filter(['member' => $u->ID, 'back' => rawurlencode($back)]))) .
             '">' .
             member_avatar($u->ID, $u->display_name) .
-            '<span><strong>' .
+            '<span><strong><span class="member-name">' .
             esc_html($u->display_name) .
+            '</span>' .
+            // Small LinkedIn mark: this member shares a LinkedIn profile (the link itself is on the profile).
+            (is_readable(__DIR__ . '/assets/social/linkedin.svg') &&
+            str_starts_with((string) visible_value(profile_data($u->ID), 'linkedin'), 'https://')
+                ? '<img class="member-linkedin" src="' .
+                    esc_url(plugins_url('assets/social/linkedin.svg', __FILE__)) .
+                    '" alt="(auf LinkedIn)" title="Auf LinkedIn" width="16" height="16">'
+                : '') .
             '</strong>' .
             ($line !== '' ? '<small>' . $line . '</small>' : '<small>Noch keine Angaben geteilt</small>') .
             '</span><span class="member-arrow" aria-hidden="true">→</span></a>';
@@ -283,6 +291,10 @@ function social_links($data) {
         $icon = is_readable(__DIR__ . '/' . $file)
             ? '<img src="' . esc_url(plugins_url($file, __FILE__)) . '" alt="" width="24" height="24">'
             : '<span class="social-fallback" aria-hidden="true">' . esc_html($label) . '</span>';
+        // LinkedIn matters most in our network: logo with its name, the others as logo only.
+        if ($key === 'linkedin' && is_readable(__DIR__ . '/' . $file)) {
+            $icon .= '<span class="social-name">LinkedIn</span>';
+        }
         $items .=
             '<li><a class="social-link social-' .
             esc_attr($key) .
