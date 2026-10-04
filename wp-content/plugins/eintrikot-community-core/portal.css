@@ -2065,3 +2065,98 @@
 .et-app .social-link:has(.social-fallback) {
     border-radius: 999px;
 }
+
+/* Mitgliedsnummer und Eintritt (nur für das Mitglied und die Verwaltung) */
+.et-app .membership-line {
+    margin: 8px 0 0;
+    font-size: 14px;
+}
+.et-app .membership-box {
+    background: #edf5f8;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 0 0 24px;
+}
+.et-app .membership-box .membership-line {
+    margin: 0 0 4px;
+    font-size: 16px;
+}
+.et-app .membership-box small {
+    color: #555;
+}
+
+/* 0.17: Mitgliedschaft mit Beitrag und Jahresspende */
+.et-app .membership-facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 18px;
+    margin: 12px 0;
+    font-size: 14px;
+}
+.et-app .membership-facts dt {
+    color: #595959;
+}
+.et-app .membership-facts dd {
+    margin: 0;
+}
+.et-app .membership-facts .text-link {
+    margin-left: 10px;
+    padding: 0;
+    font-size: 13px;
+}
+.et-app .membership-box small a {
+    text-decoration: underline;
+}
+@media (max-width: 520px) {
+    .et-app .membership-facts {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+    .et-app .membership-facts dd {
+        margin-bottom: 8px;
+    }
+}
+.et-app .review-notice {
+    background: #fff5d9;
+    border-left: 4px solid #ffcc4e;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 0 0 24px;
+}
+.et-app .review-notice p {
+    margin: 0;
+    font-size: 14px;
+}
+.et-app .portal-hint {
+    font-size: 13px;
+    color: #595959;
+}
+
+/* 0.17: LinkedIn-Logo im Profil und in der Mitgliederliste */
+.et-app a.et-member strong {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.et-app a.et-member .member-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.et-app .member-linkedin {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+}
+.et-app .social-link.social-linkedin {
+    gap: 8px;
+    padding: 0 16px 0 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 650;
+}
+.et-app .social-link .social-name {
+    line-height: 1;
+}

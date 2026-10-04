@@ -124,6 +124,10 @@ function render_directory() {
     }
     foreach ($keys as $key => $label) {
         $filters[$key] = directory_param($key);
+        if ($key === 'phase') {
+            // Saved links from before 0.17.
+            $filters[$key] = ['Aktuell' => 'Aktiv', 'Ehemalig' => 'Alumni'][$filters[$key]] ?? $filters[$key];
+        }
     }
     $matches = array_values(
         array_filter($rows, function ($row) use ($q, $filters) {
@@ -235,8 +239,16 @@ function render_directory() {
             esc_url(portal_url('member', array_filter(['member' => $u->ID, 'back' => rawurlencode($back)]))) .
             '">' .
             member_avatar($u->ID, $u->display_name) .
-            '<span><strong>' .
+            '<span><strong><span class="member-name">' .
             esc_html($u->display_name) .
+            '</span>' .
+            // Small LinkedIn mark: this member shares a LinkedIn profile (the link itself is on the profile).
+            (social_logo('linkedin') !== '' &&
+            str_starts_with((string) visible_value(profile_data($u->ID), 'linkedin'), 'https://')
+                ? '<img class="member-linkedin" src="' .
+                    esc_url(plugins_url(social_logo('linkedin'), __FILE__)) .
+                    '" alt="(auf LinkedIn)" title="Auf LinkedIn" width="16" height="16">'
+                : '') .
             '</strong>' .
             ($line !== '' ? '<small>' . $line . '</small>' : '<small>Noch keine Angaben geteilt</small>') .
             '</span><span class="member-arrow" aria-hidden="true">→</span></a>';
@@ -271,6 +283,16 @@ function render_directory() {
     }
     echo '</div>';
 }
+/** Plugin-relative path of a network logo (SVG, else PNG; 'mono/' for the one-colour set), or ''. */
+function social_logo($key, $set = '') {
+    foreach (['svg', 'png'] as $ext) {
+        $file = 'assets/social/' . $set . $key . '.' . $ext;
+        if (is_readable(__DIR__ . '/' . $file)) {
+            return $file;
+        }
+    }
+    return '';
+}
 /** Shared social profiles as a row of network logos; nothing when no link is shared. */
 function social_links($data) {
     $items = '';
@@ -279,10 +301,15 @@ function social_links($data) {
         if (!is_string($url) || !str_starts_with($url, 'https://')) {
             continue;
         }
-        $file = 'assets/social/' . $key . '.svg';
-        $icon = is_readable(__DIR__ . '/' . $file)
-            ? '<img src="' . esc_url(plugins_url($file, __FILE__)) . '" alt="" width="24" height="24">'
-            : '<span class="social-fallback" aria-hidden="true">' . esc_html($label) . '</span>';
+        $file = social_logo($key);
+        $icon =
+            $file !== ''
+                ? '<img src="' . esc_url(plugins_url($file, __FILE__)) . '" alt="" width="24" height="24">'
+                : '<span class="social-fallback" aria-hidden="true">' . esc_html($label) . '</span>';
+        // LinkedIn matters most in our network: logo with its name, the others as logo only.
+        if ($key === 'linkedin' && $file !== '') {
+            $icon .= '<span class="social-name">LinkedIn</span>';
+        }
         $items .=
             '<li><a class="social-link social-' .
             esc_attr($key) .
@@ -343,7 +370,10 @@ function render_member($id) {
     if ($city !== '') {
         echo ($meta ? ' · ' : '') . '<strong>' . esc_html($city) . '</strong>';
     }
-    echo '</p>' . social_links($data) . '</div>';
+    echo '</p>' .
+        ($id === get_current_user_id() || manager_access() ? membership_line($id) : '') .
+        social_links($data) .
+        '</div>';
     if (manager_access() || $id === get_current_user_id()) {
         echo '<a class="button" href="' .
             esc_url(
@@ -395,7 +425,14 @@ function render_member($id) {
                     esc_html($row['role'] ?? '') .
                     '</strong><p>' .
                     esc_html(
-                        implode(' · ', array_filter([$row['organisation'] ?? '', $row['age_class'] ?? '']))
+                        implode(
+                            ' · ',
+                            array_filter([
+                                $row['position'] ?? '',
+                                $row['organisation'] ?? '',
+                                $row['age_class'] ?? ''
+                            ])
+                        )
                     ) .
                     '</p></div></li>';
             }

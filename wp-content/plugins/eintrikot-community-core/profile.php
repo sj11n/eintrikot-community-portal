@@ -51,7 +51,7 @@ function long_profile_field($key) {
 function profile_choice_options() {
     return [
         'team' => ['Damen', 'Herren'],
-        'phase' => ['Aktuell', 'Ehemalig'],
+        'phase' => ['Aktiv', 'Alumni'],
         'age_class' => ['U16', 'U18', 'U21', 'A-Nationalteam', 'Masters'],
         'employment' => [
             'Schule',
@@ -93,12 +93,103 @@ function profile_value_text($key, $value) {
     }
     return is_scalar($value) ? (string) $value : '';
 }
+/** "Mitgliedsnummer 0001 · Mitglied seit 23.09.2025" for the member and the administration. */
+function membership_line($user_id) {
+    $number = member_number_label(get_user_meta($user_id, 'eintrikot_member_number', true));
+    $joined = (string) get_user_meta($user_id, 'eintrikot_joined', true);
+    $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $joined, wp_timezone());
+    $parts = [];
+    if ($number !== '') {
+        $parts[] = 'Mitgliedsnummer <strong>' . esc_html($number) . '</strong>';
+    }
+    if ($date && $date->format('Y-m-d') === $joined) {
+        $parts[] = 'Mitglied seit ' . esc_html($date->format('d.m.Y'));
+    }
+    return $parts ? '<p class="membership-line">' . implode(' · ', $parts) . '</p>' : '';
+}
+
+/** Amount in cents as "50 €" or "12,50 €". */
+function euro_text($cents) {
+    $cents = (int) $cents;
+    return number_format($cents / 100, $cents % 100 ? 2 : 0, ',', '.') . ' €';
+}
+/** Annual fee by the rule of docs/02: 50 € from 32, free up to and including 31. */
+function membership_fee_text($user_id) {
+    $years = member_years(profile_data($user_id));
+    if ($years === null) {
+        return '50 € pro Jahr (bis einschließlich 31 Jahre beitragsfrei)';
+    }
+    return $years >= 32 ? '50 € pro Jahr' : 'beitragsfrei (bis einschließlich 31 Jahre)';
+}
+/** Voluntary annual donation as stored from MeinVerein: cents as string, '' when unknown. */
+function member_donation($user_id) {
+    $v = (string) get_user_meta($user_id, 'eintrikot_donation_cents', true);
+    return ctype_digit($v) ? $v : '';
+}
+/** Sets the donation (cents or '') and notes it in the change log. */
+function set_member_donation($user_id, $cents, $reason) {
+    $old = member_donation($user_id);
+    $cents = $cents === '' ? '' : (string) (int) $cents;
+    if ($old === $cents) {
+        return;
+    }
+    $cents === ''
+        ? delete_user_meta($user_id, 'eintrikot_donation_cents')
+        : update_user_meta($user_id, 'eintrikot_donation_cents', $cents);
+    update_user_meta($user_id, 'eintrikot_donation_updated', wp_date('Y-m-d'));
+    log_change(
+        $user_id,
+        'donation',
+        $old === '' ? null : euro_text($old),
+        $cents === '' ? null : euro_text($cents),
+        $reason
+    );
+}
+/** Membership details for the member and the administration, with links into the service requests. */
+function membership_box($user_id, $own) {
+    $donation = member_donation($user_id);
+    $updated = (string) get_user_meta($user_id, 'eintrikot_donation_updated', true);
+    $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $updated, wp_timezone());
+    $rows =
+        '<dt>Jahresbeitrag</dt><dd>' .
+        esc_html(membership_fee_text($user_id)) .
+        '</dd><dt>Freiwillige Jahresspende</dt><dd>' .
+        esc_html(
+            $donation === ''
+                ? 'nicht hinterlegt'
+                : ((int) $donation > 0
+                    ? euro_text($donation) . ' pro Jahr'
+                    : 'keine')
+        ) .
+        ($own
+            ? ' <a class="text-link" href="' .
+                esc_url(portal_url('service', ['service' => 'funding'])) .
+                '">' .
+                ((int) $donation > 0 ? 'Jahresspende ändern' : 'Jahresspende anfragen') .
+                '</a>'
+            : '') .
+        '</dd>';
+    return '<div class="membership-box">' .
+        membership_line($user_id) .
+        '<dl class="membership-facts">' .
+        $rows .
+        '</dl><small>Aus der Mitgliederverwaltung (MeinVerein)' .
+        ($date && $donation !== '' ? ', Stand ' . esc_html($date->format('d.m.Y')) : '') .
+        '. ' .
+        ($own
+            ? 'Änderungen stößt du über den Service an: <a href="' .
+                esc_url(portal_url('service', ['service' => 'bank'])) .
+                '">Bankverbindung ändern</a>.'
+            : 'Korrekturen im Abschnitt Verwaltung.') .
+        '</small></div>';
+}
+
 /** Social networks a member can link: key => [label, allowed hosts, example]. */
 function social_networks() {
     return [
-        'linkedin' => ['LinkedIn', ['linkedin.com'], 'https://www.linkedin.com/in/dein-name'],
-        'facebook' => ['Facebook', ['facebook.com', 'fb.com'], 'https://www.facebook.com/dein.name'],
-        'instagram' => ['Instagram', ['instagram.com'], 'https://www.instagram.com/deinname']
+        'linkedin' => ['LinkedIn', ['linkedin.com'], 'dein-name oder linkedin.com/in/dein-name'],
+        'facebook' => ['Facebook', ['facebook.com', 'fb.com'], '@dein.name oder facebook.com/dein.name'],
+        'instagram' => ['Instagram', ['instagram.com'], '@deinname oder instagram.com/deinname']
     ];
 }
 function social_field($key) {
@@ -106,7 +197,8 @@ function social_field($key) {
 }
 /**
  * A profile link as https URL on the network's own domain, or '' for empty input.
- * Instagram and Facebook also accept a plain user name ("@name").
+ * A plain user name also works: "@name" for Instagram and Facebook, the profile name
+ * (as in linkedin.com/in/name) for LinkedIn.
  * Returns false when the input is not a link to that network.
  */
 function social_url($key, $value) {
@@ -120,6 +212,9 @@ function social_url($key, $value) {
         preg_match('/^@?([A-Za-z0-9._]{1,60})$/', $value, $m)
     ) {
         return 'https://www.' . $hosts[0] . '/' . $m[1];
+    }
+    if ($key === 'linkedin' && preg_match('#^@?(?:in/)?([A-Za-z0-9\-_%]{3,100})/?$#', $value, $m)) {
+        return 'https://www.linkedin.com/in/' . $m[1];
     }
     if (!preg_match('#^https?://#i', $value)) {
         $value = 'https://' . $value;
@@ -298,9 +393,10 @@ function profile_field($key, $label, $data) {
             '" name="profile[' .
             esc_attr($key) .
             ']" type="' .
-            ($key === 'caps' ? 'number' : (social_field($key) ? 'url' : 'text')) .
-            '" ' .
-            ($key === 'caps' ? 'min="0" max="999999" step="1" inputmode="numeric"' : 'maxlength="200"') .
+            'text" ' .
+            ($key === 'caps'
+                ? 'maxlength="60" placeholder="z. B. 185 oder 185 A-Kader, 40 Halle"'
+                : 'maxlength="200"') .
             ($key === 'job' ? ' placeholder="z. B. Ärztin, Vertriebsleiter, Lehrerin"' : '') .
             (social_field($key)
                 ? ' inputmode="url" autocapitalize="off" spellcheck="false" placeholder="' .
@@ -347,6 +443,7 @@ function station_choice($key, $value) {
 function station_fields($index, $row) {
     $labels = [
         'role' => 'Rolle',
+        'position' => 'Position (optional)',
         'organisation' => 'Team',
         'age_class' => 'Altersklasse',
         'from' => 'Von',
@@ -368,6 +465,12 @@ function station_fields($index, $row) {
                 echo '<option ' . selected($value, $choice, false) . '>' . esc_html($choice) . '</option>';
             }
             echo '</select>';
+        } elseif ($key === 'position') {
+            echo '<input name="' .
+                esc_attr($name) .
+                '" type="text" maxlength="60" list="et-positions" placeholder="z. B. Sturm, Tor" value="' .
+                esc_attr($value) .
+                '">';
         } else {
             echo '<input name="' .
                 esc_attr($name) .
@@ -415,6 +518,10 @@ function render_profile($id) {
             '',
             $own ? 'account' : 'members'
         ) .
+        membership_box($id, $own) .
+        ($own && get_user_meta($id, 'eintrikot_review', true) === 'pending'
+            ? '<div class="portal-notice review-notice" role="status"><p><strong>Bitte prüfe dein Profil.</strong> Deine Angaben aus NDAlumni haben wir übernommen. Noch sieht sie nur die Mitgliederverwaltung. Schau sie einmal durch, ergänze, was fehlt, und schalte pro Abschnitt frei, was andere Mitglieder sehen sollen. Mit dem Speichern ist die Prüfung erledigt.</p></div>'
+            : '') .
         '<div class="visibility-intro"><p><strong>So funktioniert die Sichtbarkeit:</strong> Name und Profilbild sehen alle Mitglieder. Jeden weiteren Abschnitt teilst du mit einem Schalter – ausgeschaltet sieht ihn nur die Vereinsverwaltung. Leere Felder erscheinen nirgends. Dein Geburtsdatum bleibt immer privat.</p><a class="text-link" href="' .
         esc_url(portal_url('member', ['member' => $id])) .
         '">So sehen dich andere →</a></div>';
@@ -506,7 +613,7 @@ function render_profile($id) {
         }
         echo '</div>';
         if ($group === 'Hockey-Lebenslauf') {
-            echo '<h3>DHB-Vita</h3><p>Deine Rollen und Stationen im Nationalteam, zum Beispiel „Spieler/in · Damen · U21 · 2008–2010“. Bei einer laufenden Station bleibt „Bis“ leer.</p><div id="stations">';
+            echo '<h3>DHB-Vita</h3><p>Deine Rollen und Stationen im Nationalteam, zum Beispiel „Spieler/in · Sturm · Damen · U21 · 2008–2010“. Bei einer laufenden Station bleibt „Bis“ leer.</p><div id="stations">';
             foreach ($data['stations'] ?? [[]] as $i => $row) {
                 station_fields($i, $row);
             }
@@ -514,7 +621,7 @@ function render_profile($id) {
                 field_error_text('stations') .
                 '<button type="button" class="button" id="add-station">+ Station hinzufügen</button><template id="station-template">';
             station_fields('__INDEX__', []);
-            echo '</template>';
+            echo '</template><datalist id="et-positions"><option value="Tor"><option value="Abwehr"><option value="Mittelfeld"><option value="Sturm"></datalist>';
             if (!empty($data['vita'])) {
                 echo '<details><summary>Bisheriger Hockey-Lebenslauf</summary><p>' .
                     nl2br(esc_html($data['vita'])) .
@@ -545,7 +652,36 @@ function render_profile($id) {
             selected($listing, 'show', false) .
             '>Immer anzeigen</option><option value="hide" ' .
             selected($listing, 'hide', false) .
-            '>Nicht anzeigen</option></select><small>Automatisch erscheinen alle Konten mit EINTRIKOT-Rolle. Technische Konten ohne diese Rolle, etwa ein reines Administrator-Konto, bleiben verborgen – außer du wählst „Immer anzeigen“.</small></label></section>';
+            '>Nicht anzeigen</option></select><small>Automatisch erscheinen alle Konten mit EINTRIKOT-Rolle. Technische Konten ohne diese Rolle, etwa ein reines Administrator-Konto, bleiben verborgen – außer du wählst „Immer anzeigen“.</small></label><div class="form-grid"><label class="field">Mitgliedsnummer<input name="member_number" inputmode="numeric" pattern="[0-9]{1,6}" maxlength="6" value="' .
+            esc_attr((string) get_user_meta($id, 'eintrikot_member_number', true)) .
+            '"' .
+            field_error_attrs('member_number') .
+            '>' .
+            field_error_text('member_number') .
+            '<small>Wie in MeinVerein. Wird für die Urkunde verwendet.</small></label><label class="field">Eintrittsdatum<input type="date" name="joined" max="' .
+            esc_attr(wp_date('Y-m-d')) .
+            '" value="' .
+            esc_attr((string) get_user_meta($id, 'eintrikot_joined', true)) .
+            '"' .
+            field_error_attrs('joined') .
+            '>' .
+            field_error_text('joined') .
+            '</label><label class="field">Freiwillige Jahresspende in Euro<input name="donation" inputmode="decimal" maxlength="9" placeholder="leer = nicht hinterlegt, 0 = keine" value="' .
+            esc_attr(
+                member_donation($id) === ''
+                    ? ''
+                    : number_format(
+                        (int) member_donation($id) / 100,
+                        (int) member_donation($id) % 100 ? 2 : 0,
+                        ',',
+                        ''
+                    )
+            ) .
+            '"' .
+            field_error_attrs('donation') .
+            '>' .
+            field_error_text('donation') .
+            '<small>Wie in MeinVerein. Wird bei einer übernommenen Spenden-Anfrage automatisch aktualisiert.</small></label></div></section>';
     }
     if ($id !== get_current_user_id()) {
         echo '<label class="field">Grund der Änderung<textarea name="reason" required minlength="5" maxlength="500"' .
@@ -587,7 +723,7 @@ function validate_stations($rows, $legacy = []) {
             return new \WP_Error('stations', 'Eine DHB-Station ist ungültig.');
         }
         $clean = [];
-        foreach (['role', 'organisation', 'age_class', 'from', 'to'] as $key) {
+        foreach (['role', 'position', 'organisation', 'age_class', 'from', 'to'] as $key) {
             $value = $row[$key] ?? '';
             if (!is_scalar($value) || mb_strlen((string) $value) > 160) {
                 return new \WP_Error('stations', 'Bitte die Angaben der DHB-Stationen prüfen.');
@@ -596,6 +732,9 @@ function validate_stations($rows, $legacy = []) {
         }
         if (!array_filter($clean)) {
             continue;
+        }
+        if ($clean['position'] === '') {
+            unset($clean['position']); // Optional; older stations have no position.
         }
         if (!$clean['role'] || !$clean['organisation']) {
             return new \WP_Error('stations', 'Bitte bei jeder DHB-Station Rolle und Team angeben.');
@@ -766,9 +905,9 @@ add_action('admin_post_et_profile', function () {
             if ($url === false) {
                 $errors[$key] =
                     $label .
-                    ': bitte den Link zu deinem Profil eingeben, z. B. ' .
+                    ': bitte deinen Namen dort oder den Link zu deinem Profil eingeben (' .
                     social_networks()[$key][2] .
-                    '.';
+                    ').';
             } else {
                 $data[$key] = $url;
             }
@@ -813,6 +952,40 @@ add_action('admin_post_et_profile', function () {
     foreach (['show_age', 'birthday_notice', 'newsletter'] as $key) {
         $data[$key] = isset($_POST[$key]);
     }
+    // Membership number and entry date come from MeinVerein; only the administration corrects them.
+    $membership = null;
+    if (manager_access() && isset($_POST['member_number'], $_POST['joined'])) {
+        $number = preg_replace('/\D/', '', (string) wp_unslash($_POST['member_number']));
+        $joined = sanitize_text_field(wp_unslash((string) $_POST['joined']));
+        if ($number !== '' && (strlen($number) > 6 || (int) $number < 1)) {
+            $errors['member_number'] = 'Bitte eine Mitgliedsnummer von 1 bis 999999 eingeben.';
+        } elseif ($number !== '') {
+            foreach (get_users(['meta_key' => 'eintrikot_member_number', 'fields' => 'ID']) as $other) {
+                if (
+                    (int) $other !== $id &&
+                    (int) get_user_meta($other, 'eintrikot_member_number', true) === (int) $number
+                ) {
+                    $errors['member_number'] = 'Diese Mitgliedsnummer hat schon ein anderes Konto.';
+                }
+            }
+        }
+        $d = \DateTimeImmutable::createFromFormat('!Y-m-d', $joined, wp_timezone());
+        if ($joined !== '' && (!$d || $d->format('Y-m-d') !== $joined || $joined > wp_date('Y-m-d'))) {
+            $errors['joined'] = 'Bitte das Eintrittsdatum prüfen.';
+        }
+        $donation = str_replace(',', '.', trim((string) wp_unslash($_POST['donation'] ?? '')));
+        if (
+            $donation !== '' &&
+            (!preg_match('/^\d{1,6}(?:\.\d{1,2})?$/D', $donation) || (float) $donation > 100000)
+        ) {
+            $errors['donation'] = 'Bitte einen Betrag in Euro eingeben, z. B. 100.';
+        }
+        $membership = [
+            'number' => $number,
+            'joined' => $joined,
+            'donation' => $donation === '' ? '' : (string) (int) round((float) $donation * 100)
+        ];
+    }
     // Only the administration decides whether an account is listed in the directory.
     if (manager_access() && isset($_POST['directory_listing'])) {
         $data['directory_listing'] = in_array($_POST['directory_listing'], ['show', 'hide'], true)
@@ -827,7 +1000,7 @@ add_action('admin_post_et_profile', function () {
     if (is_array($submitted)) {
         foreach (array_slice($submitted, 0, 30) as $row) {
             $safe = [];
-            foreach (['role', 'organisation', 'age_class', 'from', 'to'] as $key) {
+            foreach (['role', 'position', 'organisation', 'age_class', 'from', 'to'] as $key) {
                 $safe[$key] = profile_form_text(is_array($row) ? $row[$key] ?? '' : '', 160);
             }
             $data['stations'][] = $safe;
@@ -836,8 +1009,8 @@ add_action('admin_post_et_profile', function () {
     if (!$data['display_name']) {
         $errors['display_name'] = 'Bitte deinen Namen angeben.';
     }
-    if ($data['caps'] !== '' && (!ctype_digit($data['caps']) || strlen($data['caps']) > 6)) {
-        $errors['caps'] = 'Bitte eine ganze Zahl ab 0 eingeben.';
+    if (mb_strlen($data['caps']) > 60) {
+        $errors['caps'] = 'Bitte höchstens 60 Zeichen eingeben.';
     }
     if ($data['birthday'] !== '') {
         $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $data['birthday'], wp_timezone());
@@ -895,8 +1068,29 @@ add_action('admin_post_et_profile', function () {
         ]);
     }
     $result = persist_profile($id, $data, $avatar, $reason, $revision);
+    if (!is_wp_error($result) && $membership) {
+        set_member_donation($id, $membership['donation'], $reason);
+        foreach (['number' => 'eintrikot_member_number', 'joined' => 'eintrikot_joined'] as $key => $meta) {
+            $old = (string) get_user_meta($id, $meta, true);
+            if ($old !== $membership[$key]) {
+                update_user_meta($id, $meta, $membership[$key]);
+                log_change(
+                    $id,
+                    $meta === 'eintrikot_joined' ? 'joined' : 'member_number',
+                    $old,
+                    $membership[$key],
+                    $reason
+                );
+            }
+        }
+    }
     if (is_wp_error($result)) {
         profile_error($id, $data, $result->get_error_message(), $result->get_error_code() === 'conflict');
+    }
+    // Saving the own profile once completes the review of the values taken over from NDAlumni.
+    if ($id === get_current_user_id() && get_user_meta($id, 'eintrikot_review', true) === 'pending') {
+        update_user_meta($id, 'eintrikot_review', 'done');
+        log_change($id, 'review', null, 'geprüft', 'Profil nach der Übernahme aus NDAlumni geprüft');
     }
     delete_transient('et_profile_conflict_' . get_current_user_id() . '_' . $id);
     delete_transient('et_profile_form_' . get_current_user_id() . '_' . $id);

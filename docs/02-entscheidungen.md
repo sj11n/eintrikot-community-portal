@@ -7,8 +7,9 @@ Zusammenfassung der Festlegungen von Björn Emmerling (September 2026). Ergänzt
 - MeinVerein bleibt führend für Mitgliedschaft, Beiträge, SEPA, Spenden und Verwaltung. Das Portal übernimmt nichts automatisch; Änderungen werden dort von Hand übernommen.
 - Tippspiel und bisherige Next.js-App sind getrennte Projekte und bleiben unverändert.
 - Produktion: WordPress auf STRATO-Shared-Hosting. Kein Node-, Vercel-, Supabase- oder Headless-System.
-- Keine Bank- oder Beitragsdaten, keine vollständige Mitgliederdatenbank, keine Zugangsdaten im Repository. Das Repository ist öffentlich lesbar.
+- Keine Bankdaten, keine vollständige Mitgliederdatenbank, keine Zugangsdaten im Repository. Das Repository ist öffentlich lesbar. Im Portal stehen nur die Beträge (Jahresbeitrag nach Regel, Jahresspende laut MeinVerein), sichtbar für Mitglied und Verwaltung.
 - Echte Mitgliederdaten und Einladungen erst auf eintrikot.de mit HTTPS.
+- Umstieg von NDAlumni: Bestandsmitglieder durchlaufen keinen neuen Beitritt. Sie bekommen eine Umstiegsmail mit Zugang und der Bitte, ihr Profil zu prüfen – erst nach dem Umzug auf eintrikot.de (technisch gesperrt bis dahin). Die Migration ist so vollständig wie möglich: Profilangaben aus NDAlumni werden privat übernommen, Newsletter nur per neuem Opt-in, Profilbilder vorerst leer. Gründungsmitglieder (Nr. 1–7) haben das Eintrittsdatum 23.09.2025, niemand ein früheres; kein Eintritt nach dem SEPA-Mandatsdatum. Ab wann neue Importe den vollen Ablauf mit Urkunde bekommen, legt Björn fest.
 - Der Mitgliedsantrag läuft über den digitalen Antrag von MeinVerein (Name, E-Mail, Geburtsdatum, ggf. IBAN). Alles Weitere pflegt das Mitglied im Portal; das Portal ist der einzige Kontaktpunkt für Mitglieder.
 
 ## Marke
@@ -31,7 +32,7 @@ Zusammenfassung der Festlegungen von Björn Emmerling (September 2026). Ergänzt
 ## Mitgliederportal
 
 - Nur für angemeldete Mitglieder. Rollen: Mitglied, Redaktion, Vorstand, Administrator; Rechte werden serverseitig geprüft.
-- Profil: alle Angaben freiwillig, Sichtbarkeit pro Abschnitt. Geburtsdatum bleibt privat, Alter optional. Private Angaben dürfen weder über Treffer noch Filter oder Zähler sichtbar werden.
+- Profil: alle Angaben freiwillig, Sichtbarkeit pro Abschnitt. Trikotphase „Aktiv“ oder „Alumni“ (bis 0.16 „Aktuell“/„Ehemalig“, alte Werte werden automatisch so gelesen). Geburtsdatum bleibt privat, Alter optional. Private Angaben dürfen weder über Treffer noch Filter oder Zähler sichtbar werden.
 - Unter 18: Beitritt nur mit Zustimmung eines Elternteils (Einholung über das Portal, siehe docs/07). Andere Mitglieder sehen nur Name, Team, Altersklasse und Region; kein Alter, Wohnort, keine weiteren Angaben, kein Geburtstag in den Vereinsinfos. Ins Verzeichnis nur, wenn die Eltern es erlauben. Ab 18 automatisch Erwachsenenregeln. Ohne Geburtsdatum gelten die Erwachsenenregeln.
 - Kontakt: „Kontakt aufnehmen" per E-Mail über das Portal (Empfängeradresse verborgen, pro Profil abschaltbar) und freiwillig geteilte Kontaktfelder.
 - Service-Anfragen werden gespeichert und manuell bearbeitet. Bankwechsel ohne IBAN im Portal. Förderbeitrag ist bis zur Übernahme in MeinVerein nur „angefragt".

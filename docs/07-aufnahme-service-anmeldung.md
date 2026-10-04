@@ -22,13 +22,27 @@ Bis zur Zustimmung ist keine Anmeldung möglich und das Konto erscheint nirgends
 
 ## Aufnahme
 
-1. In MeinVerein die neuen Mitglieder filtern und als Excel exportieren (am besten nur Vorname, Nachname, E-Mail, Mitgliedsnummer, Eintrittsdatum).
+1. In MeinVerein die neuen Mitglieder filtern und als Excel exportieren (am besten nur Vorname, Nachname, E-Mail, Mitgliedsnummer, Eintrittsdatum, Geburtsdatum und Jahresspende, bei uns „Individuelles Feld 1“).
 2. Portal → Verwaltung → Neue Mitglieder aufnehmen → Datei hochladen. Erkannt werden gängige Spaltennamen; sonst „Spalten zuordnen“.
-3. Vorschau prüfen: Neu / Schon im Portal / Fehler. Ausgewählte übernehmen.
+3. Vorschau prüfen: Neu / Schon im Portal / Fehler. Ein Eintrittsdatum vor der Gründung (23.09.2025) gilt als Fehler und wird in MeinVerein korrigiert. Ausgewählte übernehmen.
 4. Das Portal legt Konten mit Rolle „EINTRIKOT Mitglied“ an (Benutzername = E-Mail) und schickt auf Wunsch sofort die Begrüßung: Schreiben, Mitgliedsurkunde als PDF, persönlicher Link „Passwort festlegen“.
 5. Unter „Einladungen“ ist der Stand je Mitglied sichtbar: noch nicht eingeladen, eingeladen, Link abgelaufen, aktiv.
 
-Grundsätze: MeinVerein bleibt führend. Nur sechs Felder werden übernommen (mit Geburtsdatum); die hochgeladene Datei wird nicht gespeichert (die Felder liegen 30 Minuten für die Vorschau bereit). Es wird nie ein Passwort verschickt. Der Link ist einmalig und 14 Tage gültig; das Passwort braucht mindestens 10 Zeichen. Bestandsmitglieder können ohne Urkunde eingeladen werden.
+Grundsätze: MeinVerein bleibt führend. Übernommen werden nur Name, E-Mail, Mitgliedsnummer, Eintrittsdatum, Geburtsdatum und Jahresspende; die hochgeladene Datei wird nicht gespeichert (die Felder liegen 30 Minuten für die Vorschau bereit). Es wird nie ein Passwort verschickt. Der Link ist einmalig und 14 Tage gültig; das Passwort braucht mindestens 10 Zeichen. Bestandsmitglieder können ohne Urkunde eingeladen werden.
+
+## Umstieg der Bestandsmitglieder von NDAlumni (0.17)
+
+Für die rund 200 bisherigen Mitglieder gibt es keinen neuen Beitritt. Voreingestellt ist im Import deshalb „Bestandsmitglieder“ (`IMPORT_DEFAULT` in `onboarding.php`); sobald neue Mitglieder den vollen Ablauf mit Urkunde bekommen sollen, wird das auf „now“ umgestellt.
+
+1. **Eintrittsdaten klären:** Gründungsmitglieder (Nr. 1–7) auf den 23.09.2025; niemand vor der Gründung; kein Eintritt nach dem Datum des SEPA-Mandats; kein Mandat mit Datum vor der Gründung.
+2. **Eine Datei, ein Upload:** Die Master-Datei (ohne Bankspalten) mit den Blättern „Export WisoMV“ und „Import_Roh“ unter „Export aus MeinVerein hochladen“ hochladen, Modus „Bestandsmitglieder“, übernehmen. Das Portal legt die Konten aus dem ersten Blatt an und ergänzt die Profile aus dem NDAlumni-Blatt. Es geht keine Mail raus. Einzeln geht es auch: MeinVerein-Export importieren und danach den NDAlumni-Export im Abschnitt „Profile aus NDAlumni übernehmen“.
+3. **Was aus NDAlumni kommt:** Zuordnung über die E-Mail-Adresse. Es werden nur leere Felder gefüllt, alles privat. Übernommen: Wohnort, Land (als Region, außer Deutschland), Verein, Team, Altersklasse, Trikotphase, Länderspiele (auch als Text), Sport, Beruf, Unternehmen, Branche, Status (Rentner, Student, Sonstiges), erste Ausbildung, DHB-Stationen mit Position, Mentoring-Angebote und -Wünsche, Interessen und Mitmachen als Text, LinkedIn/Facebook/Instagram (nur gültige Adressen) und die Jahresspende, wo aus MeinVerein keine kam. Nicht übernommen: Bank- und Mandatsdaten, Anschrift, Telefon, Geburtsname, Notizen, Tarif, Newsletter (Opt-in neu im Portal), Profilbilder (nicht im Export).
+4. **Einladen erst nach dem Umzug:** Einladungen, Umstiegsmails und Eltern-Mails sind gesperrt, solange das Portal nicht auf eintrikot.de mit HTTPS läuft. Danach unter „Einladungen“ (jeweils bis zu 25): Umstiegsmail mit Zugangslink und der Bitte, das Profil zu prüfen. Vorschau über Community-Aufbau → Aufnahme & Urkunde → „Umstiegsmail für Bestandsmitglieder“.
+5. Nach dem Festlegen des Passworts landet das Mitglied im Profil mit dem Hinweis „Bitte prüfe dein Profil“. Mit dem ersten Speichern gilt die Prüfung als erledigt (Eintrag im Änderungsprotokoll).
+
+## Beitrag und Jahresspende im Profil (0.17)
+
+Im Kasten „Mitgliedschaft“ sehen Mitglied und Verwaltung: Mitgliedsnummer, Eintritt, Jahresbeitrag (50 € ab 32, bis einschließlich 31 beitragsfrei; ohne Geburtsdatum mit diesem Hinweis) und die freiwillige Jahresspende laut MeinVerein. Das Mitglied kommt von dort zu „Jahresspende ändern“ und „Bankverbindung ändern“. Wird eine Spenden-Anfrage als „In MeinVerein übernommen“ abgeschlossen, übernimmt das Profil den neuen Betrag automatisch. Die Verwaltung kann Nummer, Eintritt und Spende im Abschnitt Verwaltung korrigieren; alles wird protokolliert.
 
 ## Urkunde
 
