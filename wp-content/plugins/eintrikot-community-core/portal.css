@@ -387,18 +387,25 @@
 }
 .et-app .dhb-stations li {
     display: flex;
-    gap: 24px;
-    padding: 16px 0;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 18px;
+    row-gap: 2px;
+    padding: 10px 0;
     border-bottom: 1px solid #eee;
     font-size: 14px;
 }
 .et-app .station-years {
-    min-width: 100px;
+    min-width: 110px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+}
+.et-app .station-team {
+    font-weight: 600;
+}
+.et-app .station-role {
     font-size: 13px;
     color: #666;
-}
-.et-app .dhb-stations p {
-    margin: 6px 0 0;
 }
 .et-app .profile-empty {
     padding: 30px 0;
@@ -426,7 +433,7 @@
         grid-template-columns: 1fr;
     }
     .et-app .dhb-stations li {
-        gap: 14px;
+        column-gap: 12px;
     }
     .et-app .et-member small {
         font-size: 13px;
@@ -1076,8 +1083,7 @@
     flex-direction: column;
     gap: 6px;
     padding: 22px 24px 24px;
-    border: 1px solid var(--et-line);
-    border-top: 6px solid var(--tone);
+    background: var(--tone-soft);
     border-radius: var(--et-radius);
 }
 .et-app .home-card .home-card-label {

@@ -153,7 +153,7 @@ function render_service() {
                 '" maxlength="200"></label>';
         }
     } elseif ($type === 'bank') {
-        echo '<p>Fordere hier den sicheren Weg zur Änderung deiner Bankverbindung an. Die Mitgliederverwaltung kümmert sich um die Änderung in MeinVerein.</p><p>Bitte hier keine IBAN oder Bankunterlagen eingeben.</p>';
+        echo '<p>So läuft es: Die Mitgliederverwaltung meldet sich über deine bei uns hinterlegte E-Mail-Adresse oder Telefonnummer und schickt dir ein neues SEPA-Lastschriftmandat. Das gibst du unterschrieben per Post oder als PDF direkt an die Schatzmeisterin zurück. Danach wird die Änderung in MeinVerein eingetragen.</p><p>Bitte hier keine IBAN oder Bankunterlagen eingeben.</p>';
     }
     if ($type !== 'bank') {
         echo '<label>' .

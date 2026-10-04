@@ -28,7 +28,7 @@
 <!-- /wp:paragraph -->
 <!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Björn Emmerling</h3>
 <!-- /wp:heading -->
-<!-- wp:paragraph --><p>Björn verantwortet die strategische Ausrichtung und Repräsentation des Vereins. Als Weltmeister 2002 und 2006 kennt er die Kraft einer Mannschaft und bringt diese Erfahrung in die Entwicklung unseres Netzwerks ein.</p>
+<!-- wp:paragraph --><p>Björn verantwortet die strategische Ausrichtung und Repräsentation des Vereins. Als Weltmeister 2002 und 2006 kennt er die Kraft einer Mannschaft und bringt diese Erfahrung in die Entwicklung unseres Netzwerks ein. Von ihm stammt auch die Idee zu den HONAMAS.</p>
 <!-- /wp:paragraph --></article>
 <!-- /wp:group -->
 <!-- wp:group {"className":"board-card","tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group board-card">

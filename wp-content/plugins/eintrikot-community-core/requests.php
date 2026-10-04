@@ -349,7 +349,9 @@ function render_request($id) {
         $id .
         '"><input type="hidden" name="revision" value="' .
         esc_attr(request_revision($id)) .
-        '"><label>Nachricht an das Mitglied<small>Sieht das Mitglied bei seiner Anfrage unter „Rückmeldung“. Pflicht, wenn du ablehnst. Es wird keine E-Mail verschickt.</small><textarea name="reply" maxlength="4000">' .
+        '"><label>Nachricht an das Mitglied<small>Sieht das Mitglied bei seiner Anfrage unter „Rückmeldung“. Pflicht, wenn du ablehnst. Es wird keine E-Mail verschickt.' .
+        ($kind === 'bank' ? ' Keine Bankdaten hineinschreiben.' : '') .
+        '</small><textarea name="reply" maxlength="4000">' .
         esc_textarea($draft['reply'] ?? ($state['reply'] ?? '')) .
         '</textarea></label><label>Interne Notiz<small>Nur für Vorstand und Verwaltung sichtbar, nie für das Mitglied.</small><textarea name="note" maxlength="4000">' .
         esc_textarea($draft['note'] ?? ($state['note'] ?? '')) .
@@ -400,7 +402,7 @@ function request_task($kind) {
     $tasks = [
         'address' => 'Neue Kontaktdaten in MeinVerein eintragen und danach hier bestätigen.',
         'bank' =>
-            'Mit dem Mitglied den sicheren Weg klären (nie über das Portal) und die Bankverbindung in MeinVerein ändern.',
+            'Das Mitglied über die in MeinVerein hinterlegte E-Mail-Adresse oder Telefonnummer kontaktieren (nicht über neue Kontaktdaten aus der Anfrage) und ihm ein neues SEPA-Lastschriftmandat schicken. Das Mitglied gibt es unterschrieben per Post oder als PDF direkt an die Schatzmeisterin zurück. Danach Bankverbindung und Mandat in MeinVerein ändern. Keine IBAN hier im Portal eintragen, auch nicht in Nachricht oder Notiz.',
         'funding' =>
             'Betrag und Beginn als freiwilligen Förderbeitrag in MeinVerein hinterlegen. Erst mit „In MeinVerein übernommen“ wird die Zusage für das Mitglied verbindlich.',
         'event' => 'Anmeldung notieren und dem Mitglied kurz bestätigen.',

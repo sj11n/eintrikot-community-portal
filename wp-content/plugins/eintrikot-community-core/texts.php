@@ -340,7 +340,7 @@ function people_page_content() {
         [
             '1. Vorsitzender',
             'Björn Emmerling',
-            'Björn verantwortet die strategische Ausrichtung und Repräsentation des Vereins. Als Weltmeister 2002 und 2006 kennt er die Kraft einer Mannschaft und bringt diese Erfahrung in die Entwicklung unseres Netzwerks ein.'
+            'Björn verantwortet die strategische Ausrichtung und Repräsentation des Vereins. Als Weltmeister 2002 und 2006 kennt er die Kraft einer Mannschaft und bringt diese Erfahrung in die Entwicklung unseres Netzwerks ein. Von ihm stammt auch die Idee zu den HONAMAS.'
         ],
         [
             '2. Vorsitzender',

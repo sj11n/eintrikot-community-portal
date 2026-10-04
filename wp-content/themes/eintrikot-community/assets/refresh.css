@@ -313,6 +313,9 @@ a.button[href*='mitglied-werden']:focus-visible {
     height: auto;
     aspect-ratio: 841.89 / 595.276;
     transform: translate(-50%, -50%) rotate(-68deg);
+    /* Farbe wie das Band im Portal-Banner: weiß, durchscheinend */
+    background: #fff;
+    opacity: 0.6;
     mask-size: 100% 100%;
     -webkit-mask-size: 100% 100%;
     mask-position: center;
