@@ -24,7 +24,12 @@ Zusammenfassung der Festlegungen von Björn Emmerling (September 2026). Ergänzt
 - Zielgruppe: aktuelle Jugend-, Damen- und Herren-Nationalspieler sowie Ehemalige, Masters und Staff.
 - Navigation: Der Verein, Engagement, News, Partner; Menschen (Vorstand/Beirat) über Der Verein. Kein öffentliches Mitgliederverzeichnis.
 - Hero-Bezeichnungen „Danas" und „Honamas" bleiben unverändert. Vision und Mission im Wortlaut des Whitepapers 2.0 (Oktober 2025).
-- Kennzahlen im Backend pflegbar, mit Stand-Datum. „Länderspiele" ist eine automatische Summe der für Mitglieder freigegebenen Angaben und erscheint erst ab 60 % Profilen mit Angabe. Spendenaufkommen nicht als Fördervolumen bezeichnen.
+- Vision 2030 (nicht aus dem Whitepaper): „Bis 2030 ist EINTRIKOT ein starkes, selbsttragendes Netzwerk mit 500+ Mitgliedern, das alle deutschen Hockey-Nationalteams finanziell, strukturell und persönlich unterstützt." Footer immer „Das Netzwerk der Nationalteams."
+- Mitglied werden können alle mit mindestens einem Länderspiel sowie Trainerinnen, Trainer und Staff der Nationalteams. Reihenfolge im Text: Jugend, Aktive, Masters und Alumni.
+- Beirat: Andreas Arntzen, Wibke Weisel, Natascha Keller (Gründungsmitglieder, zuvor Beirat der DHB-Alumni-Familie); der Vorstand nimmt an den Beiratssitzungen teil.
+- Spenden direkt: Spendenkonto und PayPal (paypal.me/eintrikot) auf „Unterstützen".
+- „Mitglied werden"-Buttons beim Darüberfahren Gold (#FFCC4E), auf Björns Wunsch – bewusste Ausnahme von „Schwarz, Rot und Gold nie zusammen" im Hero mit rotem Band.
+- Kennzahlen im Backend pflegbar, mit Stand-Datum. Mitglieder und „seit [Jahr] im Nationaltrikot" rechnet das Portal selbst (Konten im Verzeichnis, frühestes freigegebenes „Von"-Jahr der DHB-Stationen); ein eingetragener Wert ersetzt die Berechnung. „Länderspiele" ist eine automatische Summe der für Mitglieder freigegebenen Angaben und erscheint erst ab 60 % Profilen mit Angabe. Spendenaufkommen nicht als Fördervolumen bezeichnen.
 - Mitglied werden: ab einem Länderspiel in einem DHB-Nationalteam, auch Jugend. Beitrag 50 € pro Jahr ab 32 Jahren; bis einschließlich 31 Jahre beitragsfrei. Zusätzlich eine freiwillige Jahresspende (50/100/150 € oder frei), klar als Spende gekennzeichnet. Ohne hinterlegten MeinVerein-Link kein Beitritts-Button.
 - News sind normale WordPress-Beiträge; Startseite zeigt die drei neuesten.
 - Kein Tracking ohne Einwilligung. Falls Statistik gewünscht: cookielose Lösung.

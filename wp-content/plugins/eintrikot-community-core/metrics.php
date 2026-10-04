@@ -7,13 +7,33 @@ if (!defined('ABSPATH')) {
 /** Share of portal profiles that must share their caps before the total is shown publicly. */
 const CAPS_MIN_SHARE = 0.6;
 
+/**
+ * Stored key figures. 'members' and 'first_year' empty = calculated from the portal;
+ * a value entered in the backend overrides the calculation.
+ */
 function metric_values() {
-    return wp_parse_args(get_option('eintrikot_metrics', []), [
-        'members' => 201,
-        'donations' => 12750,
-        'generations' => 5,
-        'as_of' => ''
-    ]);
+    $raw = get_option('eintrikot_metrics', []);
+    $raw = is_array($raw) ? $raw : [];
+    // Before 0.17 the member count was always typed in: from now on it is calculated unless set again.
+    if (!array_key_exists('first_year', $raw)) {
+        unset($raw['members']);
+        $raw['first_year'] = '1968';
+    }
+    unset($raw['generations']);
+    return wp_parse_args($raw, ['members' => '', 'donations' => 12750, 'first_year' => '', 'as_of' => '']);
+}
+/** Members shown on the website: the typed value, else the EINTRIKOT accounts listed in the directory. */
+function metric_members() {
+    $v = metric_values()['members'];
+    return $v !== '' ? (int) $v : caps_stats()['total'];
+}
+/** Year of the oldest international match: the typed value, else the earliest shared DHB station. */
+function metric_first_year() {
+    $v = metric_values()['first_year'];
+    if ($v !== '') {
+        return (int) $v;
+    }
+    return caps_stats()['first_year'] ?? null;
 }
 
 /** "2026-09" -> "September 2026" in the site language; '' when unset or invalid. */
@@ -51,19 +71,39 @@ function metrics_page() {
     echo '<input type="hidden" name="action" value="et_metrics">';
     foreach (
         [
-            'members' => 'Mitglieder',
-            'donations' => 'Spendenaufkommen in Euro',
-            'generations' => 'Generationen im Trikot'
+            'members' => [
+                'Mitglieder',
+                'Leer lassen = automatisch: Konten mit EINTRIKOT-Rolle im Mitgliederverzeichnis (derzeit ' .
+                number_format_i18n($caps['total']) .
+                '). Eine eingetragene Zahl ersetzt die Berechnung.',
+                false
+            ],
+            'donations' => ['Spendenaufkommen in Euro', '', true],
+            'first_year' => [
+                'Ältestes Länderspiel (Jahr)',
+                'Leer lassen = automatisch: das früheste „Von“-Jahr der DHB-Stationen, die Mitglieder freigegeben haben (derzeit ' .
+                ($caps['first_year'] ?? '–') .
+                '). Ein eingetragenes Jahr ersetzt die Berechnung.',
+                false
+            ]
         ]
-        as $key => $label
+        as $key => [$label, $hint, $required]
     ) {
         echo '<p><label>' .
             esc_html($label) .
             '<br><input type="number" name="' .
             esc_attr($key) .
-            '" min="0" max="999999999" step="1" required value="' .
+            '" min="' .
+            ($key === 'first_year' ? '1900' : '0') .
+            '" max="' .
+            ($key === 'first_year' ? '2100' : '999999999') .
+            '" step="1"' .
+            ($required ? ' required' : '') .
+            ' value="' .
             esc_attr($values[$key]) .
-            '"></label></p>';
+            '"></label>' .
+            ($hint !== '' ? '<br><span class="description">' . esc_html($hint) . '</span>' : '') .
+            '</p>';
     }
     echo '<p><label>Stand der Kennzahlen<br><input type="month" name="as_of" value="' .
         esc_attr($values['as_of']) .
@@ -94,12 +134,16 @@ add_action('admin_post_et_metrics', function () {
     }
     check_admin_referer('et_metrics');
     $values = [];
-    foreach (['members', 'donations', 'generations'] as $key) {
+    foreach (['members', 'donations', 'first_year'] as $key) {
         $v = post_text($key, '', 9);
-        if (!ctype_digit($v)) {
-            wp_die('Bitte ganze nichtnegative Zahlen eingeben.');
+        if ($v === '' && $key !== 'donations') {
+            $values[$key] = ''; // calculated
+            continue;
         }
-        $values[$key] = (int) $v;
+        if (!ctype_digit($v) || ($key === 'first_year' && ((int) $v < 1900 || (int) $v > 2100))) {
+            wp_die('Bitte ganze nichtnegative Zahlen eingeben (Jahr zwischen 1900 und 2100).');
+        }
+        $values[$key] = (string) (int) $v;
     }
     $as_of = post_text('as_of', '', 7);
     if ($as_of !== '' && metrics_as_of_label($as_of) === '') {
@@ -118,10 +162,14 @@ add_action('admin_post_et_metrics', function () {
  */
 function caps_stats() {
     $cached = get_transient('eintrikot_caps_stats');
-    if (is_array($cached) && isset($cached['sum'], $cached['shared'], $cached['total'])) {
+    if (
+        is_array($cached) &&
+        isset($cached['sum'], $cached['shared'], $cached['total']) &&
+        array_key_exists('first_year', $cached)
+    ) {
         return $cached;
     }
-    $stats = ['sum' => 0, 'shared' => 0, 'total' => 0];
+    $stats = ['sum' => 0, 'shared' => 0, 'total' => 0, 'first_year' => null];
     // Technical accounts and hidden profiles do not count, just as in the directory.
     foreach (get_users(['capability' => 'eintrikot_portal']) as $user) {
         if (!directory_listed($user)) {
@@ -129,6 +177,12 @@ function caps_stats() {
         }
         $stats['total']++;
         $v = visible_value(profile_data($user->ID), 'caps');
+        foreach (shared_stations(profile_data($user->ID)) as $row) {
+            $from = is_array($row) ? (int) ($row['from'] ?? 0) : 0;
+            if ($from >= 1900 && ($stats['first_year'] === null || $from < $stats['first_year'])) {
+                $stats['first_year'] = $from;
+            }
+        }
         $n = is_scalar($v) ? caps_number((string) $v) : null;
         if ($n !== null) {
             $stats['sum'] += $n;
@@ -174,22 +228,24 @@ add_action('user_register', __NAMESPACE__ . '\flush_caps_stats');
 add_shortcode('eintrikot_metrics', function () {
     $v = metric_values();
     $items = [
-        'members' => ['Mitglieder', (int) $v['members'], ''],
+        'members' => ['Mitglieder', metric_members(), ''],
         'donations' => ['Spendenaufkommen', (int) $v['donations'], ' €'],
         'caps' => ['Länderspiele', caps_public_total(), ''],
-        'generations' => ['Generationen im Trikot', (int) $v['generations'], '']
+        'first_year' => ['im Nationaltrikot', metric_first_year(), '']
     ];
     $items = array_filter($items, fn($item) => $item[1] !== null);
     $html = '<div class="et-metrics' . (count($items) === 3 ? ' is-three' : '') . '">';
     foreach ($items as $item) {
         [$label, $value, $suffix] = $item;
+        // A year is shown as is: no thousands separator, no count-up.
+        $year = $label === 'im Nationaltrikot';
         $html .=
-            '<div class="et-metric"><strong data-count="' .
-            esc_attr((string) $value) .
-            '" data-suffix="' .
-            esc_attr($suffix) .
-            '">' .
-            esc_html(number_format_i18n($value) . $suffix) .
+            '<div class="et-metric"><strong' .
+            ($year
+                ? ''
+                : ' data-count="' . esc_attr((string) $value) . '" data-suffix="' . esc_attr($suffix) . '"') .
+            '>' .
+            esc_html(($year ? 'seit ' . $value : number_format_i18n($value)) . $suffix) .
             '</strong><span>' .
             esc_html($label) .
             '</span></div>';

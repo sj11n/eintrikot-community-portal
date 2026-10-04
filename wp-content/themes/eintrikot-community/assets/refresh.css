@@ -233,3 +233,72 @@
     text-decoration: underline;
     text-underline-offset: 3px;
 }
+
+/* 0.10: Startseite – Hero füllt genau den Bildschirm (abzüglich Kopfzeile), auf jedem Gerät */
+.entry-content .et-mvp-hero {
+    height: calc(100svh - 90px) !important;
+    min-height: 520px !important;
+    max-height: none !important;
+}
+@media (max-width: 800px) {
+    .entry-content .et-mvp-hero {
+        height: calc(100svh - 75px) !important;
+        min-height: 480px !important;
+    }
+}
+
+/* Bildplätze (Cover „Bild folgt“) über die ganze Breite, ohne Rand */
+.entry-content .et-home-photo {
+    width: 100vw !important;
+    max-width: none !important;
+    margin-left: calc(50% - 50vw) !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+}
+.entry-content .et-home-photo:not(:has(img)) .wp-block-cover__inner-container {
+    padding: 24px;
+}
+
+/* „Mitglied werden“: Gold beim Darüberfahren */
+.wp-block-button__link[href*='mitglied-werden']:hover,
+.wp-block-button__link[href*='mitglied-werden']:focus-visible,
+a.button[href*='mitglied-werden']:hover,
+a.button[href*='mitglied-werden']:focus-visible {
+    background: #ffcc4e !important;
+    border-color: #ffcc4e !important;
+    color: #000 !important;
+}
+
+/* Menschen: Profilbild aus dem Mitgliederportal im Fotoplatz */
+.entry-content .et-media-slot:has(.et-person-photo) .wp-block-cover__inner-container {
+    position: static;
+    padding: 0;
+}
+.entry-content .et-person-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+}
+
+/* Menschen: Beirat wie der Vorstand – runde Fotos, Abstand zwischen den Personen */
+.entry-content .advisory-list {
+    display: grid;
+    gap: 32px;
+    margin-top: 32px;
+}
+.entry-content .advisory-person {
+    margin-top: 0;
+    align-items: center;
+}
+.entry-content .advisory-photo {
+    border-radius: 50%;
+    overflow: hidden;
+}
+.entry-content .advisory-person h3 {
+    margin-bottom: 0;
+}

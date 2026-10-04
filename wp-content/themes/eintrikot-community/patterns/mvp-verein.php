@@ -13,7 +13,7 @@
 </div></div><!-- /wp:cover -->
 </section><!-- /wp:group -->
 <!-- wp:group {"className":"vision-2030","tagName":"section","layout":{"type":"default"}} --><section class="wp-block-group vision-2030"><!-- wp:heading {"anchor":"vision-start","level":2} --><h2 class="wp-block-heading" id="vision-start">Vision 2030</h2><!-- /wp:heading -->
-<!-- wp:paragraph --><p>Bis 2030 ist Eintrikot eine starke, selbsttragende Community, die alle deutschen Hockey Nationalteams finanziell, strukturell und persönlich unterstützt.</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Bis 2030 ist EINTRIKOT ein starkes, selbsttragendes Netzwerk mit 500+ Mitgliedern, das alle deutschen Hockey-Nationalteams finanziell, strukturell und persönlich unterstützt.</p><!-- /wp:paragraph -->
 </section><!-- /wp:group -->
 <!-- wp:group {"className":"section","tagName":"section","layout":{"type":"default"}} --><section class="wp-block-group section"><!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Aus einer Idee wird eine Institution.</h2><!-- /wp:heading -->
 <!-- wp:paragraph {"className":"lead"} --><p class="lead">EINTRIKOT ist aus der DHB Alumni Familie entstanden. Wir geben dieser gewachsenen Gemeinschaft einen verlässlichen, unabhängigen Rahmen.</p><!-- /wp:paragraph -->

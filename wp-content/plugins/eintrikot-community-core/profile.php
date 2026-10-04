@@ -578,6 +578,12 @@ function render_profile($id) {
                     : '') .
                 '</div></div><small>Bild anklicken, auswählen und den Ausschnitt festlegen. JPEG, PNG oder WebP, bis 5 MB. Nur im Mitgliederbereich sichtbar.</small>' .
                 field_error_text('avatar') .
+                // Board, advisory board and founders appear on the public page "Menschen".
+                (named_on_website($id) || !empty($data['public_photo'])
+                    ? '<label class="check"><input type="checkbox" name="public_photo" value="1" ' .
+                        checked(!empty($data['public_photo']), true, false) .
+                        '><span>Mein Profilbild darf auf der öffentlichen Website unter „Menschen“ erscheinen, wo ich als Gründungsmitglied, im Vorstand oder Beirat genannt bin. Ohne Haken stehen dort meine Initialen.</span></label>'
+                    : '') .
                 '</div><label class="field">Dein Name<input name="display_name" required maxlength="120"' .
                 field_error_attrs('display_name') .
                 ' value="' .
@@ -949,7 +955,7 @@ add_action('admin_post_et_profile', function () {
         $data['birthday'] = $previous['birthday'];
         unset($errors['birthday']);
     }
-    foreach (['show_age', 'birthday_notice', 'newsletter'] as $key) {
+    foreach (['show_age', 'birthday_notice', 'newsletter', 'public_photo'] as $key) {
         $data[$key] = isset($_POST[$key]);
     }
     // Membership number and entry date come from MeinVerein; only the administration corrects them.
