@@ -51,7 +51,7 @@ function long_profile_field($key) {
 function profile_choice_options() {
     return [
         'team' => ['Damen', 'Herren'],
-        'phase' => ['Aktuell', 'Ehemalig'],
+        'phase' => ['Aktiv', 'Alumni'],
         'age_class' => ['U16', 'U18', 'U21', 'A-Nationalteam', 'Masters'],
         'employment' => [
             'Schule',

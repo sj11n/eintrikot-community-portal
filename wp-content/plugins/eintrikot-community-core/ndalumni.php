@@ -180,7 +180,7 @@ function nda_profile($r, &$notes) {
     }
     $now = mb_strtolower((string) ($r['aktuellindernatio'] ?? ''));
     if (in_array($now, ['ja', 'nein'], true)) {
-        $d['phase'] = $now === 'ja' ? 'Aktuell' : 'Ehemalig';
+        $d['phase'] = $now === 'ja' ? 'Aktiv' : 'Alumni';
     }
     $set('caps', $g('anzahlvonnationalspielen'), 60);
     $set('other_sport', $g('sportwennnichthockeydann'));

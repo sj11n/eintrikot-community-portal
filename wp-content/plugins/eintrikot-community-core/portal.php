@@ -17,7 +17,15 @@ function portal_url($view = 'portal', $extra = []) {
 }
 function profile_data($id) {
     $v = get_user_meta($id, 'eintrikot_profile', true);
-    return is_array($v) ? $v : [];
+    if (!is_array($v)) {
+        return [];
+    }
+    // 0.17: "Aktuell"/"Ehemalig" became "Aktiv"/"Alumni"; older profiles are read with the new words.
+    $renamed = ['Aktuell' => 'Aktiv', 'Ehemalig' => 'Alumni'];
+    if (isset($v['phase']) && is_string($v['phase']) && isset($renamed[$v['phase']])) {
+        $v['phase'] = $renamed[$v['phase']];
+    }
+    return $v;
 }
 function visible_value($data, $key) {
     if (minor_hides($data, $key)) {

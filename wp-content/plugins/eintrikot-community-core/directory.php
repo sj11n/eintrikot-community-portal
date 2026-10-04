@@ -124,6 +124,10 @@ function render_directory() {
     }
     foreach ($keys as $key => $label) {
         $filters[$key] = directory_param($key);
+        if ($key === 'phase') {
+            // Saved links from before 0.17.
+            $filters[$key] = ['Aktuell' => 'Aktiv', 'Ehemalig' => 'Alumni'][$filters[$key]] ?? $filters[$key];
+        }
     }
     $matches = array_values(
         array_filter($rows, function ($row) use ($q, $filters) {
