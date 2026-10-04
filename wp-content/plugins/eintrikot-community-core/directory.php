@@ -421,7 +421,10 @@ function render_member($id) {
                 $to = $row['to'] ?? '';
                 // One line: period, then the team in front, role and position quietly behind.
                 $team = implode(' · ', array_filter([$row['organisation'] ?? '', $row['age_class'] ?? '']));
-                $role = trim(($row['role'] ?? '') . (($row['position'] ?? '') !== '' ? ' (' . $row['position'] . ')' : ''));
+                $role = trim(
+                    ($row['role'] ?? '') .
+                        (($row['position'] ?? '') !== '' ? ' (' . $row['position'] . ')' : '')
+                );
                 echo '<li><span class="station-years">' .
                     esc_html($from !== '' ? $from . ' – ' . ($to !== '' ? $to : 'heute') : 'Zeitraum offen') .
                     '</span><strong class="station-team">' .
