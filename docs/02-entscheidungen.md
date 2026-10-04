@@ -28,7 +28,8 @@ Zusammenfassung der Festlegungen von Björn Emmerling (September 2026). Ergänzt
 - Mitglied werden können alle mit mindestens einem Länderspiel sowie Trainerinnen, Trainer und Staff der Nationalteams. Reihenfolge im Text: Jugend, Aktive, Masters und Alumni.
 - Beirat: Andreas Arntzen, Wibke Weisel, Natascha Keller (Gründungsmitglieder, zuvor Beirat der DHB-Alumni-Familie); der Vorstand nimmt an den Beiratssitzungen teil.
 - Spenden direkt: Spendenkonto und PayPal (paypal.me/eintrikot) auf „Unterstützen".
-- „Mitglied werden"-Buttons beim Darüberfahren Gold (#FFCC4E), auf Björns Wunsch – bewusste Ausnahme von „Schwarz, Rot und Gold nie zusammen" im Hero mit rotem Band.
+- „Mitglied werden"-Buttons beim Darüberfahren Gold (#FFCC4E); im Hero bleibt der Button weiß (kein Gold neben dem roten Band).
+- Hero-Band um 60° gedreht, läuft oben und unten aus dem Bild; kein sichtbares Bandende.
 - Kennzahlen im Backend pflegbar, mit Stand-Datum. Mitglieder und „seit [Jahr] im Nationaltrikot" rechnet das Portal selbst (Konten im Verzeichnis, frühestes freigegebenes „Von"-Jahr der DHB-Stationen); ein eingetragener Wert ersetzt die Berechnung. „Länderspiele" ist eine automatische Summe der für Mitglieder freigegebenen Angaben und erscheint erst ab 60 % Profilen mit Angabe. Spendenaufkommen nicht als Fördervolumen bezeichnen.
 - Mitglied werden: ab einem Länderspiel in einem DHB-Nationalteam, auch Jugend. Beitrag 50 € pro Jahr ab 32 Jahren; bis einschließlich 31 Jahre beitragsfrei. Zusätzlich eine freiwillige Jahresspende (50/100/150 € oder frei), klar als Spende gekennzeichnet. Ohne hinterlegten MeinVerein-Link kein Beitritts-Button.
 - News sind normale WordPress-Beiträge; Startseite zeigt die drei neuesten.

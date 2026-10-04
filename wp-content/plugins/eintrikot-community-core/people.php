@@ -41,6 +41,25 @@ function named_on_website($user_id) {
     return $user && in_array($user->display_name, people_names(), true);
 }
 
+/** Known people of the page, used until they have an account with a team. */
+const PEOPLE_TONES = [
+    'Andreas Arntzen' => 'blue',
+    'Björn Emmerling' => 'blue',
+    'Markus Weise' => 'blue',
+    'Natascha Keller' => 'rose',
+    'Fanny Rinne' => 'rose',
+    'Uschi Schmitz' => 'rose',
+    'Wibke Weisel' => 'rose'
+];
+/** 'rose' (Damen), 'blue' (Herren) or '' – from the account's team, else from the list above. */
+function person_tone($name, $user) {
+    $team = $user ? profile_data($user->ID)['team'] ?? '' : '';
+    if ($team === 'Damen' || $team === 'Herren') {
+        return $team === 'Damen' ? 'rose' : 'blue';
+    }
+    return PEOPLE_TONES[$name] ?? '';
+}
+
 /** The portal account with exactly this display name, or null (none or ambiguous). */
 function person_account($name) {
     $users = get_users([
@@ -83,12 +102,17 @@ add_filter(
                 ? '<img class="et-person-photo" src="' . esc_attr($photo) . '" alt="' . esc_attr($name) . '">'
                 : '<p><span>' . esc_html(member_initials($name)) . '</span></p>';
         // Replace whatever stands in the photo slot ("Porträt folgt", old initials) with photo or initials.
-        return preg_replace(
+        $html = preg_replace(
             '#(<div class="wp-block-cover__inner-container[^"]*">).*?(</div>)#s',
             '$1' . str_replace(['\\', '$'], ['\\\\', '\\$'], $inner) . '$2',
             $html,
             1
         );
+        // Background as in the portal: rosé for Damen, light blue for Herren.
+        $tone = person_tone($name, $user);
+        return $tone === ''
+            ? $html
+            : preg_replace('#class="wp-block-cover #', 'class="wp-block-cover tone-' . $tone . ' ', $html, 1);
     },
     10,
     2

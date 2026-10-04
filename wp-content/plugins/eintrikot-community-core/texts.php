@@ -141,74 +141,12 @@ function update_site_texts() {
         save_page_text($page, $c, $log);
     }
 
-    // Unterstützen
+    // Unterstützen: neu aufgebaut (drei Wege, dann der Dank). Die alte Fassung bleibt als Revision.
     $page = get_page_by_path('community-unterstuetzen');
     if ($page) {
-        $c = $page->post_content;
         $log[] = 'Unterstützen';
-        $bank =
-            block_p(
-                '<strong>Spendenkonto</strong><br>EINTRIKOT e. V.<br>IBAN ' .
-                    DONATION_IBAN .
-                    '<br>Verwendungszweck: Spende EINTRIKOT',
-                'et-bank'
-            ) .
-            "\n" .
-            block_p(
-                '<a class="text-link" href="' .
-                    DONATION_PAYPAL .
-                    '" target="_blank" rel="noopener noreferrer">Mit PayPal spenden ↗</a>',
-                'et-link-line'
-            ) .
-            "\n" .
-            block_p(
-                '<small>Für Spenden bis 300 € reicht dem Finanzamt dein Kontoauszug. Für höhere Beträge stellen wir dir eine Zuwendungsbestätigung aus – schreib uns dazu kurz an info@eintrikot.de.</small>'
-            ) .
-            "\n";
-        text_change(
-            $c,
-            'Spende direkt: Konto und PayPal',
-            '#<p>Du möchtest die Arbeit von EINTRIKOT mit einer Spende unterstützen\? Unser Vorstand hilft dir bei den nächsten Schritten\.</p>\s*<!-- /wp:paragraph -->\s*#u',
-            '<p>Jede Spende fließt in die Förderung der Nationalteams. Überweise auf unser Spendenkonto oder spende per PayPal.</p><!-- /wp:paragraph -->' .
-                "\n" .
-                str_replace(['\\', '$'], ['\\\\', '\\$'], $bank),
-            $log
-        );
-        text_change(
-            $c,
-            'Größere Spenden: Kontakt zum Vorstand',
-            'Spende mit dem Vorstand abstimmen ↗',
-            'Größere Spende oder Fragen? Sprich mit dem Vorstand ↗',
-            $log
-        );
-        text_change(
-            $c,
-            'Jahresspende statt Förderbeitrag (Text)',
-            'Als Mitglied kannst du auch einen jährlich wiederkehrenden freiwilligen Förderbeitrag anfragen.',
-            'Als Mitglied kannst du eine Jahresspende einrichten oder ändern.',
-            $log
-        );
-        text_change(
-            $c,
-            'Jahresspende statt Förderbeitrag (Link)',
-            'Förderbeitrag im Mitgliederportal anfragen ↗',
-            'Jahresspende im Mitgliederportal ↗',
-            $log
-        );
-        if (!str_contains($c, 'Du willst mit anpacken')) {
-            text_change(
-                $c,
-                'Mitmachen im Ehrenamt',
-                '#(Jahresspende im Mitgliederportal ↗</a>\s*</p>\s*<!-- /wp:paragraph -->)#u',
-                '$1' .
-                    "\n" .
-                    block_p(
-                        'Du willst mit anpacken, etwa bei Events, im Mentoring oder bei Texten? Schreib uns an <a href="mailto:info@eintrikot.de">info@eintrikot.de</a>.'
-                    ),
-                $log
-            );
-        }
-        save_page_text($page, $c, $log);
+        save_page_text($page, support_page_content(), $log);
+        $log[] = '✓ Seite neu aufgebaut: Spenden (Konto, PayPal), Jahresspende, Mit anpacken, Dank';
     }
 
     // Mitglied werden
@@ -275,4 +213,119 @@ function update_site_texts() {
         $log[] = '✓ Titel der Website: EINTRIKOT e. V.';
     }
     return implode("\n", $log);
+}
+
+/** „Unterstützen“ als klare Übersicht: drei Wege (Spenden, Jahresspende, Mitanpacken), dann der Dank. */
+function support_page_content() {
+    $btn = function ($href, $label, $class = 'button solid', $extra = '') {
+        $solid = str_contains($class, 'solid');
+        return '<!-- wp:button {"className":"' .
+            $class .
+            '","backgroundColor":"' .
+            ($solid ? 'black' : 'white') .
+            '","textColor":"' .
+            ($solid ? 'white' : 'black') .
+            '"} --><div class="wp-block-button ' .
+            $class .
+            '"><a class="wp-block-button__link has-' .
+            ($solid ? 'white' : 'black') .
+            '-color has-' .
+            ($solid ? 'black' : 'white') .
+            '-background-color has-text-color has-background wp-element-button" href="' .
+            $href .
+            '"' .
+            $extra .
+            '>' .
+            $label .
+            '</a></div><!-- /wp:button -->';
+    };
+    $card = function ($tone, $micro, $title, $body) {
+        return '<!-- wp:group {"className":"support-card is-' .
+            $tone .
+            '","tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group support-card is-' .
+            $tone .
+            '">' .
+            block_p(esc_html($micro), 'micro') .
+            '<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">' .
+            esc_html($title) .
+            '</h3><!-- /wp:heading -->' .
+            $body .
+            '</article><!-- /wp:group -->';
+    };
+    $thanks = [
+        ['Andreas Arntzen', 'Für seine Spende zur Deckung der administrativen Aufwände.'],
+        ['Kathrin Jacobsen', 'Für Logo, Farben und Design von EINTRIKOT.'],
+        ['Axel Kaste', 'Für die Bilder und seinen besonderen Einsatz als Bildlieferant.']
+    ];
+    $thanks_html = '';
+    foreach ($thanks as [$name, $text]) {
+        $thanks_html .=
+            '<!-- wp:group {"tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group"><!-- wp:heading {"level":3} --><h3 class="wp-block-heading">' .
+            esc_html($name) .
+            '</h3><!-- /wp:heading -->' .
+            block_p(esc_html($text)) .
+            '</article><!-- /wp:group -->';
+    }
+    return '<!-- wp:cover {"overlayColor":"blue","dimRatio":100,"isUserOverlayColor":true,"className":"section page-intro et-mvp-page-hero"} --><div class="wp-block-cover section page-intro et-mvp-page-hero"><span aria-hidden="true" class="wp-block-cover__background has-blue-background-color has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Gemeinsam für den deutschen Hockeyleistungssport.</h1><!-- /wp:heading -->' .
+        block_p(
+            'EINTRIKOT ist ein gemeinnütziger Verein. Mitgliedschaft, ehrenamtliches Engagement und Spenden tragen unsere Arbeit.',
+            'lead'
+        ) .
+        '</div></div><!-- /wp:cover -->' .
+        "\n" .
+        '<!-- wp:group {"className":"section support-ways","anchor":"spenden","tagName":"section","layout":{"type":"default"}} --><section class="wp-block-group section support-ways" id="spenden"><!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Drei Wege, uns zu unterstützen.</h2><!-- /wp:heading -->' .
+        '<!-- wp:group {"className":"support-grid","tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group support-grid">' .
+        $card(
+            'blue',
+            'Einmalig',
+            'Spenden',
+            block_p('Jede Spende fließt in die Förderung der Nationalteams.') .
+                block_p(
+                    '<span>Empfänger</span>EINTRIKOT e. V.<br><span>IBAN</span><strong>' .
+                        DONATION_IBAN .
+                        '</strong><br><span>Zweck</span>Spende EINTRIKOT',
+                    'bank-box'
+                ) .
+                $btn(
+                    DONATION_PAYPAL,
+                    'Mit PayPal spenden ↗',
+                    'button solid',
+                    ' target="_blank" rel="noopener noreferrer"'
+                ) .
+                block_p(
+                    '<small>Bis 300 € reicht dem Finanzamt dein Kontoauszug. Für höhere Beträge stellen wir eine Zuwendungsbestätigung aus.</small>'
+                )
+        ) .
+        $card(
+            'green',
+            'Für Mitglieder',
+            'Jahresspende',
+            block_p(
+                'Mit einer festen Jahresspende hilfst du uns, langfristig zu planen: 50, 100 oder 150 € oder ein Betrag deiner Wahl, jederzeit änderbar.'
+            ) .
+                $btn(
+                    '/community-portal/?view=service&amp;service=funding',
+                    'Im Mitgliederportal einrichten ↗'
+                )
+        ) .
+        $card(
+            'white',
+            'Ehrenamt',
+            'Mit anpacken',
+            block_p(
+                'Events organisieren, Mentoring anbieten, Texte schreiben oder Bilder liefern: Viel von dem, was wir tun, entsteht ehrenamtlich.'
+            ) . $btn('mailto:info@eintrikot.de', 'Schreib uns ↗', 'button')
+        ) .
+        '</div><!-- /wp:group -->' .
+        block_p(
+            'Größere Spende, Sponsoring oder Fragen? <a href="/community-kontakt/">Sprich direkt mit dem Vorstand ↗</a>',
+            'support-note'
+        ) .
+        '</section><!-- /wp:group -->' .
+        "\n" .
+        '<!-- wp:group {"className":"section thanks","tagName":"section","layout":{"type":"default"}} --><section class="wp-block-group section thanks"><!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Von Mitgliedern<br>möglich gemacht.</h2><!-- /wp:heading -->' .
+        block_p('Danke für euren Beitrag zu EINTRIKOT.') .
+        '<!-- wp:group {"className":"info-grid","tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group info-grid">' .
+        $thanks_html .
+        '</div><!-- /wp:group --></section><!-- /wp:group -->';
 }

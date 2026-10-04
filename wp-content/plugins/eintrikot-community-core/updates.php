@@ -28,7 +28,7 @@ function content_updates() {
         '0.17-texte' => [
             'title' => 'Website-Texte überarbeiten',
             'text' =>
-                'Übernimmt die im Oktober 2026 abgestimmten Texte: Vision 2030 mit 500+ Mitgliedern, Hero mit „gemeinnütziger Verein“, Alumni statt Ehemalige, „Was ist EINTRIKOT?“ oben auf „Der Verein“, Spendenkonto und PayPal auf „Unterstützen“, Staff und unter 18 auf „Mitglied werden“, Beirat auf „Menschen“, Titel der Website „EINTRIKOT e. V.“. Ändert nur diese Stellen; im Backend bereits geänderte Stellen werden übersprungen und genannt.',
+                'Übernimmt die im Oktober 2026 abgestimmten Texte: Vision 2030 mit 500+ Mitgliedern, Hero mit „gemeinnütziger Verein“, Alumni statt Ehemalige, „Was ist EINTRIKOT?“ oben auf „Der Verein“, „Unterstützen“ neu aufgebaut (Spenden mit Konto und PayPal, Jahresspende, Mit anpacken), Staff und unter 18 auf „Mitglied werden“, Beirat auf „Menschen“, Titel der Website „EINTRIKOT e. V.“. Ändert nur diese Stellen; im Backend bereits geänderte Stellen werden übersprungen und genannt.',
             'run' => __NAMESPACE__ . '\\update_site_texts'
         ],
         '0.18-datenschutz' => [
