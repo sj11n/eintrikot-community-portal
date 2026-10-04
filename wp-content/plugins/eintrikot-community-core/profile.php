@@ -578,6 +578,12 @@ function render_profile($id) {
                     : '') .
                 '</div></div><small>Bild anklicken, auswählen und den Ausschnitt festlegen. JPEG, PNG oder WebP, bis 5 MB. Nur im Mitgliederbereich sichtbar.</small>' .
                 field_error_text('avatar') .
+                // Board, advisory board and founders appear on the public page "Menschen".
+                (named_on_website($id) || !empty($data['public_photo'])
+                    ? '<label class="check"><input type="checkbox" name="public_photo" value="1" ' .
+                        checked(!empty($data['public_photo']), true, false) .
+                        '><span>Mein Profilbild darf auf der öffentlichen Website unter „Menschen“ erscheinen, wo ich als Gründungsmitglied, im Vorstand oder Beirat genannt bin. Ohne Haken stehen dort meine Initialen.</span></label>'
+                    : '') .
                 '</div><label class="field">Dein Name<input name="display_name" required maxlength="120"' .
                 field_error_attrs('display_name') .
                 ' value="' .
@@ -638,7 +644,7 @@ function render_profile($id) {
         esc_url(portal_url('service', ['service' => 'funding'])) .
         '">Förderanfrage vorbereiten →</a></section><section class="form-section"><h2>In Verbindung bleiben</h2><label class="check"><input type="checkbox" name="birthday_notice" value="1" ' .
         checked(!empty($data['birthday_notice']), true, false) .
-        '><span>Mein Geburtstag darf mit meinem Namen in den internen Vereinsinfos erscheinen. Das Geburtsjahr wird nicht angezeigt.</span></label><label class="check"><input type="checkbox" name="newsletter" value="1" ' .
+        '><span>Mein Geburtstag darf mit meinem Namen im Portal unter „Termine“ erscheinen. Das Geburtsjahr wird nicht angezeigt.</span></label><label class="check"><input type="checkbox" name="newsletter" value="1" ' .
         checked(!empty($data['newsletter']), true, false) .
         '><span>EINTRIKOT-Newsletter erhalten<br><small>Du kannst diese Einstellung jederzeit ändern.</small></span></label></section>';
     if (manager_access()) {
@@ -949,7 +955,7 @@ add_action('admin_post_et_profile', function () {
         $data['birthday'] = $previous['birthday'];
         unset($errors['birthday']);
     }
-    foreach (['show_age', 'birthday_notice', 'newsletter'] as $key) {
+    foreach (['show_age', 'birthday_notice', 'newsletter', 'public_photo'] as $key) {
         $data[$key] = isset($_POST[$key]);
     }
     // Membership number and entry date come from MeinVerein; only the administration corrects them.

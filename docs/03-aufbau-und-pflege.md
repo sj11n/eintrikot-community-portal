@@ -21,7 +21,11 @@ Nur Theme und Plugin werden eingespielt. Alles andere bleibt im Repository.
 
 ## Pflege im Backend
 
-- **Seiten:** öffentliche Texte und Bilder. Hero und Bildplätze sind Cover- bzw. Bildblöcke; Bild über die Mediathek ersetzen, Ausschnitt über den Fokuspunkt.
+- **Seiten:** öffentliche Texte und Bilder. Hero und Bildplätze sind Cover-Blöcke; Bild einsetzen: Seite bearbeiten → den grauen Bildplatz („Bild folgt") anklicken → in der Werkzeugleiste „Medien hinzufügen" bzw. „Ersetzen" → Bild aus der Mediathek wählen oder hochladen → Ausschnitt über den Fokuspunkt (Seitenleiste). Der Platzhaltertext verschwindet, sobald ein Bild drin ist. Die Bildplätze laufen über die ganze Breite (16:7, am Handy 4:3); der Hero füllt auf jedem Gerät genau den Bildschirm.
+- **Menschen:** Fotos von Gründungsmitgliedern, Vorstand und Beirat kommen aus dem Mitgliederportal, wenn die Person im Profil „Profilbild auf der Website" angehakt hat (Zuordnung über den Namen), sonst Initialen. Hintergrund der Initialen Rosé für Damen, Hellblau für Herren (aus dem Team im Profil, für die sieben Gründungsmitglieder hinterlegt).
+- **Menschen:** Vorstand als große Karten mit Foto, Beirat auf grüner Fläche, Gründungsmitglieder am Ende als Namensliste mit Gründungsdatum.
+- **Startseite, Hero:** Das Band steht steil im rechten Teil und läuft oben und unten aus dem Bild, nie über dem Text; am Handy liegt es flach im freien unteren Bereich und läuft links und rechts hinaus; „Mitglied werden" bleibt im Hero weiß, sonst beim Darüberfahren Gold.
+- **Unterstützen:** drei Karten (Spenden mit Konto und PayPal, Jahresspende, Mit anpacken), darunter der Dank. Kontodaten stehen in `texts.php` (DONATION_IBAN, DONATION_PAYPAL). Ein im Backend gesetztes Bild hat Vorrang.
 - **Beiträge:** öffentliche News. Die Startseite zeigt die drei neuesten, die News-Seite neun pro Seite.
 - **Vereinsinfos:** interne Mitteilungen im Portal. **EINTRIKOT Kalender:** Termine und Jahrestage.
 - **Community-Aufbau:** Kennzahlen (mit Stand-Datum), Beitritt (MeinVerein-Link), Social Media (Adressen der Vereinskanäle: Footer „Folge uns“, LinkedIn-Hinweis unter den News-Listen, „sameAs“ für Suchmaschinen; leer = nicht sichtbar), Aufnahme & Urkunde, Aktualisierungen (u. a. „Interne Links domainunabhängig machen" vor dem Umzug, „Datenschutzerklärung aktualisieren").

@@ -62,7 +62,8 @@ function render_audit() {
                     'directory_listing' => 'Verzeichnis-Einstellung',
                     'donation' => 'Freiwillige Jahresspende',
                     'import' => 'Übernahme aus NDAlumni',
-                    'review' => 'Profil geprüft'
+                    'review' => 'Profil geprüft',
+                    'public_photo' => 'Profilbild auf der Website'
                 ])[$row->field] ?? $row->field
             ) .
             '</h2><p>Geändert von ' .

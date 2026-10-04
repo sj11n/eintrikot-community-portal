@@ -419,22 +419,19 @@ function render_member($id) {
                 }
                 $from = $row['from'] ?? '';
                 $to = $row['to'] ?? '';
+                // One line: period, then the team in front, role and position quietly behind.
+                $team = implode(' · ', array_filter([$row['organisation'] ?? '', $row['age_class'] ?? '']));
+                $role = trim(
+                    ($row['role'] ?? '') .
+                        (($row['position'] ?? '') !== '' ? ' (' . $row['position'] . ')' : '')
+                );
                 echo '<li><span class="station-years">' .
                     esc_html($from !== '' ? $from . ' – ' . ($to !== '' ? $to : 'heute') : 'Zeitraum offen') .
-                    '</span><div><strong>' .
-                    esc_html($row['role'] ?? '') .
-                    '</strong><p>' .
-                    esc_html(
-                        implode(
-                            ' · ',
-                            array_filter([
-                                $row['position'] ?? '',
-                                $row['organisation'] ?? '',
-                                $row['age_class'] ?? ''
-                            ])
-                        )
-                    ) .
-                    '</p></div></li>';
+                    '</span><strong class="station-team">' .
+                    esc_html($team !== '' ? $team : 'Team offen') .
+                    '</strong>' .
+                    ($role !== '' ? '<span class="station-role">' . esc_html($role) . '</span>' : '') .
+                    '</li>';
             }
             echo '</ol>';
         }
