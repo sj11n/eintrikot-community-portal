@@ -117,6 +117,8 @@ require_once __DIR__ . '/onboarding.php';
 
 require_once __DIR__ . '/ndalumni.php';
 
+require_once __DIR__ . '/social.php';
+
 require_once __DIR__ . '/login.php';
 
 require_once __DIR__ . '/consent.php';

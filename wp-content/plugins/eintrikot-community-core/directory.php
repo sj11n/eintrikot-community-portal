@@ -239,10 +239,10 @@ function render_directory() {
             esc_html($u->display_name) .
             '</span>' .
             // Small LinkedIn mark: this member shares a LinkedIn profile (the link itself is on the profile).
-            (is_readable(__DIR__ . '/assets/social/linkedin.svg') &&
+            (social_logo('linkedin') !== '' &&
             str_starts_with((string) visible_value(profile_data($u->ID), 'linkedin'), 'https://')
                 ? '<img class="member-linkedin" src="' .
-                    esc_url(plugins_url('assets/social/linkedin.svg', __FILE__)) .
+                    esc_url(plugins_url(social_logo('linkedin'), __FILE__)) .
                     '" alt="(auf LinkedIn)" title="Auf LinkedIn" width="16" height="16">'
                 : '') .
             '</strong>' .
@@ -279,6 +279,16 @@ function render_directory() {
     }
     echo '</div>';
 }
+/** Plugin-relative path of a network logo (SVG, else PNG; 'mono/' for the one-colour set), or ''. */
+function social_logo($key, $set = '') {
+    foreach (['svg', 'png'] as $ext) {
+        $file = 'assets/social/' . $set . $key . '.' . $ext;
+        if (is_readable(__DIR__ . '/' . $file)) {
+            return $file;
+        }
+    }
+    return '';
+}
 /** Shared social profiles as a row of network logos; nothing when no link is shared. */
 function social_links($data) {
     $items = '';
@@ -287,12 +297,13 @@ function social_links($data) {
         if (!is_string($url) || !str_starts_with($url, 'https://')) {
             continue;
         }
-        $file = 'assets/social/' . $key . '.svg';
-        $icon = is_readable(__DIR__ . '/' . $file)
-            ? '<img src="' . esc_url(plugins_url($file, __FILE__)) . '" alt="" width="24" height="24">'
-            : '<span class="social-fallback" aria-hidden="true">' . esc_html($label) . '</span>';
+        $file = social_logo($key);
+        $icon =
+            $file !== ''
+                ? '<img src="' . esc_url(plugins_url($file, __FILE__)) . '" alt="" width="24" height="24">'
+                : '<span class="social-fallback" aria-hidden="true">' . esc_html($label) . '</span>';
         // LinkedIn matters most in our network: logo with its name, the others as logo only.
-        if ($key === 'linkedin' && is_readable(__DIR__ . '/' . $file)) {
+        if ($key === 'linkedin' && $file !== '') {
             $icon .= '<span class="social-name">LinkedIn</span>';
         }
         $items .=
