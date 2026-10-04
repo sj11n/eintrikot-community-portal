@@ -170,41 +170,13 @@ function update_site_texts() {
         save_page_text($page, $c, $log);
     }
 
-    // Menschen: Beirat
+    // Menschen: neu aufgebaut (Vorstand, Beirat, Gründungsmitglieder am Ende). Alte Fassung bleibt als Revision.
     $page = get_page_by_path(PEOPLE_PAGE);
     if ($page) {
-        $c = $page->post_content;
         $log[] = 'Menschen';
-        $people = '';
-        foreach (['Andreas Arntzen', 'Wibke Weisel', 'Natascha Keller'] as $name) {
-            $people .=
-                '<!-- wp:group {"className":"advisory-person","tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group advisory-person"><!-- wp:cover {"overlayColor":"blue","dimRatio":100,"isUserOverlayColor":true,"className":"advisory-photo et-media-slot","minHeight":96} --><div class="wp-block-cover advisory-photo et-media-slot" style="min-height:96px"><span aria-hidden="true" class="wp-block-cover__background has-blue-background-color has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:paragraph --><p><span>' .
-                esc_html(member_initials($name)) .
-                '</span></p><!-- /wp:paragraph --></div></div><!-- /wp:cover -->' .
-                "\n" .
-                '<!-- wp:group {"tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group"><!-- wp:paragraph {"className":"micro"} --><p class="micro">Beirat · Gründungsmitglied</p><!-- /wp:paragraph -->' .
-                "\n" .
-                '<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">' .
-                esc_html($name) .
-                '</h3><!-- /wp:heading --></div><!-- /wp:group --></article><!-- /wp:group -->' .
-                "\n";
-        }
-        text_change(
-            $c,
-            'Beirat: Andreas Arntzen, Wibke Weisel, Natascha Keller',
-            '#<!-- wp:group (?:(?!-->).)*?"className":"advisory-person"(?:(?!-->).)*?-->.*?Vorstellung folgt.*?</article>\s*<!-- /wp:group -->\s*#s',
-            str_replace(['\\', '$'], ['\\\\', '\\$'], $people),
-            $log
-        );
-        text_change(
-            $c,
-            'Beirat: Einleitung',
-            'Der Beirat begleitet den Vorstand mit Erfahrung und Perspektiven aus dem Hockeysport.',
-            'Die Gründungsmitglieder waren zuvor der Beirat der DHB-Alumni-Familie. Drei von ihnen haben den Vorstand übernommen. Gemeinsam mit dem Beirat bringen sie EINTRIKOT voran; an den Beiratssitzungen nimmt der Vorstand teil.',
-            $log
-        );
-        save_page_text($page, $c, $log);
+        save_page_text($page, people_page_content(), $log);
         delete_transient('eintrikot_people_names');
+        $log[] = '✓ Seite neu aufgebaut: Vorstand, Beirat, Gründungsmitglieder';
     }
 
     // Name der Website (Browser-Tab, Suchergebnisse)
@@ -328,4 +300,123 @@ function support_page_content() {
         '<!-- wp:group {"className":"info-grid","tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group info-grid">' .
         $thanks_html .
         '</div><!-- /wp:group --></section><!-- /wp:group -->';
+}
+
+/**
+ * „Menschen“: Vorstand (große Karten mit Foto), Beirat (grüne Fläche, kompakt),
+ * Gründungsmitglieder am Ende (Namensliste mit Gründungsdatum, ohne Fotos).
+ */
+function people_page_content() {
+    $slot = function ($class, $name) {
+        return '<!-- wp:cover {"overlayColor":"blue","dimRatio":100,"isUserOverlayColor":true,"className":"' .
+            $class .
+            ' et-media-slot","minHeight":96} --><div class="wp-block-cover ' .
+            $class .
+            ' et-media-slot" style="min-height:96px"><span aria-hidden="true" class="wp-block-cover__background has-blue-background-color has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:paragraph --><p><span>' .
+            esc_html(member_initials($name)) .
+            '</span></p><!-- /wp:paragraph --></div></div><!-- /wp:cover -->';
+    };
+    $h3 = fn($text, $class = '') => '<!-- wp:heading {"level":3' .
+        ($class !== '' ? ',"className":"' . $class . '"' : '') .
+        '} --><h3 class="wp-block-heading' .
+        ($class !== '' ? ' ' . $class : '') .
+        '">' .
+        esc_html($text) .
+        '</h3><!-- /wp:heading -->';
+    $group = fn($class, $inner, $tag = 'div') => '<!-- wp:group {"className":"' .
+        $class .
+        '","tagName":"' .
+        $tag .
+        '","layout":{"type":"default"}} --><' .
+        $tag .
+        ' class="wp-block-group ' .
+        $class .
+        '">' .
+        $inner .
+        '</' .
+        $tag .
+        '><!-- /wp:group -->';
+    $board = [
+        [
+            '1. Vorsitzender',
+            'Björn Emmerling',
+            'Björn verantwortet die strategische Ausrichtung und Repräsentation des Vereins. Als Weltmeister 2002 und 2006 kennt er die Kraft einer Mannschaft und bringt diese Erfahrung in die Entwicklung unseres Netzwerks ein.'
+        ],
+        [
+            '2. Vorsitzender',
+            'Markus Weise',
+            'Markus bringt seine Expertise aus Jahrzehnten im Welthockey in die sportliche Leitung ein. Als dreifacher Olympiasieger-Trainer kennt er die Voraussetzungen für nachhaltigen Erfolg im Leistungssport.'
+        ],
+        [
+            'Schatzmeisterin',
+            'Fanny Rinne',
+            'Fanny sorgt für solide Finanzen und transparente Mittelverwendung. Die ehemalige Kapitänin und Olympiasiegerin verbindet ihre Erfahrung im Nationalteam mit der Verantwortung für eine verlässliche finanzielle Basis des Vereins.'
+        ]
+    ];
+    $cards = '';
+    foreach ($board as [$role, $name, $text]) {
+        $cards .= $group(
+            'board-card',
+            $slot('board-photo', $name) .
+                block_p(esc_html($role), 'micro') .
+                $h3($name) .
+                block_p(esc_html($text)),
+            'article'
+        );
+    }
+    $advisory = '';
+    foreach (['Andreas Arntzen', 'Wibke Weisel', 'Natascha Keller'] as $name) {
+        $advisory .= $group(
+            'advisory-card',
+            $slot('advisory-photo', $name) . $group('', $h3($name) . block_p('Gründungsmitglied', 'micro')),
+            'article'
+        );
+    }
+    $founders = '';
+    foreach (
+        [
+            ['Andreas Arntzen', 'Beirat'],
+            ['Björn Emmerling', 'Vorstand'],
+            ['Natascha Keller', 'Beirat'],
+            ['Fanny Rinne', 'Vorstand'],
+            ['Uschi Schmitz', ''],
+            ['Markus Weise', 'Vorstand'],
+            ['Wibke Weisel', 'Beirat']
+        ]
+        as [$name, $role]
+    ) {
+        $founders .= $group('founder-entry', $h3($name) . ($role !== '' ? block_p($role, 'micro') : ''));
+    }
+    return '<!-- wp:cover {"overlayColor":"blue","dimRatio":100,"isUserOverlayColor":true,"className":"section page-intro et-mvp-page-hero"} --><div class="wp-block-cover section page-intro et-mvp-page-hero"><span aria-hidden="true" class="wp-block-cover__background has-blue-background-color has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Die Menschen<br>hinter EINTRIKOT.</h1><!-- /wp:heading -->' .
+        block_p('Von Mitgliedern getragen. Ehrenamtlich gestaltet.', 'lead') .
+        '</div></div><!-- /wp:cover -->' .
+        "\n" .
+        $group(
+            'section team-board',
+            '<!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Der Vorstand</h2><!-- /wp:heading -->' .
+                block_p('Der Vorstand arbeitet ehrenamtlich und gestaltet die Entwicklung von EINTRIKOT.') .
+                $group('board-cards', $cards),
+            'section'
+        ) .
+        "\n" .
+        $group(
+            'section team-advisory',
+            '<!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Der Beirat</h2><!-- /wp:heading -->' .
+                block_p(
+                    'Die Gründungsmitglieder waren zuvor der Beirat der DHB-Alumni-Familie. Drei von ihnen haben den Vorstand übernommen. Gemeinsam mit dem Beirat bringen sie EINTRIKOT voran; an den Beiratssitzungen nimmt der Vorstand teil.'
+                ) .
+                $group('advisory-cards', $advisory),
+            'section'
+        ) .
+        "\n" .
+        $group(
+            'section team-founders',
+            block_p('Gegründet am 23. September 2025', 'micro') .
+                '<!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Die Gründungsmitglieder</h2><!-- /wp:heading -->' .
+                block_p(
+                    'Sie haben den deutschen Hockeysport über viele Jahre geprägt. Gemeinsam übernehmen sie Verantwortung über die eigene Karriere hinaus.'
+                ) .
+                $group('founder-list', $founders),
+            'section'
+        );
 }

@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 const PEOPLE_PAGE = 'community-menschen';
-const PEOPLE_BLOCKS = ['founder', 'board-person', 'advisory-person'];
+const PEOPLE_BLOCKS = ['founder', 'board-person', 'advisory-person', 'board-card', 'advisory-card'];
 
 /** Names listed on the people page (cached until the page changes). */
 function people_names() {
