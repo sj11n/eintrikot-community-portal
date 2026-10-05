@@ -37,6 +37,12 @@ function content_updates() {
                 'Ersetzt den Inhalt der Seite „Datenschutz" durch die Datenschutzerklärung für www.eintrikot.de (Stand Oktober 2026: STRATO, WISO MeinVerein, Google Workspace, EINTRIKOT-App, Minderjährige, Beitrag und Jahresspende im Profil, Umstieg von NDAlumni, Social-Media-Links, PayPal, Fotos auf „Menschen“). Die bisherige Fassung bleibt als Revision erhalten.',
             'run' => __NAMESPACE__ . '\\update_privacy_page'
         ],
+        '0.19-werte' => [
+            'title' => 'Neue Werte auf „Der Verein“',
+            'text' =>
+                'Ersetzt unter „Unsere Werte“ die drei alten Kästen (Gemeinschaft, Verantwortung, Unabhängigkeit) durch die neuen Werte mit Icons: „Ein Trikot verbindet“, „Wir geben zurück“, „Wir stehen zu unserem Wort“. Der übrige Inhalt der Seite bleibt unverändert.',
+            'run' => __NAMESPACE__ . '\\update_values'
+        ],
         '0.7-vision' => [
             'title' => 'Schreibweise „EINTRIKOT" in der Vision 2030',
             'text' =>

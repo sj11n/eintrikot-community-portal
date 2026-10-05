@@ -586,3 +586,76 @@ a.button[href*='mitglied-werden']:focus-visible {
         height: 220px !important;
     }
 }
+
+/* Unsere Werte: drei Karten mit Icon in Rosé, Grün und Hellblau */
+.entry-content .values-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 28px;
+}
+.entry-content .value-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 32px 28px;
+    border-radius: 18px;
+    background: #f1d1dd;
+}
+.entry-content .value-card.is-green {
+    background: #cedfbd;
+}
+.entry-content .value-card.is-blue {
+    background: #c8e2ee;
+}
+.entry-content .value-card .value-icon {
+    display: grid;
+    place-items: center;
+    width: 96px;
+    height: 96px;
+    margin: 0 0 6px;
+    border-radius: 50%;
+    background: #fff;
+}
+.entry-content .value-card .value-icon img {
+    width: 72px;
+    max-width: none;
+    height: 72px;
+}
+.entry-content .value-card h3 {
+    margin: 0;
+    font-size: 26px;
+    line-height: 1.15;
+}
+.entry-content .value-card p {
+    margin: 0;
+    font-weight: 600;
+}
+.entry-content .value-card ul {
+    margin: 4px 0 0;
+    padding: 14px 0 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.15);
+    list-style: none;
+}
+.entry-content .value-card li {
+    position: relative;
+    padding-left: 20px;
+    margin: 0 0 10px;
+    font-size: 15px;
+    line-height: 1.5;
+}
+.entry-content .value-card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #000;
+}
+@media (max-width: 900px) {
+    .entry-content .values-grid {
+        grid-template-columns: 1fr;
+    }
+}
