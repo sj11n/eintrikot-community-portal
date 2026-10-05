@@ -20,14 +20,21 @@
 <!-- wp:paragraph --><p>Das Netzwerk soll langfristig bestehen – unabhängig davon, welche Personen beim Deutschen Hockey-Bund Verantwortung tragen. Als eigenständiger Verein schaffen wir klare Zuständigkeiten und bewahren die Verbindung über Generationen hinweg.</p><!-- /wp:paragraph -->
 <!-- wp:paragraph --><p>Ein Vorbild sind die niederländischen De Batavieren, die seit 1937 Hockeyspieler zusammenbringen. Auch EINTRIKOT soll eine bleibende Institution für den deutschen Hockeyleistungssport werden.</p><!-- /wp:paragraph -->
 <!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Unsere Werte</h2><!-- /wp:heading -->
-<!-- wp:group {"className":"info-grid","tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group info-grid"><!-- wp:group {"tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group"><!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Gemeinschaft</h3><!-- /wp:heading -->
-<!-- wp:paragraph --><p>Das Nationaltrikot verbindet Jugend, Aktive, Ehemalige und Masters. Gemeinsame Erfahrungen schaffen Nähe über die eigene Mannschaft hinaus.</p><!-- /wp:paragraph -->
+<!-- wp:group {"className":"values-grid","tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group values-grid">
+<!-- wp:group {"className":"value-card is-rose","tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group value-card is-rose"><!-- wp:image {"sizeSlug":"full","className":"value-icon"} --><figure class="wp-block-image size-full value-icon"><img src="/wp-content/themes/eintrikot-community/assets/value-trikot.svg" alt=""/></figure><!-- /wp:image -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Ein Trikot verbindet</h3><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Wer für Deutschland gespielt oder gearbeitet hat, gehört dazu, egal wann, wie oft und in welcher Rolle.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Jedes Mitglied hat dieselbe Stimme, unabhängig von Länderspielen und Titeln.</li><!-- /wp:list-item --><!-- wp:list-item --><li>Wir bringen Generationen, Damen und Herren bewusst zusammen.</li><!-- /wp:list-item --><!-- wp:list-item --><li>Diskriminierung hat bei uns keinen Platz.</li><!-- /wp:list-item --></ul><!-- /wp:list -->
 </article><!-- /wp:group -->
-<!-- wp:group {"tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group"><!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Verantwortung</h3><!-- /wp:heading -->
-<!-- wp:paragraph --><p>Erfahrung und Möglichkeiten weitergeben: Wir möchten die nächste Generation unterstützen und zur Zukunft des deutschen Hockeys beitragen.</p><!-- /wp:paragraph -->
+<!-- wp:group {"className":"value-card is-green","tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group value-card is-green"><!-- wp:image {"sizeSlug":"full","className":"value-icon"} --><figure class="wp-block-image size-full value-icon"><img src="/wp-content/themes/eintrikot-community/assets/value-geben.svg" alt=""/></figure><!-- /wp:image -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Wir geben zurück</h3><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Wir haben vom Hockey viel bekommen und geben einen Teil davon an die Nationalteams von heute weiter.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Wir fördern, was den Teams wirklich hilft, und fragen sie danach.</li><!-- /wp:list-item --><!-- wp:list-item --><li>Wer kein Geld gibt, gibt Zeit, Netzwerk oder Erfahrung.</li><!-- /wp:list-item --><!-- wp:list-item --><li>Wir unterstützen alle Nationalteams, nicht nur die sichtbarsten.</li><!-- /wp:list-item --></ul><!-- /wp:list -->
 </article><!-- /wp:group -->
-<!-- wp:group {"tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group"><!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Unabhängigkeit</h3><!-- /wp:heading -->
-<!-- wp:paragraph --><p>Eigenständig, transparent und von unseren Mitgliedern getragen. Unser Handeln dient dem Hockeyleistungssport.</p><!-- /wp:paragraph -->
+<!-- wp:group {"className":"value-card is-blue","tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group value-card is-blue"><!-- wp:image {"sizeSlug":"full","className":"value-icon"} --><figure class="wp-block-image size-full value-icon"><img src="/wp-content/themes/eintrikot-community/assets/value-wort.svg" alt=""/></figure><!-- /wp:image -->
+<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Wir stehen zu unserem Wort</h3><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Wer uns Beitrag, Spende oder Vertrauen gibt, weiß, was damit passiert.</p><!-- /wp:paragraph -->
+<!-- wp:list --><ul class="wp-block-list"><!-- wp:list-item --><li>Wir berichten jährlich, wohin das Fördergeld gegangen ist.</li><!-- /wp:list-item --><!-- wp:list-item --><li>Wir sagen nur zu, was wir halten können.</li><!-- /wp:list-item --><!-- wp:list-item --><li>Wir entscheiden nach nachvollziehbaren Kriterien, nicht nach Nähe.</li><!-- /wp:list-item --></ul><!-- /wp:list -->
 </article><!-- /wp:group -->
 </div><!-- /wp:group -->
 </section><!-- /wp:group -->

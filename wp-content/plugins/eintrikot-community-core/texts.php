@@ -420,3 +420,93 @@ function people_page_content() {
             'section'
         );
 }
+
+/** „Unsere Werte“ (abgestimmt Oktober 2026): drei Werte mit Icon, Satz und drei Punkten. */
+function values_content() {
+    $values = [
+        [
+            'trikot',
+            'rose',
+            'Ein Trikot verbindet',
+            'Wer für Deutschland gespielt oder gearbeitet hat, gehört dazu, egal wann, wie oft und in welcher Rolle.',
+            [
+                'Jedes Mitglied hat dieselbe Stimme, unabhängig von Länderspielen und Titeln.',
+                'Wir bringen Generationen, Damen und Herren bewusst zusammen.',
+                'Diskriminierung hat bei uns keinen Platz.'
+            ]
+        ],
+        [
+            'geben',
+            'green',
+            'Wir geben zurück',
+            'Wir haben vom Hockey viel bekommen und geben einen Teil davon an die Nationalteams von heute weiter.',
+            [
+                'Wir fördern, was den Teams wirklich hilft, und fragen sie danach.',
+                'Wer kein Geld gibt, gibt Zeit, Netzwerk oder Erfahrung.',
+                'Wir unterstützen alle Nationalteams, nicht nur die sichtbarsten.'
+            ]
+        ],
+        [
+            'wort',
+            'blue',
+            'Wir stehen zu unserem Wort',
+            'Wer uns Beitrag, Spende oder Vertrauen gibt, weiß, was damit passiert.',
+            [
+                'Wir berichten jährlich, wohin das Fördergeld gegangen ist.',
+                'Wir sagen nur zu, was wir halten können.',
+                'Wir entscheiden nach nachvollziehbaren Kriterien, nicht nach Nähe.'
+            ]
+        ]
+    ];
+    $html =
+        '<!-- wp:heading {"level":2} --><h2 class="wp-block-heading">Unsere Werte</h2><!-- /wp:heading -->' .
+        "\n" .
+        '<!-- wp:group {"className":"values-grid","tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group values-grid">';
+    foreach ($values as [$icon, $tone, $title, $text, $points]) {
+        $html .=
+            "\n" .
+            '<!-- wp:group {"className":"value-card is-' .
+            $tone .
+            '","tagName":"article","layout":{"type":"default"}} --><article class="wp-block-group value-card is-' .
+            $tone .
+            '"><!-- wp:image {"sizeSlug":"full","className":"value-icon"} --><figure class="wp-block-image size-full value-icon"><img src="/wp-content/themes/eintrikot-community/assets/value-' .
+            $icon .
+            '.svg" alt=""/></figure><!-- /wp:image -->' .
+            "\n" .
+            '<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">' .
+            $title .
+            '</h3><!-- /wp:heading -->' .
+            "\n" .
+            block_p($text) .
+            "\n" .
+            '<!-- wp:list --><ul class="wp-block-list">';
+        foreach ($points as $point) {
+            $html .= '<!-- wp:list-item --><li>' . $point . '</li><!-- /wp:list-item -->';
+        }
+        $html .= '</ul><!-- /wp:list -->' . "\n" . '</article><!-- /wp:group -->';
+    }
+    return $html . "\n" . '</div><!-- /wp:group -->';
+}
+
+/** Replaces the old values (Gemeinschaft, Verantwortung, Unabhängigkeit) on „Der Verein“. */
+function update_values() {
+    $page = get_page_by_path('community-verein');
+    if (!$page) {
+        return new \WP_Error('missing', 'Seite „Der Verein“ nicht gefunden.');
+    }
+    $c = $page->post_content;
+    if (str_contains($c, 'values-grid')) {
+        return 'Nichts zu ändern – die neuen Werte stehen schon auf der Seite.';
+    }
+    $pattern =
+        '#<!-- wp:heading[^>]*-->\s*<h2[^>]*>\s*Unsere Werte\s*</h2>\s*<!-- /wp:heading -->\s*<!-- wp:group (?:(?!-->).)*?"className":"info-grid"(?:(?!-->).)*?-->.*?</div>\s*<!-- /wp:group -->#s';
+    if (!preg_match($pattern, $c, $m)) {
+        return new \WP_Error(
+            'layout',
+            'Den Abschnitt „Unsere Werte“ gibt es nicht im erwarteten Aufbau (im Backend geändert?). Nichts geändert.'
+        );
+    }
+    $c = str_replace($m[0], values_content(), $c);
+    $result = wp_update_post(wp_slash(['ID' => $page->ID, 'post_content' => $c]), true);
+    return is_wp_error($result) ? $result : 'Neue Werte mit Icons auf „Der Verein“ eingesetzt.';
+}
