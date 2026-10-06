@@ -86,6 +86,7 @@ Das Geburtsdatum kommt aus MeinVerein bzw. dem Antrag und ist zunächst **privat
 
 ## Import aus Excel: Zahlen, Tore, weitere Ausbildung (0.20.1)
 
+- **Jahre aus Excel (0.20.2):** „2003.0“ galt als Excel-Tageszahl und wurde zum Jahr 1905; 164 von 182 DHB-Vita-Stationen der Master-Tabelle wären so falsch gewesen. Jahre mit „.0“ werden jetzt als Jahre gelesen.
 - **Zahlen aus Excel:** Excel und Google Tabellen liefern ganze Zahlen als „3.0“. Der Import las daraus früher „30“ (Mitgliedsnummer 3 wäre als 30 angelegt worden). Jetzt gilt „3.0“ als 3; das gilt für Mitgliedsnummer, Länderspiele und Tore.
 - **Tore:** neues Profilfeld im Hockey-Abschnitt, aus „Anzahl von Toren“.
 - **Weitere Ausbildungen:** Das Profil hat einen strukturierten Eintrag. Weitere Einträge aus „Akademische Daten 2–5“ kommen als eine Zeile „Weitere Ausbildung: …“ unter „Mehr dazu“.

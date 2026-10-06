@@ -342,6 +342,12 @@ $profile = nda_profile([
 check('Import: Länderspiele ohne .0', ($profile['caps'] ?? '') === '185');
 check('Import: Tore ohne .0', ($profile['goals'] ?? '') === '12');
 check('Import: weitere Ausbildung als Text', str_contains($profile['support'] ?? '', 'Weitere Ausbildung: Master, BWL, Uni Test (2008–2011); Jura'));
+check('Jahr 2003.0 bleibt 2003 (nicht 1905)', nda_year('2003.0') === '2003' && nda_year('1989.0') === '1989' && nda_year('2003') === '2003');
+check('Excel-Datumswert wird zum Jahr', nda_year('46003.0') === '2025');
+$notes_y = [];
+$station_profile = nda_profile(['hockeylebenslauf1mannschaft' => 'A-Kader', 'hockeylebenslauf1position' => 'Sturm', 'hockeylebenslauf1von' => '2003.0', 'hockeylebenslauf1bis' => '2010.0', 'anrede' => 'Herr', 'akademischedaten1abschluss' => 'Master', 'akademischedaten1von' => '2004.0', 'akademischedaten1bis' => '2009.0'], $notes_y);
+check('Import: Station mit Jahren 2003 bis 2010', ($station_profile['stations'][0]['from'] ?? '') === '2003' && ($station_profile['stations'][0]['to'] ?? '') === '2010');
+check('Import: Ausbildungszeitraum 2004–2009', ($station_profile['education_period'] ?? '') === '2004–2009');
 check('Profil kennt das Feld Tore', isset(profile_fields()['goals']));
 $map = nda_map([
     ['Bevorzugte E-Mail-Adresse', 'Vorname', 'Nachname', 'Gestorben am', 'Gekündigt am'],
