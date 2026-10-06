@@ -110,7 +110,6 @@
 <violation file="wp-content/plugins/eintrikot-community-core/profile.php" sniff="WordPress.Security.ValidatedSanitizedInput.MissingUnslash" signature="af7d8b0ad878c86ee0ca3e2e71aca2f4a825773f"/>
 <violation file="wp-content/plugins/eintrikot-community-core/profile.php" sniff="WordPress.Security.ValidatedSanitizedInput.MissingUnslash" signature="bdc0d557ceeae68816bcdc74a166dfd0e40aab1a"/>
 <violation file="wp-content/plugins/eintrikot-community-core/profile.php" sniff="WordPress.Security.ValidatedSanitizedInput.MissingUnslash" signature="d51d23a05fd509e32276279f0dbaad0832ef4324"/>
-<violation file="wp-content/plugins/eintrikot-community-core/requests.php" sniff="WordPress.NamingConventions.PrefixAllGlobals.ShortPrefixPassed" signature="cdc61cd495e7ba16ac38d8826ec786a5dd8a44e6"/>
 <violation file="wp-content/plugins/eintrikot-community-core/requests.php" sniff="WordPress.Security.EscapeOutput.OutputNotEscaped" signature="84609937f9dc53b774da7336eb5e46943093f746"/>
 <violation file="wp-content/plugins/eintrikot-community-core/requests.php" sniff="WordPress.Security.EscapeOutput.OutputNotEscaped" signature="ead1812086900c84a090de0e2f52c64904e83de7"/>
 <violation file="wp-content/plugins/eintrikot-community-core/requests.php" sniff="WordPress.Security.NonceVerification.Recommended" signature="e9a9f430092f34cfef7db13f4f0c033f9a5e5bb0"/>

@@ -49,6 +49,8 @@
 
     <!-- Namespace Eintrikot\Community statt Präfix -->
     <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <!-- "et_" ist das gewachsene Präfix für Hooks und Optionen -->
+        <exclude name="WordPress.NamingConventions.PrefixAllGlobals.ShortPrefixPassed"/>
         <properties>
             <property name="prefixes" type="array">
                 <element value="Eintrikot"/>
