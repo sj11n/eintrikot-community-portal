@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 }
 function service_types() {
     return [
-        'event' => 'Für ein Event anmelden',
+        'event' => 'Teilnahme an einem Event anfragen',
         'idea' => 'Förderidee einreichen',
         'help' => 'Ich möchte mich einbringen',
         'contact' => 'Vorstand kontaktieren',
@@ -24,7 +24,7 @@ function service_groups() {
 /** Short explanation under each service entry. */
 function service_hints() {
     return [
-        'event' => 'Teilnahme an einem EINTRIKOT-Termin',
+        'event' => 'Du fragst die Teilnahme an; der Vorstand bestätigt sie dir hier im Portal',
         'idea' => 'Ein Projekt, das wir unterstützen sollten',
         'help' => 'Zeit, Wissen oder Kontakte einbringen',
         'funding' => 'Freiwillige Jahresspende anfragen oder ändern',

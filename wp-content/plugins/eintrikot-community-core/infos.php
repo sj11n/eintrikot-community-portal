@@ -140,12 +140,19 @@ function calendar_items($days = 30) {
     }
     foreach (get_users(['capability' => 'eintrikot_portal', 'fields' => 'all']) as $user) {
         $data = profile_data($user->ID);
-        if (empty($data['birthday_notice']) || empty($data['birthday']) || is_minor_data($data)) {
+        // Only what the member shares, and never for accounts that are hidden from the directory.
+        $mode = birthday_mode($data);
+        if ($mode === '' || !directory_listed($user)) {
             continue;
         }
         $date = upcoming_date($data['birthday'], true, $today);
         if ($date && $date <= $until) {
-            $items[] = ['date' => $date->format('Y-m-d'), 'title' => 'Geburtstag: ' . $user->display_name];
+            $turns = (int) $date->format('Y') - (int) substr($data['birthday'], 0, 4);
+            $items[] = [
+                'date' => $date->format('Y-m-d'),
+                'title' =>
+                    'Geburtstag: ' . $user->display_name . ($mode === 'full' ? ' (wird ' . $turns . ')' : '')
+            ];
         }
     }
     usort($items, fn($a, $b) => strcmp($a['date'], $b['date']));
@@ -215,7 +222,7 @@ function render_events() {
     }
     $items = calendar_items(92);
     if (!$items) {
-        echo '<p class="portal-empty">In den nächsten drei Monaten stehen keine Termine an.</p>';
+        echo '<p class="portal-empty">In den nächsten drei Monaten stehen keine Termine oder Geburtstage an.</p>';
         return;
     }
     $month = '';

@@ -63,7 +63,8 @@ function render_audit() {
                     'donation' => 'Freiwillige Jahresspende',
                     'import' => 'Übernahme aus NDAlumni',
                     'review' => 'Profil geprüft',
-                    'public_photo' => 'Profilbild auf der Website'
+                    'public_photo' => 'Profilbild auf der Website',
+                    'birthday_visibility' => 'Geburtstag für Mitglieder sichtbar'
                 ])[$row->field] ?? $row->field
             ) .
             '</h2><p>Geändert von ' .

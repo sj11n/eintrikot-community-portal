@@ -83,6 +83,32 @@ check('Alter nur auf Wunsch', member_age($adult) === null);
 check('Alter bei Freigabe', member_age($with_age) === 30);
 check('Minderjährig: nie ein Alter', member_age($kid + ['show_age' => true]) === null);
 
+/* ---------- Geburtstag: nur, was das Mitglied freigibt ---------- */
+
+$birth_adult = ['birthday' => '1990-05-17'];
+check('Geburtstag: ohne Wahl privat', birthday_mode($birth_adult) === '' && birthday_text($birth_adult) === '');
+check('Geburtstag: Tag und Monat ohne Jahr', preg_match('/^17\. \p{L}+$/u', birthday_text($birth_adult + ['birthday_visibility' => 'day'])) === 1);
+check('Geburtstag: mit Jahr', preg_match('/^17\. \p{L}+ 1990$/u', birthday_text($birth_adult + ['birthday_visibility' => 'full'])) === 1);
+check('Geburtstag: ungültige Wahl = privat', birthday_mode($birth_adult + ['birthday_visibility' => 'alle']) === '');
+check('Geburtstag: altes Häkchen gilt als Tag und Monat', birthday_mode($birth_adult + ['birthday_notice' => true]) === 'day');
+check('Geburtstag: neue Wahl schlägt das alte Häkchen', birthday_mode($birth_adult + ['birthday_notice' => true, 'birthday_visibility' => '']) === '');
+$kid_birth = ['birthday' => day('-15 years'), 'birthday_visibility' => 'full'];
+check('Geburtstag: Minderjährige zeigen nie einen Geburtstag', birthday_mode($kid_birth) === '' && birthday_text($kid_birth) === '');
+check('Geburtstag: ohne gültiges Datum nichts', birthday_mode(['birthday_visibility' => 'full']) === '');
+
+$bday_day = make_user('eintrikot_member', ['birthday' => day('+10 days -30 years'), 'birthday_visibility' => 'day'], ['eintrikot_activated_at' => time()]);
+$bday_full = make_user('eintrikot_member', ['birthday' => day('+12 days -40 years'), 'birthday_visibility' => 'full'], ['eintrikot_activated_at' => time()]);
+$bday_private = make_user('eintrikot_member', ['birthday' => day('+11 days -35 years')], ['eintrikot_activated_at' => time()]);
+$bday_hidden = make_user('eintrikot_member', ['birthday' => day('+13 days -33 years'), 'birthday_visibility' => 'full', 'directory_listing' => 'hide'], ['eintrikot_activated_at' => time()]);
+$bday_kid = make_user('eintrikot_member', ['birthday' => day('+14 days -15 years'), 'birthday_visibility' => 'full'], ['eintrikot_activated_at' => time(), 'eintrikot_consent' => 'given', 'eintrikot_consent_record' => ['method' => 'manual']]);
+$titles = array_column(calendar_items(60), 'title');
+$name = fn($id) => get_user_by('id', $id)->display_name;
+check('Termine: Tag und Monat ohne Alter', in_array('Geburtstag: ' . $name($bday_day), $titles, true));
+check('Termine: mit Jahr zeigt das neue Alter', in_array('Geburtstag: ' . $name($bday_full) . ' (wird 40)', $titles, true));
+check('Termine: privat erscheint nicht', !array_filter($titles, fn($t) => str_contains($t, $name($bday_private))));
+check('Termine: im Verzeichnis ausgeblendete Konten erscheinen nicht', !array_filter($titles, fn($t) => str_contains($t, $name($bday_hidden))));
+check('Termine: Minderjährige erscheinen nicht', !array_filter($titles, fn($t) => str_contains($t, $name($bday_kid))));
+
 /* ---------- Eltern-Zustimmung ---------- */
 
 $kid_id = make_user('eintrikot_member', ['birthday' => day('-15 years')]);
@@ -183,6 +209,23 @@ caps_stats();
 check('Kennzahlen sind zwischengespeichert', get_transient('eintrikot_caps_stats') !== false);
 update_user_meta($cache_user, 'eintrikot_profile', ['birthday' => day('-30 years'), 'caps' => '3']);
 check('Profiländerung leert den Zwischenspeicher', get_transient('eintrikot_caps_stats') === false);
+
+/* ---------- Import: Spaltennamen der MeinVerein-Datei ---------- */
+
+$import_rows = [
+    ['Mitgliedsnr.', 'Vorname', 'Nachname', 'E-Mail', 'Geburtstag', 'Mitglied seit', 'Zusatzbetrag NDAlumni'],
+    ['4711', 'Test', 'Import', 'import.' . wp_generate_password(6, false) . '@example.test', '35000', '45923', '60.0']
+];
+$import_map = import_extract($import_rows, [])['map'];
+check('Import: Mitgliedsnummer erkannt', $import_map['number'] === 0);
+check('Import: Geburtstag erkannt', $import_map['birthday'] === 4);
+check('Import: Mitglied seit erkannt', $import_map['joined'] === 5);
+check('Import: Zusatzbetrag NDAlumni wird zur Jahresspende', $import_map['donation'] === 6);
+$import_checked = import_check(import_extract($import_rows, [])['rows']);
+check('Import: Excel-Datum und Spende gelesen', $import_checked[0]['birthday'] === '1995-10-28' && $import_checked[0]['donation'] === '6000');
+check('Import: Eintritt am Gründungstag ist gültig', $import_checked[0]['status'] === 'new');
+$before = import_check([['first_name' => 'A', 'last_name' => 'B', 'email' => 'vorher@example.test', 'number' => '1', 'joined' => '2020-12-15', 'birthday' => '', 'donation' => '']]);
+check('Import: Eintritt vor der Gründung wird abgelehnt', $before[0]['status'] === 'invalid');
 
 /* ---------- Login-Sperre ---------- */
 

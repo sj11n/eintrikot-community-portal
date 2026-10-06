@@ -213,10 +213,17 @@ function import_fields() {
             ['eintrittsdatum', 'eintritt', 'eintrittam', 'mitgliedseit', 'beitrittsdatum', 'beitritt']
         ],
         'birthday' => ['Geburtsdatum', ['geburtsdatum', 'geburtstag', 'geboren', 'geborenam', 'birthday']],
-        // Optional. In our MeinVerein setup the donation sits in "Individuelles Feld 1".
+        // Optional. In our MeinVerein setup the donation sits in "Individuelles Feld 1" or, in the NDAlumni export, in "Zusatzbetrag NDAlumni".
         'donation' => [
             'Jahresspende',
-            ['jahresspende', 'zusatzbeitrag', 'spende', 'forderbeitrag', 'individuellesfeld1']
+            [
+                'jahresspende',
+                'zusatzbeitrag',
+                'spende',
+                'forderbeitrag',
+                'individuellesfeld1',
+                'zusatzbetragndalumni'
+            ]
         ]
     ];
 }
@@ -509,7 +516,7 @@ function create_member_account($row) {
         update_user_meta($id, 'eintrikot_donation_cents', $row['donation']);
         update_user_meta($id, 'eintrikot_donation_updated', wp_date('Y-m-d'));
     }
-    // The birthday stays private; only the member decides whether the age is shown.
+    // The birthday stays private after the import; only the member decides whether others see it (birthday_visibility, show_age).
     if (($row['birthday'] ?? '') !== '') {
         update_user_meta($id, 'eintrikot_profile', ['birthday' => $row['birthday']]);
     }
