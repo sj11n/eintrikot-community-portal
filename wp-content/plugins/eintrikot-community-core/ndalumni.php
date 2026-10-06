@@ -182,7 +182,8 @@ function nda_profile($r, &$notes) {
     if (in_array($now, ['ja', 'nein'], true)) {
         $d['phase'] = $now === 'ja' ? 'Aktiv' : 'Alumni';
     }
-    $set('caps', $g('anzahlvonnationalspielen'), 60);
+    $set('caps', import_whole_number($g('anzahlvonnationalspielen')), 60);
+    $set('goals', import_whole_number($g('anzahlvontoren')), 20);
     $set('other_sport', $g('sportwennnichthockeydann'));
     $set('job', $g('aktuelleposition'));
     $set('employer', $g('arbeitgeber'));
@@ -205,11 +206,27 @@ function nda_profile($r, &$notes) {
     if ($period) {
         $d['education_period'] = implode('–', array_unique($period));
     }
+    // Further education entries become one line of text ("Mehr dazu"); the profile keeps one structured entry.
+    $more_education = [];
     foreach ([2, 3, 4, 5] as $n) {
-        if (!in_array($g('akademischedaten' . $n . 'abschluss'), ['', 'Abschluss', 'ja'], true)) {
-            nda_note($notes, 'Weitere Ausbildung nicht übernommen (nur die erste)');
-            break;
+        $parts = array_filter([
+            in_array($g('akademischedaten' . $n . 'abschluss'), ['', 'Abschluss', 'ja'], true)
+                ? ''
+                : $g('akademischedaten' . $n . 'abschluss'),
+            $g('akademischedaten' . $n . 'programm'),
+            $g('akademischedaten' . $n . 'schuleuniversitatinstitut')
+        ]);
+        if (!$parts) {
+            continue;
         }
+        $years = array_unique(
+            array_filter([
+                nda_year($r['akademischedaten' . $n . 'von'] ?? ''),
+                nda_year($r['akademischedaten' . $n . 'bis'] ?? '')
+            ])
+        );
+        $more_education[] = implode(', ', $parts) . ($years ? ' (' . implode('–', $years) . ')' : '');
+        nda_note($notes, 'Weitere Ausbildung als Text unter „Mehr dazu“ übernommen');
     }
     // DHB-Vita
     $stations = [];
@@ -294,6 +311,14 @@ function nda_profile($r, &$notes) {
             2000
         );
     }
+    if ($more_education) {
+        $extra = 'Weitere Ausbildung: ' . implode('; ', $more_education);
+        $d['support'] = mb_substr(
+            sanitize_textarea_field(isset($d['support']) ? $d['support'] . "\n" . $extra : $extra),
+            0,
+            2000
+        );
+    }
     foreach (
         ['linkedin' => 'linkedin', 'facebook' => 'facebook', 'instagram' => 'instagram']
         as $key => $col
@@ -327,6 +352,15 @@ function nda_map($rows) {
     [, $records] = nda_records($rows);
     $out = ['people' => [], 'notes' => []];
     foreach ($records as $r) {
+        // Cancelled or deceased members get no profile data and no account.
+        if (
+            nda_text($r['gestorbenam'] ?? '') !== '' ||
+            nda_text($r['gekundigtam'] ?? '') !== '' ||
+            nda_text($r['gekundigtzum'] ?? '') !== ''
+        ) {
+            nda_note($out['notes'], 'Gekündigt oder verstorben: nicht übernommen');
+            continue;
+        }
         $emails = [];
         foreach (['bevorzugteemailadresse', 'emailadresseprivat', 'emailgeschaftlich'] as $col) {
             $email = strtolower(sanitize_email($r[$col] ?? ''));
