@@ -209,9 +209,9 @@ function caps_public_total() {
 function flush_caps_stats() {
     delete_transient('eintrikot_caps_stats');
 }
-foreach (['added_user_meta', 'updated_user_meta', 'deleted_user_meta'] as $hook) {
+foreach (['added_user_meta', 'updated_user_meta', 'deleted_user_meta'] as $eintrikot_hook) {
     add_action(
-        $hook,
+        $eintrikot_hook,
         function ($meta_id, $user_id, $key) {
             if ($key === 'eintrikot_profile') {
                 flush_caps_stats();

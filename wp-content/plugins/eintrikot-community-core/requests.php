@@ -336,17 +336,16 @@ function render_request($id) {
     }
     $current = $state['status'] ?? 'received';
     $meinverein = in_array($kind, ['address', 'bank', 'funding'], true);
-    $details = request_details_list($id);
     echo '<section class="request-work"><h2>Bearbeiten</h2><p class="request-task"><strong>Aufgabe:</strong> ' .
         esc_html(request_task($kind)) .
         '</p>' .
-        $details .
+        request_details_list($id) .
         '<form class="et-form request-editor" method="post" action="' .
         esc_url(admin_url('admin-post.php')) .
         '">';
     wp_nonce_field('et_request_' . $id);
     echo '<input type="hidden" name="action" value="et_request_update"><input type="hidden" name="request" value="' .
-        $id .
+        (int) $id .
         '"><input type="hidden" name="revision" value="' .
         esc_attr(request_revision($id)) .
         '"><label>Nachricht an das Mitglied<small>Sieht das Mitglied bei seiner Anfrage unter „Rückmeldung“. Pflicht, wenn du ablehnst. Es wird keine E-Mail verschickt.' .

@@ -119,7 +119,7 @@ add_action('admin_post_et_onboarding_settings', function () {
         ],
         false
     );
-    $file = $_FILES['certificate_bg'] ?? null;
+    $file = $_FILES['certificate_bg'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- upload: type, size and is_uploaded_file() are checked below
     if (is_array($file) && ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
         $info =
             ($file['error'] ?? 1) === UPLOAD_ERR_OK &&
@@ -143,7 +143,7 @@ add_action('admin_post_et_onboarding_settings', function () {
         }
         ob_start();
         imagejpeg($image, null, 88);
-        update_option('eintrikot_certificate_bg', base64_encode(ob_get_clean()), false);
+        update_option('eintrikot_certificate_bg', base64_encode(ob_get_clean()), false); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- stores an image
     }
     wp_safe_redirect(admin_url('admin.php?page=eintrikot-onboarding&saved=1'));
     exit();
@@ -161,7 +161,7 @@ add_action('admin_post_et_certificate_preview', function () {
     nocache_headers();
     header('Content-Type: application/pdf');
     header('Content-Disposition: inline; filename="Muster-Mitgliedsurkunde.pdf"');
-    echo jpeg_to_pdf($jpeg, 'Muster-Mitgliedsurkunde');
+    echo jpeg_to_pdf($jpeg, 'Muster-Mitgliedsurkunde'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- binary PDF, sent with a PDF content type
     exit();
 });
 
@@ -171,7 +171,7 @@ add_action('admin_post_et_onboarding_test', function () {
     }
     check_admin_referer('et_onboarding_test');
     $me = wp_get_current_user();
-    $existing = ($_POST['kind'] ?? '') === 'existing';
+    $existing = post_choice('kind', ['existing']) === 'existing';
     $result = send_welcome_mail(
         $me->user_email,
         first_name($me->display_name) ?: 'Vorname',
@@ -710,7 +710,7 @@ add_filter(
 add_action(
     'validate_password_reset',
     function ($errors, $user) {
-        $pass = $_POST['pass1'] ?? '';
+        $pass = $_POST['pass1'] ?? ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- password: only its length is checked, it must not be altered; WordPress verifies the reset key
         if (is_string($pass) && $pass !== '' && mb_strlen(wp_unslash($pass)) < MIN_PASSWORD_LENGTH) {
             $errors->add(
                 'password_too_short',
@@ -731,7 +731,7 @@ add_action('after_password_reset', function ($user) {
 });
 // Hint on the "set new password" page of WordPress.
 add_filter('login_message', function ($message) {
-    $action = isset($_GET['action']) && is_string($_GET['action']) ? $_GET['action'] : '';
+    $action = directory_param('action');
     if (in_array($action, ['rp', 'resetpass'], true)) {
         $message .=
             '<p class="message">Lege jetzt dein persönliches Passwort fest: mindestens ' .
@@ -925,7 +925,7 @@ function render_onboarding() {
             echo '<fieldset class="import-choice"><legend>Was soll passieren?</legend><label class="check"><input type="radio" name="invite" value="now"' .
                 checked(IMPORT_DEFAULT, 'now', false) .
                 '><span>Konten anlegen und Begrüßung mit Urkunde und Zugangslink sofort senden – bei Mitgliedern unter 18 zuerst die Bitte um Zustimmung der Eltern (höchstens ' .
-                INVITE_BATCH .
+                (int) INVITE_BATCH .
                 ' auf einmal, der Rest wird unten zum Nachsenden angeboten)</span></label><label class="check"><input type="radio" name="invite" value="later"><span>Nur Konten anlegen, Begrüßung später senden</span></label><label class="check"><input type="radio" name="invite" value="existing"' .
                 checked(IMPORT_DEFAULT, 'existing', false) .
                 '><span>Bestandsmitglieder (Umstieg von NDAlumni): Konten anlegen, später nur den Portalzugang mit der Bitte schicken, das Profil zu prüfen (ohne Urkunde)</span></label></fieldset><button class="button solid">Ausgewählte übernehmen</button>';
@@ -1022,7 +1022,7 @@ add_action('admin_post_et_import_upload', function () {
         wp_die('Keine Berechtigung.', '', ['response' => 403]);
     }
     check_admin_referer('et_import_upload');
-    $file = $_FILES['import'] ?? null;
+    $file = $_FILES['import'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- upload: type, size and is_uploaded_file() are checked below
     if (
         !is_array($file) ||
         ($file['error'] ?? 1) !== UPLOAD_ERR_OK ||
@@ -1059,7 +1059,7 @@ add_action('admin_post_et_import_upload', function () {
     }
     $map =
         isset($_POST['map']) && is_array($_POST['map'])
-            ? array_map(fn($v) => is_scalar($v) && $v !== '' ? absint($v) : '', wp_unslash($_POST['map']))
+            ? array_map(fn($v) => is_scalar($v) && $v !== '' ? absint($v) : '', wp_unslash($_POST['map'])) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- every value becomes a whole number
             : [];
     $import = import_extract($rows, array_intersect_key($map, import_fields()));
     // Only these six fields are kept, for 30 minutes, for this administrator.
@@ -1087,8 +1087,9 @@ add_action('admin_post_et_import_create', function () {
     }
     $rows = import_check($import['rows']);
     $chosen = array_map('absint', is_array($_POST['rows'] ?? null) ? $_POST['rows'] : []);
-    $invite = ($_POST['invite'] ?? '') === 'now';
-    $existing = ($_POST['invite'] ?? '') === 'existing';
+    $mode = post_choice('invite', ['now', 'existing', 'later']);
+    $invite = $mode === 'now';
+    $existing = $mode === 'existing';
     $created = 0;
     $invited = 0;
     $errors = [];
@@ -1147,7 +1148,7 @@ add_action('admin_post_et_invite', function () {
         );
     }
     $ids = [];
-    if (($_POST['scope'] ?? '') === 'open') {
+    if (post_choice('scope', ['open']) === 'open') {
         foreach (
             get_users(['meta_key' => 'eintrikot_member_number', 'fields' => 'ID', 'number' => 1000])
             as $id

@@ -39,6 +39,8 @@ function member_avatar($id, $name) {
         '</span>';
 }
 function prepare_avatar() {
+    // Called from the profile handler after its nonce check.
+    // phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- file checks follow below
     if (!empty($_POST['remove_avatar'])) {
         return '';
     }
@@ -49,6 +51,7 @@ function prepare_avatar() {
         return;
     }
     $file = $_FILES['avatar'];
+    // phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
     if (
         !is_array($file) ||
         ($file['error'] ?? 1) !== UPLOAD_ERR_OK ||
@@ -90,7 +93,7 @@ function prepare_avatar() {
         return new \WP_Error('avatar', 'Bild konnte nicht gespeichert werden.');
     }
     // Store the resized image in protected user metadata, never as a public media URL.
-    return 'data:image/jpeg;base64,' . base64_encode($bytes);
+    return 'data:image/jpeg;base64,' . base64_encode($bytes); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- image data URI
 }
 
 /** Crop dialog for the profile picture. Works only with JavaScript; without it the plain file field is used. */

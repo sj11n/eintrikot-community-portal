@@ -10,7 +10,7 @@
 #   WP_CONTENT_PATH   Pfad zu wp-content auf dem Server, z. B. /eintrikot/wp-content
 #   SITE_URL          öffentliche Adresse für die Prüfung, z. B. http://eintrikot.myemmel.com
 #   DEPLOY_PROTOCOL   sftp (Standard) oder ftps
-#   SFTP_KNOWN_HOSTS  optional: known_hosts-Zeile des Servers
+#   SFTP_KNOWN_HOSTS  known_hosts-Zeile des Servers (Pflicht bei sftp; nur mit ALLOW_UNVERIFIED_HOST=true ohne)
 #   DRY_RUN           true = nur anzeigen, was sich ändern würde
 set -euo pipefail
 
@@ -28,9 +28,12 @@ case "$PROTO" in
         if [[ -n "${SFTP_KNOWN_HOSTS:-}" ]]; then
             printf '%s\n' "$SFTP_KNOWN_HOSTS" >"$KH"
             HOSTCHECK="StrictHostKeyChecking=yes"
-        else
-            echo "::warning::SFTP_KNOWN_HOSTS nicht gesetzt – Serverschlüssel wird beim ersten Kontakt ungeprüft akzeptiert."
+        elif [[ "${ALLOW_UNVERIFIED_HOST:-false}" == "true" ]]; then
+            echo "::warning::SFTP_KNOWN_HOSTS nicht gesetzt – Serverschlüssel wird beim ersten Kontakt ungeprüft akzeptiert (ALLOW_UNVERIFIED_HOST=true)."
             HOSTCHECK="StrictHostKeyChecking=accept-new"
+        else
+            echo "::error::SFTP_KNOWN_HOSTS fehlt. Ohne den Serverschlüssel könnte sich jemand dazwischenschalten und Zugangsdaten sowie Code abgreifen. Zeile holen mit: ssh-keyscan -t ed25519 <Host> (Port mit -p angeben), dann als Secret SFTP_KNOWN_HOSTS speichern. Es wurde nichts verändert."
+            exit 1
         fi
         SETTINGS="set sftp:connect-program 'ssh -a -x -o $HOSTCHECK -o UserKnownHostsFile=$KH';"
         ;;

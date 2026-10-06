@@ -85,14 +85,31 @@ add_action('template_redirect', function () {
     if ((int) get_option('eintrikot_portal_page') > 0 && is_page((int) get_option('eintrikot_portal_page'))) {
         nocache_headers();
         header('X-Robots-Tag: noindex, nofollow', true);
+        // The consent link carries a one-time key in its address; it must not leak to other sites or into their logs.
+        header('Referrer-Policy: no-referrer', true);
     }
 });
 function is_portal_user($id) {
     $u = get_user_by('id', $id);
     return $u && user_can($u, 'eintrikot_portal');
 }
+/** One POST value out of a fixed list of allowed values; anything else gives $default. */
+function post_choice($key, array $allowed, $default = '') {
+    // Callers verify the nonce before reading form values.
+    $raw = $_POST[$key] ?? ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- cleaned right below
+    $value = is_string($raw) ? sanitize_text_field(wp_unslash($raw)) : '';
+    return in_array($value, $allowed, true) ? $value : $default;
+}
+/** The visitor's address as the web server reports it (no proxy headers: they can be forged). */
+function client_ip() {
+    $ip = isset($_SERVER['REMOTE_ADDR'])
+        ? sanitize_text_field(wp_unslash((string) $_SERVER['REMOTE_ADDR']))
+        : '';
+    return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '';
+}
 function post_text($key, $default = '', $max = 4000) {
-    $raw = $_POST[$key] ?? $default;
+    // Callers verify the nonce before reading form values.
+    $raw = $_POST[$key] ?? $default; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- cleaned right below
     if (!is_scalar($raw)) {
         wp_die('Ungültige Eingabe.', '', ['response' => 400]);
     }

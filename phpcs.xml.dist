@@ -13,11 +13,28 @@
 
     <!-- Ausgabe escapen, Eingaben bereinigen, Nonces prüfen, SQL vorbereiten -->
     <rule ref="WordPress.Security"/>
+    <!-- Nur lesende GET-Parameter (Ansicht, Filter, Seite) brauchen keine Nonce; jede Änderung läuft über POST mit Nonce. -->
+    <rule ref="WordPress.Security.NonceVerification.Recommended">
+        <severity>0</severity>
+    </rule>
+    <!-- Hilfsfunktionen, die Eingaben entschlacken (wp_unslash + sanitize_*) -->
+    <rule ref="WordPress.Security.ValidatedSanitizedInput">
+        <properties>
+            <property name="customUnslashingSanitizingFunctions" type="array">
+                <element value="profile_form_text"/>
+                <element value="post_text"/>
+                <element value="post_choice"/>
+                <element value="directory_param"/>
+            </property>
+        </properties>
+    </rule>
+
     <!-- Hilfsfunktionen des Plugins, die fertig escaptes HTML liefern -->
     <rule ref="WordPress.Security.EscapeOutput">
         <properties>
             <property name="customAutoEscapedFunctions" type="array">
                 <element value="page_head"/>
+                <element value="request_details_list"/>
                 <element value="request_status_pill"/>
                 <element value="request_timeline"/>
                 <element value="funding_summary"/>

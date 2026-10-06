@@ -83,9 +83,10 @@ add_action('save_post_et_calendar', function ($id) {
     ) {
         return;
     }
+    $nonce = $_POST['et_calendar_nonce']; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- this is the nonce itself, checked on the next line
     if (
-        !is_string($_POST['et_calendar_nonce']) ||
-        !wp_verify_nonce($_POST['et_calendar_nonce'], 'et_calendar_' . $id)
+        !is_string($nonce) ||
+        !wp_verify_nonce(sanitize_text_field(wp_unslash($nonce)), 'et_calendar_' . $id)
     ) {
         return;
     }
@@ -181,7 +182,7 @@ function render_infos() {
             '</p><h2>' .
             esc_html($post->post_title) .
             '</h2>' .
-            wp_kses_post(apply_filters('the_content', $post->post_content)) .
+            wp_kses_post(apply_filters('the_content', $post->post_content)) . // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core filter
             '</article>';
     }
     if ($page > 1) {
@@ -230,7 +231,7 @@ function render_events() {
         }
         $details =
             trim(wp_strip_all_tags((string) ($item['content'] ?? ''))) !== ''
-                ? wp_kses_post(apply_filters('the_content', $item['content']))
+                ? wp_kses_post(apply_filters('the_content', $item['content'])) // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core filter
                 : '';
         echo '<li><time datetime="' .
             esc_attr($item['date']) .
@@ -243,7 +244,7 @@ function render_events() {
                 ? '<details><summary>' .
                     esc_html($item['title']) .
                     '</summary><div class="et-event-body">' .
-                    $details .
+                    $details . // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already passed through wp_kses_post() above
                     '</div></details>'
                 : '<span>' . esc_html($item['title']) . '</span>') .
             '</li>';

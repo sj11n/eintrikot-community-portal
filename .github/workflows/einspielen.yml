@@ -37,7 +37,7 @@ jobs:
     environment: entwicklung
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: lftp installieren
         run: sudo apt-get update -q && sudo apt-get install -y -q lftp
@@ -55,11 +55,29 @@ jobs:
           BACKUP_DIR: backup
         run: tools/deploy.sh
 
-      - name: Sicherung des vorherigen Stands aufbewahren
+      # Das Repository ist öffentlich, und Artefakte öffentlicher Repositories kann jeder mit GitHub-Konto laden.
+      # Die Sicherung des Servers wird deshalb nur verschlüsselt aufbewahrt (Secret BACKUP_PASSPHRASE).
+      - name: Sicherung verschlüsseln
+        id: sicherung
         if: always()
-        uses: actions/upload-artifact@v4
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [[ ! -d backup ]] || [[ -z "$(ls -A backup)" ]]; then
+            echo "Keine Sicherung in diesem Lauf."
+            exit 0
+          fi
+          if [[ -z "$BACKUP_PASSPHRASE" ]]; then
+            echo "::warning::Secret BACKUP_PASSPHRASE fehlt – die Sicherung wird nicht als Artefakt abgelegt (Rücktausch während des Laufs und Git-Verlauf bleiben). Anlegen mit: gh secret set BACKUP_PASSPHRASE"
+            exit 0
+          fi
+          tar -czf - backup | gpg --batch --yes --pinentry-mode loopback --passphrase-env BACKUP_PASSPHRASE --symmetric --cipher-algo AES256 -o "sicherung-${GITHUB_RUN_NUMBER}.tar.gz.gpg"
+          echo "datei=sicherung-${GITHUB_RUN_NUMBER}.tar.gz.gpg" >>"$GITHUB_OUTPUT"
+
+      - name: Sicherung aufbewahren
+        if: always() && steps.sicherung.outputs.datei != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: sicherung-${{ github.run_number }}
-          path: backup/
-          if-no-files-found: ignore
+          path: ${{ steps.sicherung.outputs.datei }}
           retention-days: 30

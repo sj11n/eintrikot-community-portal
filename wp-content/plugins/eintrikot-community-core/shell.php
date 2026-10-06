@@ -250,7 +250,7 @@ add_shortcode('eintrikot_portal', function () {
             render_request(absint(directory_param('request')));
             break;
         case 'requests':
-            echo manager_access() ? '' : $denied;
+            echo manager_access() ? '' : wp_kses_post($denied);
             if (manager_access()) {
                 render_requests(true);
             }
@@ -259,14 +259,14 @@ add_shortcode('eintrikot_portal', function () {
             render_onboarding();
             break;
         case 'audit':
-            echo manager_access() ? '' : $denied;
+            echo manager_access() ? '' : wp_kses_post($denied);
             if (manager_access()) {
                 render_audit();
             }
             break;
         case 'admin':
             if (!manager_access()) {
-                echo $denied;
+                echo wp_kses_post($denied);
                 break;
             }
             echo page_head('Verwaltung', 'Anfragen bearbeiten, Profile pflegen, Änderungen nachvollziehen.') .
@@ -288,7 +288,7 @@ add_shortcode('eintrikot_portal', function () {
             break;
         case 'editorial':
             if (!current_user_can('eintrikot_edit_infos')) {
-                echo $denied;
+                echo wp_kses_post($denied);
                 break;
             }
             echo page_head('Redaktion', 'Geschichten teilen. Den Verein verbinden.') .

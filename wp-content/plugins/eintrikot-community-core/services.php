@@ -171,7 +171,7 @@ function render_service() {
     if ($draft) {
         $html = restore_service_form($html, $draft['values'], $draft['field'] ?? '', $draft['message']);
     }
-    echo $html;
+    echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the service form of this plugin; its values are escaped where it is built
 }
 function restore_service_form($html, $values, $field = '', $message = '') {
     $doc = new \DOMDocument();
@@ -237,6 +237,8 @@ function restore_service_form($html, $values, $field = '', $message = '') {
 }
 function service_error($type, $message, $field = '') {
     $values = [];
+    // Called from the service handler after its nonce check; every value is cleaned right here.
+    // phpcs:ignore WordPress.Security.NonceVerification.Missing
     foreach ($_POST as $key => $value) {
         if (is_scalar($value) && !in_array($key, ['_wpnonce', '_wp_http_referer'], true)) {
             $values[sanitize_key($key)] = mb_substr(

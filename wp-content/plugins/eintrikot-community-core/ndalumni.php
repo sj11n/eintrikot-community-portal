@@ -485,7 +485,7 @@ add_action('admin_post_et_ndalumni_upload', function () {
         wp_die('Keine Berechtigung.', '', ['response' => 403]);
     }
     check_admin_referer('et_ndalumni_upload');
-    $file = $_FILES['ndalumni'] ?? null;
+    $file = $_FILES['ndalumni'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- upload: type, size and is_uploaded_file() are checked below
     if (
         !is_array($file) ||
         ($file['error'] ?? 1) !== UPLOAD_ERR_OK ||

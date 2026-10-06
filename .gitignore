@@ -29,3 +29,6 @@ Claude outputs/
 
 # Composer
 vendor/
+
+# Lokales Testsystem (tools/lokal-test.sh)
+.lokal/
