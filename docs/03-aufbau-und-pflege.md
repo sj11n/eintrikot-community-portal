@@ -55,3 +55,26 @@ Isoliertes WordPress mit SQLite und synthetischen Testmitgliedern (Rollen Mitgli
 - Altplugins und Altseiten bereinigen (docs/04).
 - Umzug auf eintrikot.de mit HTTPS und SMTP (docs/06), danach Einladungen.
 - Geschützte Dokumentenablage, Newsletter, zweite Anmeldestufe für Vorstand und Admins, Datenschutzerklärung.
+
+## Statische Analyse (PHPCS und PHPStan)
+
+„Prüfen" führt zusätzlich zur Syntaxprüfung zwei Werkzeuge aus. Beide sind reine Entwicklungswerkzeuge und werden nicht eingespielt.
+
+- **PHPCS** (`phpcs.xml.dist`): nur die Sicherheitsregeln von WordPress – Ausgabe escapen, Eingaben bereinigen, Nonces prüfen, SQL vorbereiten. Der Stil bleibt bei Prettier. Hilfsfunktionen, die fertig escaptes HTML liefern (z. B. `page_head`, `service_link`), sind in der Regeldatei als sicher eingetragen. Wer eine neue solche Funktion anlegt, trägt sie dort ein und escaped Eingaben darin selbst. Beachte: `page_head()` gibt `$lead` und `$extra` unverändert aus, Aufrufer müssen sie vorher escapen.
+- **PHPStan** (`phpstan.neon.dist`, Stufe 5, mit WordPress-Erweiterung): findet Typfehler und tote Zweige.
+- **Baselines** (`phpcs.baseline.xml`, `phpstan-baseline.neon`): halten den Stand vom Einführungstag fest, damit nur **neue** Verstöße die Prüfung scheitern lassen. Die Baselines sollen schrumpfen, nie wachsen. Wer alte Befunde behebt, erzeugt sie neu.
+
+Lokal (einmalig `composer install`):
+
+```bash
+composer analyse        # beides
+composer phpcs
+composer phpstan
+```
+
+Baseline neu erzeugen, nachdem Altlasten behoben wurden:
+
+```bash
+vendor/bin/phpcs --report=\\DR\\CodeSnifferBaseline\\Reports\\Baseline --report-file=phpcs.baseline.xml --basepath=. -q
+vendor/bin/phpstan analyse --generate-baseline phpstan-baseline.neon
+```

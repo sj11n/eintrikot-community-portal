@@ -26,3 +26,6 @@ wp-content/uploads/
 
 # Ablage der Claude-App (Vorschaubilder), gehört nicht ins Repository
 Claude outputs/
+
+# Composer
+vendor/
