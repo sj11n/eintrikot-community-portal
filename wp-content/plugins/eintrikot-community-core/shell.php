@@ -8,8 +8,7 @@ function portal_nav_items() {
     $items = [
         'portal' => 'Start',
         'members' => 'Mitglieder',
-        'infos' => 'Vereinsinfos',
-        'events' => 'Termine',
+        'aktuelles' => 'Aktuelles',
         'service' => 'Service'
     ];
     if (current_user_can('eintrikot_edit_infos')) {
@@ -26,8 +25,7 @@ function portal_mobile_items() {
     return [
         'portal' => 'Start',
         'members' => 'Mitglieder',
-        'infos' => 'Infos',
-        'events' => 'Termine',
+        'aktuelles' => 'Aktuelles',
         'service' => 'Service'
     ];
 }
@@ -35,6 +33,8 @@ function portal_mobile_items() {
 /** Which navigation entry a view belongs to. The own profile belongs to the account menu. */
 function portal_nav_section($view) {
     $map = [
+        'infos' => 'aktuelles',
+        'events' => 'aktuelles',
         'member' => 'members',
         'edit-member' => 'members',
         'more' => 'service',
@@ -53,8 +53,7 @@ function portal_tone($section) {
     $tones = [
         'portal' => 'start',
         'members' => 'blue',
-        'infos' => 'rose',
-        'events' => 'green',
+        'aktuelles' => 'green',
         'service' => 'gold',
         'editorial' => 'rose',
         'admin' => 'blue',
@@ -236,11 +235,10 @@ add_shortcode('eintrikot_portal', function () {
                 echo '<div class="portal-empty"><h1>Kein Zugriff</h1><p>Du kannst nur dein eigenes Profil bearbeiten.</p></div>';
             }
             break;
+        case 'aktuelles':
         case 'infos':
-            render_infos();
-            break;
         case 'events':
-            render_events();
+            render_news();
             break;
         case 'more':
         case 'service':
@@ -305,7 +303,7 @@ add_shortcode('eintrikot_portal', function () {
                 ) .
                 service_link(
                     admin_url('edit.php?post_type=et_calendar'),
-                    'Kalender pflegen',
+                    'Termine pflegen',
                     'Termine im Portal'
                 ) .
                 '</section><section class="portal-section"><h2>Newsletter</h2><p>Der Ablauf zum Einlesen und Bearbeiten von KI-Entwürfen folgt in einem späteren Ausbauschritt.</p></section>';

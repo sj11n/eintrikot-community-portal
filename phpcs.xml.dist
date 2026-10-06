@@ -36,6 +36,12 @@
                 <element value="page_head"/>
                 <element value="request_details_list"/>
                 <element value="birthday_choice_fields"/>
+                <element value="news_tabs"/>
+                <element value="event_field"/>
+                <element value="event_format_options"/>
+                <element value="event_card"/>
+                <element value="event_signup_block"/>
+                <element value="event_attendees_block"/>
                 <element value="request_status_pill"/>
                 <element value="request_timeline"/>
                 <element value="funding_summary"/>

@@ -139,12 +139,12 @@ function render_home() {
     } else {
         echo '<p>Noch keine Vereinsinfos. Neue Mitteilungen erscheinen hier.</p>';
     }
-    echo '<a class="text-link" href="' . esc_url(portal_url('infos')) . '">Alle Vereinsinfos →</a></section>';
+    echo '<a class="text-link" href="' .
+        esc_url(portal_url('aktuelles', ['tab' => 'mitteilungen'])) .
+        '">Alle Vereinsinfos →</a></section>';
 
     // Next event.
-    $events = array_values(
-        array_filter(calendar_items(92), fn($item) => !str_starts_with($item['title'], 'Geburtstag: '))
-    );
+    $events = array_values(array_filter(event_items(92), fn($item) => !$item['cancelled']));
     echo '<section class="home-card tone-green"><h2 class="home-card-label">Nächster Termin</h2>';
     if ($events) {
         $ts = strtotime($events[0]['date'] . ' 12:00:00');
@@ -170,8 +170,8 @@ function render_home() {
         echo '<p>Aktuell keine Veranstaltungen geplant.</p>';
     }
     echo '<a class="text-link" href="' .
-        esc_url(portal_url('events')) .
-        '">Alle Termine und Geburtstage →</a></section>';
+        esc_url(portal_url('aktuelles', ['tab' => 'termine'])) .
+        '">Alle Termine →</a></section>';
 
     // Open requests, or an invitation to the service area.
     $open = open_member_requests();
