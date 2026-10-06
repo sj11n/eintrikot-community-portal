@@ -659,3 +659,58 @@ a.button[href*='mitglied-werden']:focus-visible {
         grid-template-columns: 1fr;
     }
 }
+
+/* Footer: ruhige Spalten, enge Linkabstände, kleine Überschriften */
+.footer {
+    align-items: start;
+    column-gap: 48px;
+}
+.footer .footer-label {
+    margin: 0 0 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #ffffffa6;
+}
+.footer .footer-col .wp-block-navigation {
+    font-size: 14px;
+}
+.footer .footer-col .wp-block-navigation__container {
+    gap: 2px;
+}
+.footer .footer-col .wp-block-navigation-item__content {
+    display: inline-block;
+    padding: 5px 0;
+    line-height: 1.4;
+    min-height: 0;
+    text-decoration: none;
+}
+.footer .footer-col .wp-block-navigation-item__content:hover,
+.footer .footer-col .wp-block-navigation-item__content:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+.footer > div:first-child p {
+    margin: 0 0 6px;
+    line-height: 1.55;
+}
+.footer > div:first-child .brand img {
+    margin-bottom: 18px;
+}
+.footer .et-follow {
+    margin-top: 24px;
+}
+@media (max-width: 800px) {
+    .footer {
+        grid-template-columns: 1fr 1fr;
+        column-gap: 24px;
+        row-gap: 32px;
+    }
+    .footer > div:first-child {
+        grid-column: 1 / -1;
+    }
+    .footer > .footer-col {
+        grid-column: auto;
+    }
+}
