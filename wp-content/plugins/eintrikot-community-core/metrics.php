@@ -158,7 +158,7 @@ add_action('admin_post_et_metrics', function () {
 /**
  * Caps shared with members, across all portal profiles. Cached; see invalidation below.
  *
- * @return array{sum:int,shared:int,total:int}
+ * @return array{sum:int,shared:int,total:int,first_year:int|null}
  */
 function caps_stats() {
     $cached = get_transient('eintrikot_caps_stats');

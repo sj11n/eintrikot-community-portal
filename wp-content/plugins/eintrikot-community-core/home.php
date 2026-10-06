@@ -84,7 +84,7 @@ function profile_steps($id) {
         'photo' => ['Profilbild', is_string($avatar) && $avatar !== ''],
         'about' => ['Wohnort oder Verein', $filled(['city', 'region', 'club'])],
         'hockey' => ['Team und Altersklasse', $filled(['team', 'age_class', 'phase'])],
-        'vita' => ['DHB-Vita', (bool) array_filter($stations, fn($row) => array_filter($row))],
+        'vita' => ['DHB-Vita', (bool) array_filter($stations, fn($row) => array_filter($row) !== [])],
         'career' => ['Beruf', $filled(['job', 'employer', 'industry', 'university'])]
     ];
 }

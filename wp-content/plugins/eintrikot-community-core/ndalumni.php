@@ -109,7 +109,7 @@ function nda_items($value) {
         }
     }
     $out[] = trim($cur);
-    return array_values(array_filter($out, 'strlen'));
+    return array_values(array_filter($out, fn($part) => $part !== ''));
 }
 
 function nda_note(array &$notes, $text) {

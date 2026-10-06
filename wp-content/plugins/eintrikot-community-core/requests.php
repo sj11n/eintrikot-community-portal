@@ -234,7 +234,7 @@ function render_requests($all) {
         echo '<a class="request-card" href="' .
             esc_url(portal_url('request', ['request' => $row->ID])) .
             '"><div><small>#' .
-            esc_html($row->ID) .
+            esc_html((string) $row->ID) .
             ' · ' .
             esc_html(get_the_date('d.m.Y', $row)) .
             ($all ? ' · ' . esc_html($author ? $author->display_name : 'Gelöschtes Mitglied') : '') .

@@ -265,7 +265,7 @@ function create_service_request($type, $message, $details, $token) {
     if ($wpdb->query('START TRANSACTION') === false) {
         return new \WP_Error('storage', 'Speichern derzeit nicht möglich.');
     }
-    if (!add_option($key, 'pending', '', 'no')) {
+    if (!add_option($key, 'pending', '', false)) {
         $wpdb->query('ROLLBACK');
         wp_cache_delete($key, 'options');
         $existing = get_option($key);
@@ -286,7 +286,7 @@ function create_service_request($type, $message, $details, $token) {
         ]),
         true
     );
-    $ok = !is_wp_error($id) && $id > 0;
+    $ok = !is_wp_error($id);
     if ($ok) {
         foreach (
             ['et_kind' => $type, 'et_details' => $details, 'et_status' => 'received']

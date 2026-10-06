@@ -902,7 +902,7 @@ add_action('admin_post_et_profile', function () {
         }
         $value = $raw[$key] ?? '';
         $max = long_profile_field($key) ? 4000 : 200;
-        if (!is_scalar($value) || mb_strlen(is_scalar($value) ? wp_unslash((string) $value) : '') > $max) {
+        if (!is_scalar($value) || mb_strlen(wp_unslash((string) $value)) > $max) {
             $errors[$key] = $label . ' bitte prüfen.';
         }
         $data[$key] = profile_form_text($value, $max);
@@ -944,7 +944,7 @@ add_action('admin_post_et_profile', function () {
     }
     foreach (['display_name' => 120, 'birthday' => 10] as $key => $max) {
         $v = $_POST[$key] ?? '';
-        if (!is_scalar($v) || mb_strlen(is_scalar($v) ? wp_unslash((string) $v) : '') > $max) {
+        if (!is_scalar($v) || mb_strlen(wp_unslash((string) $v)) > $max) {
             $errors[$key] =
                 $key === 'birthday' ? 'Bitte das Geburtsdatum prüfen.' : 'Bitte deinen Namen prüfen.';
         }
