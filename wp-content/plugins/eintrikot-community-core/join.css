@@ -140,6 +140,7 @@ dialog.et-join-dialog a.button.solid:focus-visible,
 dialog.et-join-dialog button.button:focus-visible {
     outline: 3px solid #000;
     outline-offset: 3px;
+}
 
 /* Hilfen zur IBAN und zum Formular: eingeklappt, damit der Dialog kurz bleibt */
 .et-join-help {
