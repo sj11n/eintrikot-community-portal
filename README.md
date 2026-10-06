@@ -18,7 +18,7 @@
 
 1. Änderung auf einem eigenen Branch, lokal mit WordPress getestet.
 2. Pull Request; „Prüfen" muss grün sein. Danach Merge nach `main`.
-3. **Actions → Einspielen → Run workflow** (Probelauf ohne Haken), dann „Approve and deploy".
+3. Nach dem Merge spielt **Einspielen** automatisch ein, wenn Plugin, Theme oder das Einspiel-Werkzeug betroffen sind. Von Hand geht es unter Actions → Einspielen → Run workflow (Probelauf ohne Haken).
 
 ## Abgrenzung
 

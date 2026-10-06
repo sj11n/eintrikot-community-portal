@@ -2,8 +2,8 @@ name: Einspielen
 
 # Spielt Theme und Plugin auf die Entwicklungsinstallation ein.
 # Von Hand unter Actions → Einspielen → Run workflow (mit Probelauf).
-# Automatisch bei jedem Push auf main, der Theme oder Plugin ändert,
-# sobald die Repository-Variable AUTO_DEPLOY auf true steht.
+# Automatisch bei jedem Push auf main, der Theme, Plugin oder dieses Einspiel-Werkzeug ändert.
+# Die Freigabe geschieht vorher im Chat mit dem Merge; danach läuft alles ohne Halt durch.
 
 on:
   push:
@@ -11,6 +11,8 @@ on:
     paths:
       - 'wp-content/themes/eintrikot-community/**'
       - 'wp-content/plugins/eintrikot-community-core/**'
+      - 'tools/deploy.sh'
+      - '.github/workflows/einspielen.yml'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -31,8 +33,6 @@ jobs:
 
   einspielen:
     needs: pruefen
-    # Push-Läufe erst, wenn die Variable AUTO_DEPLOY auf true steht (nach dem ersten erfolgreichen Lauf).
-    if: github.event_name == 'workflow_dispatch' || vars.AUTO_DEPLOY == 'true'
     runs-on: ubuntu-latest
     environment: entwicklung
     timeout-minutes: 20
@@ -71,7 +71,10 @@ jobs:
             echo "::warning::Secret BACKUP_PASSPHRASE fehlt – die Sicherung wird nicht als Artefakt abgelegt (Rücktausch während des Laufs und Git-Verlauf bleiben). Anlegen mit: gh secret set BACKUP_PASSPHRASE"
             exit 0
           fi
-          tar -czf - backup | gpg --batch --yes --pinentry-mode loopback --passphrase-env BACKUP_PASSPHRASE --symmetric --cipher-algo AES256 -o "sicherung-${GITHUB_RUN_NUMBER}.tar.gz.gpg"
+          umask 077
+          printf '%s' "$BACKUP_PASSPHRASE" >"$RUNNER_TEMP/backup-passphrase"
+          tar -czf - backup | gpg --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/backup-passphrase" --symmetric --cipher-algo AES256 -o "sicherung-${GITHUB_RUN_NUMBER}.tar.gz.gpg"
+          rm -f "$RUNNER_TEMP/backup-passphrase"
           echo "datei=sicherung-${GITHUB_RUN_NUMBER}.tar.gz.gpg" >>"$GITHUB_OUTPUT"
 
       - name: Sicherung aufbewahren

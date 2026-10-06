@@ -5,7 +5,7 @@ Theme und Plugin werden per GitHub Action auf die Entwicklungsinstallation kopie
 ## Was passiert
 
 - **Prüfen** (`.github/workflows/pruefen.yml`) läuft bei jedem Push und Pull Request: PHP-Syntax unter PHP 8.1, Sicherheitsprüfung (PHPCS), statische Analyse (PHPStan), Regeltests in einem lokalen WordPress, Formatierung und ShellCheck für die Skripte unter `tools/`. Einspielen startet erst, wenn alles grün ist.
-- **Einspielen** (`.github/workflows/einspielen.yml`) läuft von Hand (mit Probelauf) und – sobald die Variable `AUTO_DEPLOY` auf `true` steht – automatisch bei jedem Push auf `main`, der Theme oder Plugin ändert.
+- **Einspielen** (`.github/workflows/einspielen.yml`) läuft automatisch bei jedem Push auf `main`, der Theme, Plugin, `tools/deploy.sh` oder die Workflow-Datei ändert, und von Hand (mit Probelauf). Es startet erst, wenn **Prüfen** grün ist. Eine zweite Freigabe auf GitHub gibt es nicht: die Freigabe ist der Merge, den Björn im Chat gibt.
   1. Anmeldung und Zielpfad prüfen. Stimmt etwas nicht, bricht der Lauf ab, ohne etwas zu ändern.
   2. Den aktuellen Stand von Theme und Plugin herunterladen. Als Artefakt „sicherung-…" (30 Tage) wird er nur **verschlüsselt** abgelegt (siehe „Sicherung"), weil Artefakte eines öffentlichen Repositories für jeden mit GitHub-Konto abrufbar sind.
   3. Neue Fassung in einen versteckten Nachbarordner hochladen (WordPress ignoriert Ordner mit Punkt).
@@ -18,7 +18,7 @@ Theme und Plugin werden per GitHub Action auf die Entwicklungsinstallation kopie
 
 Auf github.com im Repository **Settings → Environments → New environment** „entwicklung" anlegen.
 
-Empfohlen: dort unter **Required reviewers** dich selbst eintragen. Dann wartet jeder Lauf auf deinen Klick „Approve and deploy".
+Required reviewers sind bewusst **nicht** gesetzt (Ein-Personen-Projekt, Freigabe im Chat). Die Regel **Deployment branches** (nur `main`) bleibt.
 
 Im Environment „entwicklung":
 
@@ -32,7 +32,6 @@ Im Environment „entwicklung":
 | Variable | `WP_CONTENT_PATH` | Pfad zu `wp-content`, wie er nach der SFTP-Anmeldung aussieht, z. B. `/eintrikot/wp-content` |
 | Variable | `SITE_URL` | `http://eintrikot.myemmel.com` |
 | Variable | `DEPLOY_PROTOCOL` | optional, `sftp` (Standard) oder `ftps` |
-| Variable | `AUTO_DEPLOY` | erst nach dem ersten erfolgreichen Lauf auf `true` setzen |
 
 Den Pfad findest du mit einem SFTP-Programm (z. B. Cyberduck): anmelden, in den WordPress-Ordner wechseln, Pfad von `wp-content` kopieren.
 
@@ -40,7 +39,7 @@ Den Pfad findest du mit einem SFTP-Programm (z. B. Cyberduck): anmelden, in den 
 
 1. **Actions → Einspielen → Run workflow**, Branch `main`, „Nur Probelauf" angehakt. Das Protokoll zeigt, welche Dateien sich ändern würden.
 2. Sieht das plausibel aus, denselben Lauf ohne Haken starten.
-3. Läuft alles, `AUTO_DEPLOY` = `true` setzen. Ab dann spielt jeder Merge nach `main` automatisch ein.
+3. Ab dann spielt jeder Merge nach `main`, der Plugin oder Theme ändert, automatisch ein. (Die frühere Variable `AUTO_DEPLOY` wird nicht mehr gebraucht; sie stand im Environment und war dort für die Bedingung unsichtbar.)
 
 ## Zurücknehmen
 
