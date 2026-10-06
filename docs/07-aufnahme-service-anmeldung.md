@@ -83,3 +83,11 @@ Das Geburtsdatum kommt aus MeinVerein bzw. dem Antrag und ist zunächst **privat
 - **Tag, Monat und Jahr** (Profil und „Termine“ mit „wird 40“; das Alter lässt sich daraus ablesen).
 
 „Mein Alter im Mitgliederprofil anzeigen“ bleibt eine eigene Wahl. Die Vereinsverwaltung sieht die Auswahl beim Bearbeiten, ändert sie aber nie (Einwilligung). Mitglieder unter 18 zeigen keinen Geburtstag, auch wenn sie ihn früher gewählt haben; ab 18 gilt ihre Wahl. Konten, die aus dem Verzeichnis ausgeblendet sind, erscheinen auch nicht unter „Termine“. Das frühere Häkchen „in den Terminen, ohne Jahr“ wird als „Tag und Monat“ gelesen und beim nächsten Speichern durch die neue Wahl ersetzt.
+
+## Import aus Excel: Zahlen, Tore, weitere Ausbildung (0.20.1)
+
+- **Zahlen aus Excel:** Excel und Google Tabellen liefern ganze Zahlen als „3.0“. Der Import las daraus früher „30“ (Mitgliedsnummer 3 wäre als 30 angelegt worden). Jetzt gilt „3.0“ als 3; das gilt für Mitgliedsnummer, Länderspiele und Tore.
+- **Tore:** neues Profilfeld im Hockey-Abschnitt, aus „Anzahl von Toren“.
+- **Weitere Ausbildungen:** Das Profil hat einen strukturierten Eintrag. Weitere Einträge aus „Akademische Daten 2–5“ kommen als eine Zeile „Weitere Ausbildung: …“ unter „Mehr dazu“.
+- **Gekündigt oder verstorben** (Spalten „Gekündigt am/zum“, „Gestorben am“): werden nicht übernommen.
+- **Team:** Steht in „Mannschaft“ nichts oder nur „Staff“, leitet der Import das Team aus der Anrede ab und meldet das in den Hinweisen. Wer es genauer will, trägt „Damen“ oder „Herren“ in die Spalte „Mannschaft“ ein; das wird übernommen.

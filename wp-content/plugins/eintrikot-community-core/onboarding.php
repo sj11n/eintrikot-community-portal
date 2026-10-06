@@ -375,6 +375,11 @@ function read_csv($path) {
 }
 
 /** "16.12.2025", "2025-12-16" or an Excel day number -> "2025-12-16"; '' if unknown. */
+/** A whole number from a spreadsheet cell: "3.0" (how Excel stores numbers) becomes "3". Other text stays. */
+function import_whole_number($value) {
+    $v = trim((string) $value);
+    return preg_match('/^\d+\.0+$/D', $v) ? (string) (int) $v : $v;
+}
 function import_date($value) {
     $value = trim((string) $value);
     if ($value === '') {
@@ -454,7 +459,7 @@ function import_check($rows) {
     }
     foreach ($rows as &$row) {
         $row['email'] = strtolower(sanitize_email($row['email']));
-        $row['number'] = preg_replace('/\D/', '', $row['number']);
+        $row['number'] = preg_replace('/\D/', '', import_whole_number($row['number']));
         $row['joined'] = import_date($row['joined']);
         $row['birthday'] = import_date($row['birthday'] ?? '');
         if (

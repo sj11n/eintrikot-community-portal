@@ -15,7 +15,8 @@ function profile_groups() {
             'age_class' => 'Altersklasse',
             'phase' => 'Trikotphase',
             'hockey' => 'Ein besonderer Moment oder eine Geschichte',
-            'caps' => 'Länderspiele gesamt'
+            'caps' => 'Länderspiele gesamt',
+            'goals' => 'Tore'
         ],
         'Abseits des Platzes' => ['hobbies' => 'Hobbys', 'other_sport' => 'Sport neben Hockey'],
         'Beruf & Ausbildung' => [
@@ -403,7 +404,9 @@ function profile_field($key, $label, $data) {
             'text" ' .
             ($key === 'caps'
                 ? 'maxlength="60" placeholder="z. B. 185 oder 185 A-Kader, 40 Halle"'
-                : 'maxlength="200"') .
+                : ($key === 'goals'
+                    ? 'maxlength="20" inputmode="numeric" placeholder="z. B. 12"'
+                    : 'maxlength="200"')) .
             ($key === 'job' ? ' placeholder="z. B. Ärztin, Vertriebsleiter, Lehrerin"' : '') .
             (social_field($key)
                 ? ' inputmode="url" autocapitalize="off" spellcheck="false" placeholder="' .

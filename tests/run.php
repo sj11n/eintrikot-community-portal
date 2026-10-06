@@ -321,6 +321,36 @@ foreach ($event_posts as $pid) {
     wp_delete_post($pid, true);
 }
 
+/* ---------- Import: Zahlen aus Excel, Tore, weitere Ausbildung, Ausschluss ---------- */
+
+check('Excel-Zahl 3.0 wird 3', import_whole_number('3.0') === '3' && import_whole_number('1270.0') === '1270');
+check('Text und Kommazahlen bleiben', import_whole_number('185 (A-Kader)') === '185 (A-Kader)' && import_whole_number('12.5') === '12.5');
+$num_row = import_check([['first_name' => 'A', 'last_name' => 'B', 'email' => 'zahl@example.test', 'number' => '127.0', 'joined' => '2026-01-26', 'birthday' => '', 'donation' => '']]);
+check('Import: Mitgliedsnummer 127.0 bleibt 127 (nicht 1270)', $num_row[0]['number'] === '127');
+$notes = [];
+$profile = nda_profile([
+    'anzahlvonnationalspielen' => '185.0',
+    'anzahlvontoren' => '12.0',
+    'interessen' => '',
+    'akademischedaten2abschluss' => 'Master',
+    'akademischedaten2programm' => 'BWL',
+    'akademischedaten2schuleuniversitatinstitut' => 'Uni Test',
+    'akademischedaten2von' => '2008',
+    'akademischedaten2bis' => '2011',
+    'akademischedaten3programm' => 'Jura'
+], $notes);
+check('Import: Länderspiele ohne .0', ($profile['caps'] ?? '') === '185');
+check('Import: Tore ohne .0', ($profile['goals'] ?? '') === '12');
+check('Import: weitere Ausbildung als Text', str_contains($profile['support'] ?? '', 'Weitere Ausbildung: Master, BWL, Uni Test (2008–2011); Jura'));
+check('Profil kennt das Feld Tore', isset(profile_fields()['goals']));
+$map = nda_map([
+    ['Bevorzugte E-Mail-Adresse', 'Vorname', 'Nachname', 'Gestorben am', 'Gekündigt am'],
+    ['aktiv@example.test', 'Aaa', 'Bbb', '', ''],
+    ['tot@example.test', 'Ccc', 'Ddd', '2024-01-01', ''],
+    ['weg@example.test', 'Eee', 'Fff', '', '2025-12-31']
+]);
+check('Import: Verstorbene und Gekündigte werden ausgeschlossen', count($map['people']) === 1 && ($map['notes']['Gekündigt oder verstorben: nicht übernommen'] ?? 0) === 2);
+
 /* ---------- Login-Sperre ---------- */
 
 $locked_id = make_user('eintrikot_member');
