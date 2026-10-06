@@ -1,20 +1,33 @@
+# Dependabot prüft monatlich, ob es neue Versionen der Werkzeuge gibt, die wir verwenden
+# (GitHub-Actions, PHPCS/PHPStan über Composer, Prettier über npm), und schlägt sie als
+# Pull Request vor. Die Prüfung "Prüfen" läuft darauf wie bei jeder Änderung.
+# Pro Bereich gibt es höchstens einen Sammel-Pull-Request im Monat.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+    groups:
+      actions:
+        patterns: ['*']
     commit-message:
-      prefix: "Actions"
+      prefix: 'Actions'
   - package-ecosystem: composer
     directory: /
     schedule:
       interval: monthly
+    groups:
+      composer:
+        patterns: ['*']
     commit-message:
-      prefix: "Composer"
+      prefix: 'Composer'
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: monthly
+    groups:
+      npm:
+        patterns: ['*']
     commit-message:
-      prefix: "npm"
+      prefix: 'npm'
