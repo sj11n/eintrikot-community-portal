@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<ruleset name="EINTRIKOT">
+    <description>Sicherheitsprüfung für Plugin und Theme. Der Stil (Einrückung, Zeilenlänge) gehört Prettier und wird hier bewusst nicht geprüft.</description>
+
+    <file>wp-content/plugins/eintrikot-community-core</file>
+    <file>wp-content/themes/eintrikot-community</file>
+
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+    <config name="testVersion" value="8.1-"/>
+    <config name="minimum_wp_version" value="6.4"/>
+
+    <!-- Ausgabe escapen, Eingaben bereinigen, Nonces prüfen, SQL vorbereiten -->
+    <rule ref="WordPress.Security"/>
+    <!-- Hilfsfunktionen des Plugins, die fertig escaptes HTML liefern -->
+    <rule ref="WordPress.Security.EscapeOutput">
+        <properties>
+            <property name="customAutoEscapedFunctions" type="array">
+                <element value="page_head"/>
+                <element value="request_status_pill"/>
+                <element value="request_timeline"/>
+                <element value="funding_summary"/>
+                <element value="service_link"/>
+                <element value="logout_others_form"/>
+                <element value="member_avatar"/>
+                <element value="membership_line"/>
+                <element value="social_links"/>
+                <element value="field_error_text"/>
+                <element value="field_error_attrs"/>
+                <element value="membership_box"/>
+                <element value="section_visibility_switch"/>
+                <element value="avatar_cropper_markup"/>
+                <element value="consent_manual_form"/>
+            </property>
+        </properties>
+    </rule>
+    <rule ref="WordPress.DB.PreparedSQL"/>
+    <rule ref="WordPress.DB.PreparedSQLPlaceholders"/>
+    <rule ref="WordPress.DB.DirectDatabaseQuery">
+        <!-- Eigene Tabellen (Protokoll, Anfragen) sind gewollt. -->
+        <exclude name="WordPress.DB.DirectDatabaseQuery.DirectQuery"/>
+        <exclude name="WordPress.DB.DirectDatabaseQuery.NoCaching"/>
+        <exclude name="WordPress.DB.DirectDatabaseQuery.SchemaChange"/>
+    </rule>
+    <rule ref="WordPress.WP.DeprecatedFunctions"/>
+    <rule ref="WordPress.PHP.DiscouragedPHPFunctions"/>
+    <rule ref="WordPress.PHP.DevelopmentFunctions"/>
+
+    <!-- Namespace Eintrikot\Community statt Präfix -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <!-- "et_" ist das gewachsene Präfix für Hooks und Optionen -->
+        <exclude name="WordPress.NamingConventions.PrefixAllGlobals.ShortPrefixPassed"/>
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="Eintrikot"/>
+                <element value="eintrikot"/>
+                <element value="et"/>
+            </property>
+        </properties>
+    </rule>
+</ruleset>

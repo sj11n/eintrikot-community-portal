@@ -17,13 +17,22 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
-          tools: none
+          tools: composer
 
       - name: PHP-Syntax (PHP 8.1, Mindestversion laut Plugin)
         run: |
           set -e
           find wp-content -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
           echo "Alle PHP-Dateien ohne Syntaxfehler."
+
+      - name: Entwicklungswerkzeuge installieren (Composer)
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Sicherheitsprüfung (PHPCS, WordPress.Security)
+        run: composer phpcs
+
+      - name: Statische Analyse (PHPStan)
+        run: composer phpstan
 
       - uses: actions/setup-node@v4
         with:
