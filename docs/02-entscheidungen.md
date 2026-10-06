@@ -49,5 +49,5 @@ Zusammenfassung der Festlegungen von Björn Emmerling (September 2026). Ergänzt
 ## Arbeitsweise
 
 - Vor Umsetzung visuelles Konzept und ausdrückliche Designfreigabe.
-- Produktion nie direkt bearbeiten: Änderungen über Pull Request, Prüfung und das Einspielen aus GitHub (docs/05). Björn startet und genehmigt jedes Einspielen.
+- Produktion nie direkt bearbeiten: Änderungen über Pull Request, Prüfung und das Einspielen aus GitHub (docs/05). Björn gibt jede Änderung im Chat frei (Merge); danach spielt GitHub automatisch ein, prüft die Seite und tauscht bei einem Fehler zurück. Eine zweite Freigabe auf GitHub gibt es bewusst nicht mehr.
 - Testen in einem lokalen WordPress mit synthetischen Profilen, Desktop und Handy (390 und 320 px).
