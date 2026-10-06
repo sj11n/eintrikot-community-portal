@@ -277,9 +277,9 @@ function consent_invalid() {
 }
 
 function render_consent() {
-    $step = isset($_GET['step']) && is_string($_GET['step']) ? $_GET['step'] : '';
+    $step = directory_param('step');
     $user_id = isset($_GET['u']) ? absint($_GET['u']) : 0;
-    $token = isset($_GET['k']) && is_string($_GET['k']) ? $_GET['k'] : '';
+    $token = directory_param('k');
     $user = get_user_by('id', $user_id);
     // Shows no name: this page is reachable without a token.
     if ($step === 'done') {
@@ -301,12 +301,11 @@ function render_consent() {
         '"><input type="hidden" name="k" value="' .
         esc_attr($token) .
         '">';
-    $notice =
-        isset($_GET['error']) && is_string($_GET['error'])
-            ? '<div class="form-error" role="alert" tabindex="-1"><p>' .
-                esc_html(wp_unslash($_GET['error'])) .
-                '</p></div>'
-            : '';
+    $notice = isset(consent_errors()[directory_param('error')])
+        ? '<div class="form-error" role="alert" tabindex="-1"><p>' .
+            esc_html(consent_errors()[directory_param('error')]) .
+            '</p></div>'
+        : '';
     $first = esc_html(first_name($user->display_name));
 
     if ($step === 'kid') {
@@ -367,16 +366,32 @@ function render_consent() {
     );
 }
 
+/**
+ * Messages for the consent pages. The address carries only the key, never the text: a link with free text in it
+ * could show a forged message on our own page.
+ */
+function consent_errors() {
+    return [
+        'email_invalid' => 'Bitte eine gültige E-Mail-Adresse eingeben.',
+        'email_mismatch' => 'Die beiden Adressen stimmen nicht überein.',
+        'email_own' => 'Das ist deine eigene Adresse. Bitte die Adresse eines Elternteils eingeben.',
+        'email_limit' => 'Die Adresse wurde schon mehrmals geändert. Bitte schreib uns an info@eintrikot.de.',
+        'mail_failed' => 'Die E-Mail konnte gerade nicht verschickt werden. Bitte später erneut versuchen.',
+        'parent_incomplete' =>
+            'Bitte Ihren Namen eingeben, das Sorgerecht auswählen und der Mitgliedschaft zustimmen.'
+    ];
+}
+
 function consent_redirect($step, $user_id, $token, $args = []) {
     wp_safe_redirect(add_query_arg($args, consent_url($step, $user_id, $token)));
     exit();
 }
 
-foreach (['admin_post_et_consent_kid', 'admin_post_nopriv_et_consent_kid'] as $hook) {
-    add_action($hook, function () {
+foreach (['admin_post_et_consent_kid', 'admin_post_nopriv_et_consent_kid'] as $eintrikot_hook) {
+    add_action($eintrikot_hook, function () {
         check_admin_referer('et_consent_kid');
         $user_id = absint($_POST['u'] ?? 0);
-        $token = is_string($_POST['k'] ?? null) ? $_POST['k'] : '';
+        $token = post_text('k', '', 160);
         if (!consent_token_valid($user_id, 'kid', $token) || consent_state($user_id) === 'given') {
             wp_safe_redirect(portal_url('consent'));
             exit();
@@ -388,16 +403,16 @@ foreach (['admin_post_et_consent_kid', 'admin_post_nopriv_et_consent_kid'] as $h
         $user = get_user_by('id', $user_id);
         $error = '';
         if (!is_email($email)) {
-            $error = 'Bitte eine gültige E-Mail-Adresse eingeben.';
+            $error = 'email_invalid';
         } elseif ($email !== $repeat) {
-            $error = 'Die beiden Adressen stimmen nicht überein.';
+            $error = 'email_mismatch';
         } elseif ($user && $email === strtolower($user->user_email)) {
-            $error = 'Das ist deine eigene Adresse. Bitte die Adresse eines Elternteils eingeben.';
+            $error = 'email_own';
         } elseif ((int) get_user_meta($user_id, 'eintrikot_consent_changes', true) >= 5) {
-            $error = 'Die Adresse wurde schon mehrmals geändert. Bitte schreib uns an info@eintrikot.de.';
+            $error = 'email_limit';
         }
         if ($error) {
-            consent_redirect('kid', $user_id, $token, ['error' => rawurlencode($error)]);
+            consent_redirect('kid', $user_id, $token, ['error' => $error]);
         }
         update_user_meta($user_id, 'eintrikot_consent_parent_email', $email);
         update_user_meta(
@@ -407,33 +422,25 @@ foreach (['admin_post_et_consent_kid', 'admin_post_nopriv_et_consent_kid'] as $h
         );
         delete_user_meta($user_id, 'eintrikot_consent_reminded');
         if (!send_consent_parent_mail($user_id)) {
-            consent_redirect('kid', $user_id, $token, [
-                'error' => rawurlencode(
-                    'Die E-Mail konnte gerade nicht verschickt werden. Bitte später erneut versuchen.'
-                )
-            ]);
+            consent_redirect('kid', $user_id, $token, ['error' => 'mail_failed']);
         }
         consent_redirect('kid', $user_id, $token, ['sent' => 1]);
     });
 }
 
-foreach (['admin_post_et_consent_parent', 'admin_post_nopriv_et_consent_parent'] as $hook) {
-    add_action($hook, function () {
+foreach (['admin_post_et_consent_parent', 'admin_post_nopriv_et_consent_parent'] as $eintrikot_hook) {
+    add_action($eintrikot_hook, function () {
         check_admin_referer('et_consent_parent');
         $user_id = absint($_POST['u'] ?? 0);
-        $token = is_string($_POST['k'] ?? null) ? $_POST['k'] : '';
+        $token = post_text('k', '', 160);
         if (!consent_token_valid($user_id, 'parent', $token) || consent_state($user_id) === 'given') {
             wp_safe_redirect(portal_url('consent'));
             exit();
         }
         $name = trim(sanitize_text_field(wp_unslash((string) ($_POST['parent_name'] ?? ''))));
-        $custody = in_array($_POST['custody'] ?? '', ['joint', 'sole'], true) ? $_POST['custody'] : '';
+        $custody = post_choice('custody', ['joint', 'sole']);
         if (mb_strlen($name) < 3 || !$custody || empty($_POST['agree'])) {
-            consent_redirect('parent', $user_id, $token, [
-                'error' => rawurlencode(
-                    'Bitte Ihren Namen eingeben, das Sorgerecht auswählen und der Mitgliedschaft zustimmen.'
-                )
-            ]);
+            consent_redirect('parent', $user_id, $token, ['error' => 'parent_incomplete']);
         }
         $user = get_user_by('id', $user_id);
         $record = [

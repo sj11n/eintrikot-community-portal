@@ -84,7 +84,7 @@ function logout_others_form() {
 /* ---------- Schutz vor Passwort-Raten ---------- */
 
 function login_throttle_key($login) {
-    $ip = isset($_SERVER['REMOTE_ADDR']) ? (string) $_SERVER['REMOTE_ADDR'] : '';
+    $ip = client_ip();
     return 'et_login_fail_' . md5(strtolower(trim((string) $login)) . '|' . $ip);
 }
 
@@ -147,10 +147,13 @@ add_action(
 add_action(
     'lostpassword_post',
     function ($errors, $user) {
+        // Only checked for "not empty": WordPress itself handles the address (and its nonce) afterwards.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $input =
             isset($_POST['user_login']) && is_string($_POST['user_login'])
                 ? wp_unslash($_POST['user_login'])
                 : '';
+        // phpcs:enable
         if ($input === '') {
             return;
         }

@@ -130,7 +130,7 @@ add_action(
             ['name', 'twitter:card', 'summary_large_image']
         ];
         foreach ($tags as [$attr, $key, $value]) {
-            printf('<meta %s="%s" content="%s">' . "\n", $attr, esc_attr($key), esc_attr($value));
+            printf('<meta %s="%s" content="%s">' . "\n", esc_attr($attr), esc_attr($key), esc_attr($value));
         }
     },
     5

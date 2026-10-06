@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
     exit();
 }
 function directory_param($key) {
-    $v = $_GET[$key] ?? '';
+    $v = $_GET[$key] ?? ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cleaned right below
     return is_scalar($v) ? mb_substr(sanitize_text_field(wp_unslash((string) $v)), 0, 160) : '';
 }
 function shared_stations($data) {
@@ -250,7 +250,9 @@ function render_directory() {
                     '" alt="(auf LinkedIn)" title="Auf LinkedIn" width="16" height="16">'
                 : '') .
             '</strong>' .
-            ($line !== '' ? '<small>' . $line . '</small>' : '<small>Noch keine Angaben geteilt</small>') .
+            ($line !== ''
+                ? '<small>' . wp_kses($line, ['b' => []]) . '</small>'
+                : '<small>Noch keine Angaben geteilt</small>') .
             '</span><span class="member-arrow" aria-hidden="true">→</span></a>';
     }
     echo '</div>';

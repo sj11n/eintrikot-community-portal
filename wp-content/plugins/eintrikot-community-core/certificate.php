@@ -16,7 +16,7 @@ const CERT_PAGE_H = 841.89;
 
 function certificate_background() {
     $data = get_option('eintrikot_certificate_bg', '');
-    return is_string($data) && $data !== '' ? base64_decode($data, true) : false;
+    return is_string($data) && $data !== '' ? base64_decode($data, true) : false; // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- stored image, not code
 }
 
 function certificate_ready() {
@@ -200,6 +200,6 @@ add_action('template_redirect', function () {
     header('Content-Disposition: inline; filename="' . certificate_filename($id) . '"');
     header('Content-Length: ' . strlen($pdf));
     header('X-Robots-Tag: noindex');
-    echo $pdf;
+    echo $pdf; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- binary PDF, sent with a PDF content type
     exit();
 });

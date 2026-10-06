@@ -90,7 +90,7 @@ add_action('admin_post_et_club_social', function () {
     check_admin_referer('et_club_social');
     $raw =
         isset($_POST['club_social']) && is_array($_POST['club_social'])
-            ? wp_unslash($_POST['club_social'])
+            ? wp_unslash($_POST['club_social']) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- each value goes through sanitize_text_field() and social_url() below
             : [];
     $save = [];
     foreach (['linkedin', 'instagram', 'facebook'] as $key) {

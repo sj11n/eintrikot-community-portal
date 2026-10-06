@@ -90,11 +90,7 @@ function join_stats() {
  * the address only lives for an hour to ignore repeated clicks; it is never saved permanently.
  */
 function join_count($step) {
-    $marker =
-        'et_join_' .
-        $step .
-        '_' .
-        substr(hash_hmac('sha256', $_SERVER['REMOTE_ADDR'] ?? '', wp_salt('nonce')), 0, 20);
+    $marker = 'et_join_' . $step . '_' . substr(hash_hmac('sha256', client_ip(), wp_salt('nonce')), 0, 20);
     if (get_transient($marker)) {
         return;
     }
@@ -105,10 +101,11 @@ function join_count($step) {
     update_option('eintrikot_join_stats', array_slice($stats, -24, null, true), false);
 }
 
-foreach (['wp_ajax_et_join_count', 'wp_ajax_nopriv_et_join_count'] as $hook) {
-    add_action($hook, function () {
-        $step = isset($_POST['step']) && is_string($_POST['step']) ? $_POST['step'] : '';
-        if (in_array($step, ['open', 'go'], true) && join_url() !== '') {
+foreach (['wp_ajax_et_join_count', 'wp_ajax_nopriv_et_join_count'] as $eintrikot_hook) {
+    add_action($eintrikot_hook, function () {
+        // Anonymous counter without a login: there is no nonce, and nothing but a monthly count is stored.
+        $step = post_choice('step', ['open', 'go']);
+        if ($step !== '' && join_url() !== '') {
             join_count($step);
         }
         wp_send_json_success();

@@ -542,7 +542,7 @@ function render_profile($id) {
         '">';
     wp_nonce_field('et_profile_' . $id);
     echo '<input type="hidden" name="action" value="et_profile"><input type="hidden" name="member" value="' .
-        $id .
+        (int) $id .
         '"><input type="hidden" name="revision" value="' .
         esc_attr(profile_revision($id)) .
         '">';
@@ -770,8 +770,9 @@ function validate_stations($rows, $legacy = []) {
     return $result;
 }
 function profile_error($id, $data, $message, $conflict = false, $fields = []) {
-    $reason = $_POST['reason'] ?? '';
-    $reason = is_scalar($reason) ? sanitize_textarea_field(wp_unslash((string) $reason)) : '';
+    // Only called from the profile handler, after its nonce check.
+    // phpcs:disable WordPress.Security.NonceVerification.Missing
+    $reason = profile_form_text($_POST['reason'] ?? '', 500);
     set_transient(
         'et_profile_form_' . get_current_user_id() . '_' . $id,
         [
@@ -788,6 +789,7 @@ function profile_error($id, $data, $message, $conflict = false, $fields = []) {
         ],
         1800
     );
+    // phpcs:enable WordPress.Security.NonceVerification.Missing
     if ($conflict) {
         set_transient('et_profile_conflict_' . get_current_user_id() . '_' . $id, true, 600);
     }
@@ -875,15 +877,19 @@ function persist_profile($id, $data, $avatar, $reason, $revision) {
     return true;
 }
 add_action('admin_post_et_profile', function () {
-    $id = isset($_POST['member']) && is_scalar($_POST['member']) ? absint($_POST['member']) : 0;
+    // The member number is needed to build the nonce action, so it is read first and then verified.
+    $id = isset($_POST['member']) && is_scalar($_POST['member']) ? absint($_POST['member']) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
     if (!member_access() || !is_portal_user($id) || ($id !== get_current_user_id() && !manager_access())) {
         wp_die('Keine Berechtigung.', '', ['response' => 403]);
     }
     check_admin_referer('et_profile_' . $id);
     $data = profile_data($id);
+    // Arrays of form values: every entry is cleaned one by one further down (profile_form_text and the option lists).
+    // phpcs:disable WordPress.Security.ValidatedSanitizedInput
     $raw = $_POST['profile'] ?? [];
     $sections = $_POST['section_visibility'] ?? [];
     $keep = $_POST['section_visibility_keep'] ?? [];
+    // phpcs:enable WordPress.Security.ValidatedSanitizedInput
     if (!is_array($raw) || !is_array($sections) || !is_array($keep)) {
         wp_die('Ungültige Eingabe.', '', ['response' => 400]);
     }
@@ -943,7 +949,7 @@ add_action('admin_post_et_profile', function () {
         }
     }
     foreach (['display_name' => 120, 'birthday' => 10] as $key => $max) {
-        $v = $_POST[$key] ?? '';
+        $v = $_POST[$key] ?? ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cleaned by profile_form_text() below
         if (!is_scalar($v) || mb_strlen(wp_unslash((string) $v)) > $max) {
             $errors[$key] =
                 $key === 'birthday' ? 'Bitte das Geburtsdatum prüfen.' : 'Bitte deinen Namen prüfen.';
@@ -961,7 +967,9 @@ add_action('admin_post_et_profile', function () {
     // Membership number and entry date come from MeinVerein; only the administration corrects them.
     $membership = null;
     if (manager_access() && isset($_POST['member_number'], $_POST['joined'])) {
+        // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- reduced to digits and checked below
         $number = preg_replace('/\D/', '', (string) wp_unslash($_POST['member_number']));
+        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $joined = sanitize_text_field(wp_unslash((string) $_POST['joined']));
         if ($number !== '' && (strlen($number) > 6 || (int) $number < 1)) {
             $errors['member_number'] = 'Bitte eine Mitgliedsnummer von 1 bis 999999 eingeben.';
@@ -979,7 +987,7 @@ add_action('admin_post_et_profile', function () {
         if ($joined !== '' && (!$d || $d->format('Y-m-d') !== $joined || $joined > wp_date('Y-m-d'))) {
             $errors['joined'] = 'Bitte das Eintrittsdatum prüfen.';
         }
-        $donation = str_replace(',', '.', trim((string) wp_unslash($_POST['donation'] ?? '')));
+        $donation = str_replace(',', '.', trim(post_text('donation', '', 12)));
         if (
             $donation !== '' &&
             (!preg_match('/^\d{1,6}(?:\.\d{1,2})?$/D', $donation) || (float) $donation > 100000)
@@ -994,14 +1002,10 @@ add_action('admin_post_et_profile', function () {
     }
     // Only the administration decides whether an account is listed in the directory.
     if (manager_access() && isset($_POST['directory_listing'])) {
-        $data['directory_listing'] = in_array($_POST['directory_listing'], ['show', 'hide'], true)
-            ? $_POST['directory_listing']
-            : '';
+        $data['directory_listing'] = post_choice('directory_listing', ['show', 'hide']);
     }
-    $data['funding_interest'] = in_array($_POST['funding_interest'] ?? '', ['yes', 'no'], true)
-        ? $_POST['funding_interest']
-        : '';
-    $submitted = $_POST['stations'] ?? [];
+    $data['funding_interest'] = post_choice('funding_interest', ['yes', 'no']);
+    $submitted = $_POST['stations'] ?? []; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- every field of every row is cleaned below and in validate_stations()
     $data['stations'] = [];
     if (is_array($submitted)) {
         foreach (array_slice($submitted, 0, 30) as $row) {
