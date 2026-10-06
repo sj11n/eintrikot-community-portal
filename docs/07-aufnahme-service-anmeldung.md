@@ -18,6 +18,14 @@ Die Satzung regelt Minderjährige nicht; ein Beitritt unter 18 wird erst mit Zus
 4. Danach gehen automatisch Bestätigung an die Eltern und Begrüßung mit Urkunde und Zugang an das Mitglied.
 5. Links gelten 30 Tage. Nach 7 Tagen einmal Erinnerung. Unter „Einladungen“ steht der Stand („Wartet auf Eltern-Adresse“, „Wartet auf Zustimmung der Eltern“, nach 30 Tagen „bitte nachfassen“). Eine Zustimmung auf Papier trägt der Vorstand mit „Zustimmung von Hand eintragen“ ein.
 
+**Datenschutz bei der Zustimmung (0.19.1; Empfehlungen, die der Datenschutzbeauftragte laut Vorstand mitträgt):**
+
+- Der Schlüssel im Link ist nur als Hash gespeichert, gilt 30 Tage und wird mit der erteilten Zustimmung gelöscht (einmalig verwendbar).
+- Der Schlüssel steht in der Adresse, weil er per Mail kommt. Alle Portalseiten senden deshalb `Referrer-Policy: no-referrer` und `noindex`: Der Schlüssel gelangt nicht in Logs oder Verweise anderer Seiten.
+- Fehlermeldungen stehen nicht mehr in der Adresse, sondern kommen aus einer festen Liste (`consent_errors()`). Ein präparierter Link kann dort keinen eigenen Text einblenden.
+- Nachweis: Name, Zeitpunkt, bestätigter Text, Sorgerechts-Angabe. Die Adresse des Elternteils wird vom jungen Mitglied selbst eingetragen; der Nachweis ist damit eine „angemessene Anstrengung“ im Sinne von Art. 8 Abs. 2 DSGVO (Bestätigung über ein Postfach), keine Identitätsprüfung. Wer mehr will, nutzt „Zustimmung von Hand eintragen“ (Papier mit Unterschrift).
+- Geprüft durch `tests/run.php`: Altersgrenze am 18. Geburtstag, Jugendregeln (nur Team, Altersklasse, Region), Verzeichnis nur mit Zustimmung und Freigabe der Eltern, Jugendliche zählen nicht in die öffentlichen Kennzahlen.
+
 Bis zur Zustimmung ist keine Anmeldung möglich und das Konto erscheint nirgends. Gespeichert werden Name, E-Mail, Zeitpunkt und der bestätigte Text; gelöscht wird der Nachweis drei Jahre nach dem 18. Geburtstag. Das Geburtsdatum können Minderjährige nicht selbst ändern.
 
 ## Aufnahme

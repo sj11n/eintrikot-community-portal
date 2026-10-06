@@ -4,10 +4,10 @@ Theme und Plugin werden per GitHub Action auf die Entwicklungsinstallation kopie
 
 ## Was passiert
 
-- **Prüfen** (`.github/workflows/pruefen.yml`) läuft bei jedem Push und Pull Request: PHP-Syntax unter PHP 8.1, Formatierung, Deploy-Skript `tools/deploy.sh`.
+- **Prüfen** (`.github/workflows/pruefen.yml`) läuft bei jedem Push und Pull Request: PHP-Syntax unter PHP 8.1, Sicherheitsprüfung (PHPCS), statische Analyse (PHPStan), Regeltests in einem lokalen WordPress, Formatierung und ShellCheck für die Skripte unter `tools/`. Einspielen startet erst, wenn alles grün ist.
 - **Einspielen** (`.github/workflows/einspielen.yml`) läuft von Hand (mit Probelauf) und – sobald die Variable `AUTO_DEPLOY` auf `true` steht – automatisch bei jedem Push auf `main`, der Theme oder Plugin ändert.
   1. Anmeldung und Zielpfad prüfen. Stimmt etwas nicht, bricht der Lauf ab, ohne etwas zu ändern.
-  2. Den aktuellen Stand von Theme und Plugin herunterladen und 30 Tage als Artefakt „sicherung-…" aufbewahren.
+  2. Den aktuellen Stand von Theme und Plugin herunterladen. Als Artefakt „sicherung-…" (30 Tage) wird er nur **verschlüsselt** abgelegt (siehe „Sicherung"), weil Artefakte eines öffentlichen Repositories für jeden mit GitHub-Konto abrufbar sind.
   3. Neue Fassung in einen versteckten Nachbarordner hochladen (WordPress ignoriert Ordner mit Punkt).
   4. Ordner tauschen – die Seite wechselt in einem Schritt auf den neuen Stand.
   5. Startseite, „Mitglied werden" und Portal abrufen. Bei Fehler oder „kritischer Fehler" automatisch zurücktauschen; der Lauf wird rot.
@@ -27,7 +27,8 @@ Im Environment „entwicklung":
 | Secret | `SFTP_HOST` | SFTP-Server laut STRATO-Kundenbereich (bei STRATO in der Regel `ssh.strato.de`) |
 | Secret | `SFTP_USER` | SFTP-Benutzer, am besten ein eigener nur für das Einspielen |
 | Secret | `SFTP_PASSWORD` | zugehöriges Passwort |
-| Secret | `SFTP_KNOWN_HOSTS` | empfohlen: Ausgabe von `ssh-keyscan ssh.strato.de` im Terminal |
+| Secret | `SFTP_KNOWN_HOSTS` | **Pflicht**: Ausgabe von `ssh-keyscan -t ed25519 ssh.strato.de` im Terminal. Fehlt sie, bricht der Lauf ab, ohne etwas zu verändern. |
+| Secret | `BACKUP_PASSPHRASE` | Passwort für die verschlüsselte Sicherung (`gh secret set BACKUP_PASSPHRASE`). Fehlt es, wird keine Sicherung als Artefakt abgelegt; der Rücktausch im Lauf und der Git-Verlauf bleiben. |
 | Variable | `WP_CONTENT_PATH` | Pfad zu `wp-content`, wie er nach der SFTP-Anmeldung aussieht, z. B. `/eintrikot/wp-content` |
 | Variable | `SITE_URL` | `http://eintrikot.myemmel.com` |
 | Variable | `DEPLOY_PROTOCOL` | optional, `sftp` (Standard) oder `ftps` |
@@ -49,3 +50,24 @@ Den Pfad findest du mit einem SFTP-Programm (z. B. Cyberduck): anmelden, in den 
 ## Getestet
 
 Das Skript wurde gegen einen lokalen SFTP-Server geprüft: falscher Pfad und falsches Passwort brechen ohne Änderung ab, Probelauf ändert nichts, ein Lauf spielt Theme und Plugin identisch ein und lädt die Sicherung, eine fehlschlagende Seitenprüfung tauscht automatisch zurück. Seit September 2026 laufen alle Einspielungen auf STRATO über diesen Weg.
+
+## Sicherung
+
+Die Sicherung wird mit AES-256 verschlüsselt (`gpg --symmetric`) und als `sicherung-<Laufnummer>.tar.gz.gpg` 30 Tage aufbewahrt. Entschlüsseln:
+
+```bash
+gpg --decrypt sicherung-123.tar.gz.gpg | tar -xz
+```
+
+Das Passwort bewahrst du in deinem Passwortmanager auf, nicht nur als GitHub-Secret: GitHub zeigt gespeicherte Secrets nicht mehr an.
+
+## Regeltests und lokales WordPress
+
+`tools/lokal-test.sh` baut ein isoliertes WordPress mit SQLite unter `.lokal/` (nicht im Repository). Es verschickt keine Mails und enthält nur Testkonten.
+
+```bash
+tools/lokal-test.sh test    # Regeltests (Altersgrenze, Sichtbarkeit, Zustimmung, Login-Sperre)
+tools/lokal-test.sh serve   # Seite zum Ausprobieren unter http://127.0.0.1:8899
+```
+
+Die Tests liegen in `tests/run.php`. Wer eine Regel ändert (z. B. welche Angaben Jugendliche zeigen), ändert zuerst den Test.

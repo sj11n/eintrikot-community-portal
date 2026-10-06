@@ -47,7 +47,7 @@ Nur Theme und Plugin werden eingespielt. Alles andere bleibt im Repository.
 
 ## Lokaler Test
 
-Isoliertes WordPress mit SQLite und synthetischen Testmitgliedern (Rollen Mitglied, Vorstand, Administrator), ausgehende Mails werden abgefangen. Prüfung jeweils am Desktop sowie bei 390 und 320 px.
+Isoliertes WordPress mit SQLite und synthetischen Testmitgliedern (Rollen Mitglied, Vorstand, Administrator), ausgehende Mails werden abgefangen. Aufbau und Regeltests: `tools/lokal-test.sh` (siehe docs/05). Prüfung der Oberfläche jeweils am Desktop sowie bei 390 und 320 px.
 
 ## Offen
 
@@ -61,8 +61,8 @@ Isoliertes WordPress mit SQLite und synthetischen Testmitgliedern (Rollen Mitgli
 „Prüfen" führt zusätzlich zur Syntaxprüfung zwei Werkzeuge aus. Beide sind reine Entwicklungswerkzeuge und werden nicht eingespielt.
 
 - **PHPCS** (`phpcs.xml.dist`): nur die Sicherheitsregeln von WordPress – Ausgabe escapen, Eingaben bereinigen, Nonces prüfen, SQL vorbereiten. Der Stil bleibt bei Prettier. Hilfsfunktionen, die fertig escaptes HTML liefern (z. B. `page_head`, `service_link`), sind in der Regeldatei als sicher eingetragen. Wer eine neue solche Funktion anlegt, trägt sie dort ein und escaped Eingaben darin selbst. Beachte: `page_head()` gibt `$lead` und `$extra` unverändert aus, Aufrufer müssen sie vorher escapen.
-- **PHPStan** (`phpstan.neon.dist`, Stufe 5, mit WordPress-Erweiterung): findet Typfehler und tote Zweige. Er läuft ohne Baseline, jeder Fund bricht die Prüfung.
-- **PHPCS-Baseline** (`phpcs.baseline.xml`): hält die Altbefunde vom Einführungstag fest, damit nur **neue** Verstöße die Prüfung scheitern lassen. Sie soll schrumpfen, nie wachsen. Wer alte Befunde behebt, erzeugt sie neu. PHPStan hat keine Baseline mehr; jeder Fund bricht die Prüfung.
+- **PHPStan** (`phpstan.neon.dist`, Stufe 5, mit WordPress-Erweiterung): findet Typfehler und tote Zweige.
+- **Keine Baselines.** Seit 0.19.1 ist der Altbestand abgearbeitet; jeder Fund von PHPCS und PHPStan bricht die Prüfung. Eingaben liest man mit `post_text()`, `post_choice()` oder `directory_param()` (entschlacken und `wp_unslash`). Wo ein Wert bewusst roh bleibt (Passwort, Upload, Nonce), steht ein `phpcs:ignore` mit Begründung direkt daneben.
 
 Lokal (einmalig `composer install`):
 
@@ -70,10 +70,4 @@ Lokal (einmalig `composer install`):
 composer analyse        # beides
 composer phpcs
 composer phpstan
-```
-
-PHPCS-Baseline neu erzeugen, nachdem Altlasten behoben wurden:
-
-```bash
-vendor/bin/phpcs --report=\\DR\\CodeSnifferBaseline\\Reports\\Baseline --report-file=phpcs.baseline.xml --basepath=. -q
 ```
