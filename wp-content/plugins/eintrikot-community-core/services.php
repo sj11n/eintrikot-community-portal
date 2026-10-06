@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 }
 function service_types() {
     return [
-        'event' => 'Teilnahme an einem Event anfragen',
+        'event' => 'Für eine Veranstaltung anmelden',
         'idea' => 'Förderidee einreichen',
         'help' => 'Ich möchte mich einbringen',
         'contact' => 'Vorstand kontaktieren',
@@ -24,7 +24,7 @@ function service_groups() {
 /** Short explanation under each service entry. */
 function service_hints() {
     return [
-        'event' => 'Du fragst die Teilnahme an; der Vorstand bestätigt sie dir hier im Portal',
+        'event' => 'Bei den Terminen unter „Aktuelles“ meldest du dich direkt an',
         'idea' => 'Ein Projekt, das wir unterstützen sollten',
         'help' => 'Zeit, Wissen oder Kontakte einbringen',
         'funding' => 'Freiwillige Jahresspende anfragen oder ändern',
@@ -49,8 +49,13 @@ function render_service_overview($types) {
     foreach (service_groups() as $group => $keys) {
         echo '<section class="portal-section"><h2>' . esc_html($group) . '</h2><div class="et-services">';
         foreach ($keys as $key) {
+            // Sign-up happens at the event itself (Aktuelles → Termine); the old request form stays for past requests.
+            $target =
+                $key === 'event'
+                    ? portal_url('aktuelles', ['tab' => 'termine'])
+                    : portal_url('service', ['service' => $key]);
             echo '<a class="service-card" href="' .
-                esc_url(portal_url('service', ['service' => $key])) .
+                esc_url($target) .
                 '"><span><strong>' .
                 esc_html($types[$key]) .
                 '</strong><small>' .
@@ -73,7 +78,7 @@ function render_service_overview($types) {
     if (current_user_can('eintrikot_edit_infos') || manager_access()) {
         echo '<section class="portal-section"><h2>Vereinsarbeit</h2>';
         if (current_user_can('eintrikot_edit_infos')) {
-            echo service_link(portal_url('editorial'), 'Redaktion', 'News, Vereinsinfos, Kalender');
+            echo service_link(portal_url('editorial'), 'Redaktion', 'News, Vereinsinfos, Termine');
         }
         if (manager_access()) {
             echo service_link(portal_url('admin'), 'Verwaltung', 'Anfragen, Profile, Protokoll');

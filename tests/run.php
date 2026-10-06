@@ -101,7 +101,7 @@ $bday_full = make_user('eintrikot_member', ['birthday' => day('+12 days -40 year
 $bday_private = make_user('eintrikot_member', ['birthday' => day('+11 days -35 years')], ['eintrikot_activated_at' => time()]);
 $bday_hidden = make_user('eintrikot_member', ['birthday' => day('+13 days -33 years'), 'birthday_visibility' => 'full', 'directory_listing' => 'hide'], ['eintrikot_activated_at' => time()]);
 $bday_kid = make_user('eintrikot_member', ['birthday' => day('+14 days -15 years'), 'birthday_visibility' => 'full'], ['eintrikot_activated_at' => time(), 'eintrikot_consent' => 'given', 'eintrikot_consent_record' => ['method' => 'manual']]);
-$titles = array_column(calendar_items(60), 'title');
+$titles = array_column(birthday_items(60), 'title');
 $name = fn($id) => get_user_by('id', $id)->display_name;
 check('Termine: Tag und Monat ohne Alter', in_array('Geburtstag: ' . $name($bday_day), $titles, true));
 check('Termine: mit Jahr zeigt das neue Alter', in_array('Geburtstag: ' . $name($bday_full) . ' (wird 40)', $titles, true));
@@ -226,6 +226,100 @@ check('Import: Excel-Datum und Spende gelesen', $import_checked[0]['birthday'] =
 check('Import: Eintritt am Gründungstag ist gültig', $import_checked[0]['status'] === 'new');
 $before = import_check([['first_name' => 'A', 'last_name' => 'B', 'email' => 'vorher@example.test', 'number' => '1', 'joined' => '2020-12-15', 'birthday' => '', 'donation' => '']]);
 check('Import: Eintritt vor der Gründung wird abgelehnt', $before[0]['status'] === 'invalid');
+
+/* ---------- Aktuelles: Termine und Anmeldung ---------- */
+
+$event_posts = [];
+function make_event($title, $meta) {
+    global $event_posts;
+    $id = wp_insert_post(['post_type' => 'et_calendar', 'post_status' => 'publish', 'post_title' => $title, 'post_content' => 'Beschreibung ' . $title]);
+    foreach ($meta as $k => $v) {
+        update_post_meta($id, $k, $v);
+    }
+    $event_posts[] = $id;
+    return $id;
+}
+$ev_open = make_event('Test Treffen Köln', ['et_date' => day('+20 days'), 'et_time' => '18:30', 'et_end_time' => '21:00', 'et_place' => 'Test-Ort', 'et_meetpoint' => 'Eingang', 'et_contact' => 'Anna', 'et_format' => 'treffen', 'et_signup' => '1']);
+$ev_multi = make_event('Test Turnier', ['et_date' => day('+30 days'), 'et_end_date' => day('+31 days'), 'et_format' => 'unterwegs', 'et_signup' => '1']);
+$ev_cancel = make_event('Test Abgesagt', ['et_date' => day('+25 days'), 'et_signup' => '1', 'et_cancelled' => '1']);
+$ev_past = make_event('Test Vergangen', ['et_date' => day('-5 days'), 'et_signup' => '1']);
+$ev_running = make_event('Test Läuft gerade', ['et_date' => day('-1 day'), 'et_end_date' => day('+1 day'), 'et_signup' => '1']);
+$ev_deadline = make_event('Test Schluss', ['et_date' => day('+40 days'), 'et_signup' => '1', 'et_deadline' => day('-1 day')]);
+$ev_annual = make_event('Test Jahrestag', ['et_date' => day('+10 days -3 years'), 'et_annual' => '1', 'et_signup' => '1']);
+$ev_free = make_event('Test Ohne Anmeldung', ['et_date' => day('+50 days')]);
+$ev_draft = wp_insert_post(['post_type' => 'et_calendar', 'post_status' => 'draft', 'post_title' => 'Test Entwurf']);
+update_post_meta($ev_draft, 'et_date', day('+5 days'));
+$event_posts[] = $ev_draft;
+$items = event_items();
+$by = array_column($items, null, 'id');
+check('Termine: Entwurf erscheint nicht', !isset($by[$ev_draft]));
+check('Termine: Vergangenes erscheint nicht', !isset($by[$ev_past]));
+check('Termine: laufender mehrtägiger Termin erscheint', isset($by[$ev_running]));
+check('Termine: Felder gelesen', ($by[$ev_open]['place'] ?? '') === 'Test-Ort' && ($by[$ev_open]['meetpoint'] ?? '') === 'Eingang' && ($by[$ev_open]['format'] ?? '') === 'treffen');
+check('Termine: Uhrzeit-Text', event_time_text($by[$ev_open]) === '18:30–21:00 Uhr');
+check('Termine: mehrtägig hat Ende', ($by[$ev_multi]['end'] ?? '') === day('+31 days'));
+check('Termine: Jahrestag hat keine Anmeldung', ($by[$ev_annual]['signup'] ?? true) === false && str_contains($by[$ev_annual]['title'] ?? '', '3. Jahrestag'));
+check('Termine: unbekanntes Format wird Sonstiges', (event_from_post(get_post(make_event('Test Format', ['et_date' => day('+9 days'), 'et_format' => 'quatsch'])))['format'] ?? '') === 'sonstiges');
+$sorted = array_column($items, 'date');
+$copy = $sorted; sort($copy);
+check('Termine: nach Datum sortiert', $sorted === $copy);
+check('Termine: Geburtstage stehen nicht in der Terminliste', !array_filter($items, fn($i) => str_starts_with($i['title'], 'Geburtstag')));
+
+$m1 = make_user('eintrikot_member', ['birthday' => day('-35 years')], ['eintrikot_activated_at' => time()]);
+$m2 = make_user('eintrikot_member', ['birthday' => day('-28 years')], ['eintrikot_activated_at' => time()]);
+$m_kid = make_user('eintrikot_member', ['birthday' => day('-14 years')], ['eintrikot_activated_at' => time(), 'eintrikot_consent' => 'given', 'eintrikot_consent_record' => ['method' => 'manual']]);
+$m_hidden = make_user('eintrikot_member', ['birthday' => day('-40 years'), 'directory_listing' => 'hide'], ['eintrikot_activated_at' => time()]);
+$outsider = make_user('subscriber');
+check('Anmeldung: Mitglied kann sich anmelden', event_signup($ev_open, $m1) === '' && event_is_signed($ev_open, $m1));
+check('Anmeldung: doppelt zählt einmal', event_signup($ev_open, $m1) === '' && count(event_attendee_ids($ev_open)) === 1);
+event_signup($ev_open, $m2);
+event_signup($ev_open, $m_kid);
+event_signup($ev_open, $m_hidden);
+check('Anmeldung: Teilnehmerzahl stimmt', count(event_attendee_ids($ev_open)) === 4);
+$who = event_visible_attendees($ev_open);
+check('Liste: Erwachsene mit Namen', isset($who['names'][$m1], $who['names'][$m2]));
+check('Liste: Minderjährige nie mit Namen', !isset($who['names'][$m_kid]));
+check('Liste: ausgeblendete Konten nie mit Namen', !isset($who['names'][$m_hidden]));
+check('Liste: Verborgene zählen mit', $who['hidden'] === 2);
+event_unsign($ev_open, $m2);
+check('Abmelden entfernt die Anmeldung', !event_is_signed($ev_open, $m2));
+check('Anmeldung: Abgesagtes nicht möglich', event_signup($ev_cancel, $m1) !== '' && !event_is_signed($ev_cancel, $m1));
+check('Anmeldung: Vergangenes nicht möglich', event_signup($ev_past, $m1) !== '');
+check('Anmeldung: nach Anmeldeschluss nicht möglich', event_signup($ev_deadline, $m1) !== '');
+check('Anmeldung: Jahrestag nicht möglich', event_signup($ev_annual, $m1) !== '');
+check('Anmeldung: Termin ohne Anmeldung nicht möglich', event_signup($ev_free, $m1) !== '');
+check('Anmeldung: Entwurf nicht möglich', event_signup($ev_draft, $m1) !== '');
+check('Anmeldung: Technisches Konto nicht möglich', event_signup($ev_open, $outsider) !== '');
+check('Anmeldung: mehrtägig und laufend möglich', event_signup($ev_multi, $m1) === '' && event_signup($ev_running, $m1) === '');
+wp_set_current_user($m1);
+$_GET = ['view' => 'aktuelles', 'tab' => 'termine'];
+ob_start();
+render_news();
+$page = ob_get_clean();
+check('Seite Aktuelles: Titel und Reiter', str_contains($page, 'Aktuelles') && str_contains($page, 'news-tabs'));
+check('Seite: Termin mit Ort und Format', str_contains($page, 'Test Treffen Köln') && str_contains($page, 'Test-Ort') && str_contains($page, 'Treffen'));
+check('Seite: Abmelden für Angemeldeten', str_contains($page, 'Du bist angemeldet') && str_contains($page, 'value="leave"'));
+wp_set_current_user($m2);
+ob_start();
+render_news();
+$page2 = ob_get_clean();
+check('Seite: Anmelden für Offenen', str_contains($page2, 'Für Veranstaltung anmelden') && str_contains($page2, 'value="join"'));
+check('Seite: Teilnehmerliste mit Namen und Zahl', str_contains($page2, 'Wer ist dabei?') && str_contains($page2, get_user_by('id', $m1)->display_name));
+check('Seite: Namen von Kindern fehlen', !str_contains($page, get_user_by('id', $m_kid)->display_name));
+check('Seite: Entwurf und Vergangenes fehlen', !str_contains($page, 'Test Entwurf') && !str_contains($page, 'Test Vergangen'));
+wp_set_current_user(0);
+$_GET = [];
+check('Navigation: Aktuelles statt Vereinsinfos und Termine', isset(portal_nav_items()['aktuelles']) && !isset(portal_nav_items()['infos']) && !isset(portal_nav_items()['events']));
+check('Navigation: mobil vier Punkte', count(portal_mobile_items()) === 4);
+global $wpdb;
+$wpdb->insert(signup_table(), ['event_id' => $ev_open, 'user_id' => $outsider, 'event_date' => day('-400 days'), 'created_at' => current_time('mysql', true)]);
+$retention = run_retention();
+check('Aufbewahrung: alte Anmeldungen werden gelöscht', $retention['signups'] >= 1 && !event_is_signed($ev_open, $outsider));
+check('Aufbewahrung: aktuelle bleiben', event_is_signed($ev_open, $m1));
+$wpdb->query("DELETE FROM {$wpdb->prefix}eintrikot_event_signups WHERE event_id IN (" . implode(',', array_map('intval', $event_posts)) . ')');
+foreach ($event_posts as $pid) {
+    wp_delete_post($pid, true);
+}
 
 /* ---------- Login-Sperre ---------- */
 

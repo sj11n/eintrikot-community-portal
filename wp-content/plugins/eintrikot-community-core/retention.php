@@ -3,6 +3,7 @@
  * Speicherfristen (siehe Datenschutzerklärung):
  * - Änderungsprotokoll: Einträge älter als 24 Monate werden gelöscht.
  * - Service-Anfragen: abgeschlossene oder abgelehnte Anfragen 24 Monate nach der letzten Bearbeitung.
+ * - Anmeldungen zu Terminen: 180 Tage nach dem Termin.
  * Der Nachweis der Elternzustimmung wird in consent.php gelöscht.
  */
 namespace Eintrikot\Community;
@@ -23,6 +24,13 @@ function run_retention() {
     $cutoff = gmdate('Y-m-d H:i:s', strtotime('-' . RETENTION_MONTHS . ' months'));
     $audit = (int) $wpdb->query(
         $wpdb->prepare("DELETE FROM {$wpdb->prefix}eintrikot_audit WHERE created_at < %s", $cutoff)
+    );
+    // Event sign-ups: deleted 180 days after the event.
+    $signups = (int) $wpdb->query(
+        $wpdb->prepare(
+            "DELETE FROM {$wpdb->prefix}eintrikot_event_signups WHERE event_date < %s",
+            gmdate('Y-m-d', strtotime('-' . SIGNUP_KEEP_DAYS . ' days'))
+        )
     );
     $requests = 0;
     $limit = strtotime('-' . RETENTION_MONTHS . ' months');
@@ -50,6 +58,6 @@ function run_retention() {
             $requests++;
         }
     }
-    return ['audit' => $audit, 'requests' => $requests];
+    return ['audit' => $audit, 'requests' => $requests, 'signups' => $signups];
 }
 add_action('eintrikot_retention', __NAMESPACE__ . '\run_retention');
