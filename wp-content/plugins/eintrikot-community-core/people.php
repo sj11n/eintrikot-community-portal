@@ -33,7 +33,9 @@ function people_names() {
     set_transient('eintrikot_people_names', $names, DAY_IN_SECONDS);
     return $names;
 }
-add_action('save_post_page', fn() => delete_transient('eintrikot_people_names'));
+add_action('save_post_page', function () {
+    delete_transient('eintrikot_people_names');
+});
 
 /** Whether this member is named on the public people page. */
 function named_on_website($user_id) {
