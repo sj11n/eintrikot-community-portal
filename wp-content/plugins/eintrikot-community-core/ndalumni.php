@@ -24,9 +24,10 @@ function nda_text($value) {
         ? ''
         : $v;
 }
-/** A year from "2003", an Excel day number or a date; '' otherwise. */
+/** A year from "2003" or "2003.0", an Excel day number or a date; '' otherwise. */
 function nda_year($value) {
-    $v = trim((string) $value);
+    // Excel stores a year as "2003.0": without this it would be read as the day number 2003 (= year 1905).
+    $v = import_whole_number($value);
     if (preg_match('/^(19|20)\d{2}$/D', $v)) {
         return $v;
     }
