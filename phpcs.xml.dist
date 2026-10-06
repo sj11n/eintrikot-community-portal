@@ -35,6 +35,7 @@
             <property name="customAutoEscapedFunctions" type="array">
                 <element value="page_head"/>
                 <element value="request_details_list"/>
+                <element value="birthday_choice_fields"/>
                 <element value="request_status_pill"/>
                 <element value="request_timeline"/>
                 <element value="funding_summary"/>

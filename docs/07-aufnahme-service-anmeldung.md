@@ -31,7 +31,7 @@ Bis zur Zustimmung ist keine Anmeldung möglich und das Konto erscheint nirgends
 ## Aufnahme
 
 1. In MeinVerein die neuen Mitglieder filtern und als Excel exportieren (am besten nur Vorname, Nachname, E-Mail, Mitgliedsnummer, Eintrittsdatum, Geburtsdatum und Jahresspende, bei uns „Individuelles Feld 1“).
-2. Portal → Verwaltung → Neue Mitglieder aufnehmen → Datei hochladen. Erkannt werden gängige Spaltennamen; sonst „Spalten zuordnen“.
+2. Portal → Verwaltung → Neue Mitglieder aufnehmen → Datei hochladen. Erkannt werden gängige Spaltennamen (auch die der MeinVerein-Datei: „Mitgliedsnr.“, „Geburtstag“, „Mitglied seit“, „Zusatzbetrag NDAlumni“ als Jahresspende); sonst „Spalten zuordnen“. Gelesen werden nur diese Spalten; IBAN, Anschrift, Telefon und alles andere in der Datei bleiben unberührt und werden nicht gespeichert.
 3. Vorschau prüfen: Neu / Schon im Portal / Fehler. Ein Eintrittsdatum vor der Gründung (23.09.2025) gilt als Fehler und wird in MeinVerein korrigiert. Ausgewählte übernehmen.
 4. Das Portal legt Konten mit Rolle „EINTRIKOT Mitglied“ an (Benutzername = E-Mail) und schickt auf Wunsch sofort die Begrüßung: Schreiben, Mitgliedsurkunde als PDF, persönlicher Link „Passwort festlegen“.
 5. Unter „Einladungen“ ist der Stand je Mitglied sichtbar: noch nicht eingeladen, eingeladen, Link abgelaufen, aktiv.
@@ -73,3 +73,13 @@ Statt eines Status-Menüs hat jede Anfrage Schaltflächen für den nächsten Sch
 - **Passwort-Raten:** 5 Fehlversuche je Konto und Anschluss → 15 Minuten gesperrt; eine gemeinsame Fehlermeldung für falsche E-Mail und falsches Passwort.
 - **Härtung:** XML-RPC aus, Benutzerliste der REST-Schnittstelle und Autorenseiten für Gäste gesperrt, keine Benutzer-Sitemap.
 - **Mit HTTPS (eintrikot.de):** WordPress setzt die Anmelde-Cookies dann automatisch als „secure“; zusätzlich HTTPS-Weiterleitung einschalten. Zweite Stufe (Authenticator-App) für Vorstand und Admins ist vorbereitet als Empfehlung, aber bewusst noch nicht eingerichtet.
+
+## Geburtstag im Profil (0.19.2)
+
+Das Geburtsdatum kommt aus MeinVerein bzw. dem Antrag und ist zunächst **privat**: Es dient dem Beitrag und der Altersprüfung, sehen kann es nur die Vereinsverwaltung. Im Profil unter „Über dich“ wählt das Mitglied selbst, wer den Geburtstag sonst noch sieht:
+
+- **Niemand** (Standard, auch nach dem Import),
+- **Tag und Monat** (Profil und „Termine“, ohne Jahr),
+- **Tag, Monat und Jahr** (Profil und „Termine“ mit „wird 40“; das Alter lässt sich daraus ablesen).
+
+„Mein Alter im Mitgliederprofil anzeigen“ bleibt eine eigene Wahl. Die Vereinsverwaltung sieht die Auswahl beim Bearbeiten, ändert sie aber nie (Einwilligung). Mitglieder unter 18 zeigen keinen Geburtstag, auch wenn sie ihn früher gewählt haben; ab 18 gilt ihre Wahl. Konten, die aus dem Verzeichnis ausgeblendet sind, erscheinen auch nicht unter „Termine“. Das frühere Häkchen „in den Terminen, ohne Jahr“ wird als „Tag und Monat“ gelesen und beim nächsten Speichern durch die neue Wahl ersetzt.

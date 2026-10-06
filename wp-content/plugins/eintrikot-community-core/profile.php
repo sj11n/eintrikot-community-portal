@@ -299,12 +299,19 @@ function section_visibility_state($data, $group) {
 /** One switch per section instead of a selector per field. Off = only the club administration sees it. */
 function section_visibility_switch($group, $data) {
     $slug = profile_group_slugs()[$group] ?? '';
+    // Name and photo are always visible; in the first section the switch covers only the rest.
+    $label =
+        $group === 'Über dich'
+            ? 'Wohnort, Region und Verein für Mitglieder sichtbar'
+            : 'Für Mitglieder sichtbar';
     $state = section_visibility_state($data, $group);
     return '<div class="visibility-switch-row"><label class="visibility-switch"><input type="checkbox" role="switch" name="section_visibility[' .
         esc_attr($slug) .
         ']" value="members"' .
         ($state === 'all' ? ' checked' : '') .
-        '><span class="switch-track" aria-hidden="true"></span><span class="switch-label">Für Mitglieder sichtbar</span></label>' .
+        '><span class="switch-track" aria-hidden="true"></span><span class="switch-label">' .
+        esc_html($label) .
+        '</span></label>' .
         ($state === 'mixed'
             ? '<input type="hidden" class="visibility-keep" name="section_visibility_keep[' .
                 esc_attr($slug) .
@@ -522,7 +529,7 @@ function render_profile($id) {
         ($own && get_user_meta($id, 'eintrikot_review', true) === 'pending'
             ? '<div class="portal-notice review-notice" role="status"><p><strong>Bitte prüfe dein Profil.</strong> Deine Angaben aus NDAlumni haben wir übernommen. Noch sieht sie nur die Mitgliederverwaltung. Schau sie einmal durch, ergänze, was fehlt, und schalte pro Abschnitt frei, was andere Mitglieder sehen sollen. Mit dem Speichern ist die Prüfung erledigt.</p></div>'
             : '') .
-        '<div class="visibility-intro"><p><strong>So funktioniert die Sichtbarkeit:</strong> Name und Profilbild sehen alle Mitglieder. Jeden weiteren Abschnitt teilst du mit einem Schalter – ausgeschaltet sieht ihn nur die Vereinsverwaltung. Leere Felder erscheinen nirgends. Dein Geburtsdatum bleibt immer privat.</p><a class="text-link" href="' .
+        '<div class="visibility-intro"><p><strong>So funktioniert die Sichtbarkeit:</strong></p><ul><li><strong>Immer für Mitglieder sichtbar:</strong> dein Name und dein Profilbild.</li><li><strong>Du entscheidest:</strong> jeder weitere Abschnitt mit einem Schalter, dein Geburtstag und dein Alter mit einer eigenen Auswahl. Was ausgeschaltet ist, sieht nur die Vereinsverwaltung. Leere Felder erscheinen nirgends.</li><li><strong>Öffentlich:</strong> nichts – außer ein Profilbild, das du selbst für die Website freigibst.</li></ul><a class="text-link" href="' .
         esc_url(portal_url('member', ['member' => $id])) .
         '">So sehen dich andere →</a></div>';
     if ($draft) {
@@ -576,7 +583,7 @@ function render_profile($id) {
                         checked(!empty($draft['remove_avatar']), true, false) .
                         '> Bild entfernen</label>'
                     : '') .
-                '</div></div><small>Bild anklicken, auswählen und den Ausschnitt festlegen. JPEG, PNG oder WebP, bis 5 MB. Nur im Mitgliederbereich sichtbar.</small>' .
+                '</div></div><small>Bild anklicken, auswählen und den Ausschnitt festlegen. JPEG, PNG oder WebP, bis 5 MB. Für alle Mitglieder sichtbar.</small>' .
                 field_error_text('avatar') .
                 // Board, advisory board and founders appear on the public page "Menschen".
                 (named_on_website($id) || !empty($data['public_photo'])
@@ -608,12 +615,13 @@ function render_profile($id) {
                 field_error_text('birthday') .
                 '<small>' .
                 ($minor_locked
-                    ? 'Bleibt privat. Änderungen bitte über die Vereinsverwaltung.'
-                    : 'Bleibt privat. Nur dein Alter kann im Mitgliederprofil erscheinen.') .
+                    ? 'Änderungen bitte über die Vereinsverwaltung.'
+                    : 'Das ganze Datum sehen nur du und die Vereinsverwaltung – außer du gibst es unten frei.') .
                 '</small></label>' .
                 (is_minor_data($data)
-                    ? '<p class="minor-note">Solange du unter 18 bist, sehen andere Mitglieder nur deinen Namen, dein Team, deine Altersklasse und deine Region. Ab deinem 18. Geburtstag entscheidest du selbst über alle Angaben.</p>'
-                    : '<label class="check"><input type="checkbox" name="show_age" value="1" ' .
+                    ? '<p class="minor-note">Solange du unter 18 bist, sehen andere Mitglieder nur deinen Namen, dein Team, deine Altersklasse und deine Region – auch keinen Geburtstag. Ab deinem 18. Geburtstag entscheidest du selbst über alle Angaben.</p>'
+                    : birthday_choice_fields($data, $id === get_current_user_id()) .
+                        '<label class="check"><input type="checkbox" name="show_age" value="1" ' .
                         checked(!empty($data['show_age']), true, false) .
                         '> Mein Alter im Mitgliederprofil anzeigen</label>');
         }
@@ -642,9 +650,7 @@ function render_profile($id) {
         selected($data['funding_interest'] ?? '', 'no', false) .
         '>Derzeit nicht</option></select></label><p>Deine Auswahl ist unverbindlich. Betrag und Beginn bestätigst du in einer separaten Anfrage.</p><a class="text-link" href="' .
         esc_url(portal_url('service', ['service' => 'funding'])) .
-        '">Förderanfrage vorbereiten →</a></section><section class="form-section"><h2>In Verbindung bleiben</h2><label class="check"><input type="checkbox" name="birthday_notice" value="1" ' .
-        checked(!empty($data['birthday_notice']), true, false) .
-        '><span>Mein Geburtstag darf mit meinem Namen im Portal unter „Termine“ erscheinen. Das Geburtsjahr wird nicht angezeigt.</span></label><label class="check"><input type="checkbox" name="newsletter" value="1" ' .
+        '">Förderanfrage vorbereiten →</a></section><section class="form-section"><h2>In Verbindung bleiben</h2><label class="check"><input type="checkbox" name="newsletter" value="1" ' .
         checked(!empty($data['newsletter']), true, false) .
         '><span>EINTRIKOT-Newsletter erhalten<br><small>Du kannst diese Einstellung jederzeit ändern.</small></span></label></section>';
     if (manager_access()) {
@@ -797,6 +803,40 @@ function profile_error($id, $data, $message, $conflict = false, $fields = []) {
         portal_url($id === get_current_user_id() ? 'profile' : 'edit-member', ['member' => $id])
     );
     exit();
+}
+/** The birthday choice: who besides the administration may see it. Only the member changes it. */
+function birthday_choice_fields($data, $own) {
+    $choice = birthday_choice($data);
+    $options = [
+        '' => ['Niemand', 'Nur die Vereinsverwaltung kennt mein Geburtsdatum.'],
+        'day' => [
+            'Tag und Monat',
+            'Mitglieder sehen meinen Geburtstag im Profil und unter „Termine“, ohne Jahr.'
+        ],
+        'full' => [
+            'Tag, Monat und Jahr',
+            'Mitglieder sehen mein Geburtsdatum im Profil und unter „Termine“. Daraus ergibt sich auch mein Alter.'
+        ]
+    ];
+    $html =
+        '<fieldset class="field birthday-choice"><legend>Wer sieht deinen Geburtstag?</legend>' .
+        '<p class="field-hint">Das entscheidest nur du. Du kannst es jederzeit ändern.</p>';
+    foreach ($options as $value => [$label, $hint]) {
+        $html .=
+            '<label class="check"><input type="radio" name="birthday_visibility" value="' .
+            esc_attr($value) .
+            '" ' .
+            checked($choice, $value, false) .
+            ($own ? '' : ' disabled') .
+            '><span><strong>' .
+            esc_html($label) .
+            '</strong><br><small>' .
+            esc_html($hint) .
+            '</small></span></label>';
+    }
+    return $html .
+        ($own ? '' : '<p class="field-hint">Diese Wahl trifft das Mitglied selbst.</p>') .
+        '</fieldset>';
 }
 function profile_form_text($value, $max = 4000) {
     return is_scalar($value) ? mb_substr(sanitize_textarea_field(wp_unslash((string) $value)), 0, $max) : '';
@@ -961,9 +1001,16 @@ add_action('admin_post_et_profile', function () {
         $data['birthday'] = $previous['birthday'];
         unset($errors['birthday']);
     }
-    foreach (['show_age', 'birthday_notice', 'newsletter', 'public_photo'] as $key) {
+    foreach (['show_age', 'newsletter', 'public_photo'] as $key) {
         $data[$key] = isset($_POST[$key]);
     }
+    // Who sees the birthday: only the member decides (never the administration), and nobody under 18 shares it.
+    $data['birthday_visibility'] = is_minor_data($data)
+        ? ''
+        : ($id === get_current_user_id()
+            ? post_choice('birthday_visibility', ['day', 'full'])
+            : birthday_choice($previous));
+    unset($data['birthday_notice']); // replaced by birthday_visibility
     // Membership number and entry date come from MeinVerein; only the administration corrects them.
     $membership = null;
     if (manager_access() && isset($_POST['member_number'], $_POST['joined'])) {

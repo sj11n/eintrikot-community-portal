@@ -327,6 +327,30 @@ function social_links($data) {
     }
     return $items ? '<ul class="social-links">' . $items . '</ul>' : '';
 }
+/**
+ * What the member chose for the birthday: '' (only the administration sees it), 'day' (other members see day and month)
+ * or 'full' (day, month and year). Before 0.19.1 there was one tick "in den Terminen, ohne Jahr", read as 'day'.
+ */
+function birthday_choice($data) {
+    $mode = $data['birthday_visibility'] ?? null;
+    if ($mode === null) {
+        return !empty($data['birthday_notice']) ? 'day' : '';
+    }
+    return in_array($mode, ['day', 'full'], true) ? $mode : '';
+}
+/** The choice that counts for other members: nothing for under-18s and without a valid birthday. */
+function birthday_mode($data) {
+    return is_minor_data($data) || member_birthday($data) === null ? '' : birthday_choice($data);
+}
+/** "17. Mai" or "17. Mai 1990" as shared by the member; '' when not shared. */
+function birthday_text($data) {
+    $mode = birthday_mode($data);
+    $birth = member_birthday($data);
+    if ($mode === '' || $birth === null) {
+        return '';
+    }
+    return wp_date($mode === 'full' ? 'j. F Y' : 'j. F', $birth->getTimestamp());
+}
 function member_age($data) {
     if (
         empty($data['show_age']) ||
@@ -373,6 +397,9 @@ function render_member($id) {
         echo ($meta ? ' · ' : '') . '<strong>' . esc_html($city) . '</strong>';
     }
     echo '</p>' .
+        (birthday_text($data) !== ''
+            ? '<p class="member-birthday">Geburtstag: ' . esc_html(birthday_text($data)) . '</p>'
+            : '') .
         ($id === get_current_user_id() || manager_access() ? membership_line($id) : '') .
         social_links($data) .
         '</div>';

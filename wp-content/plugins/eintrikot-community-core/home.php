@@ -26,7 +26,7 @@ function member_search_form($q = '', $hidden = []) {
     return $html .
         '<label class="search-field"><span class="screen-reader-text">Mitglieder suchen</span><input type="search" name="q" value="' .
         esc_attr($q) .
-        '" placeholder="Name, Team oder Ort suchen" autocomplete="off"></label><button class="button solid" type="submit">Suchen</button></form>';
+        '" placeholder="Name, Team oder Ort" autocomplete="off"></label><button class="button solid" type="submit">Suchen</button></form>';
 }
 
 /** Open requests of the current member (not yet closed). */
@@ -167,9 +167,11 @@ function render_home() {
                 '</p>';
         }
     } else {
-        echo '<p>In den nächsten drei Monaten stehen keine Termine an.</p>';
+        echo '<p>Aktuell keine Veranstaltungen geplant.</p>';
     }
-    echo '<a class="text-link" href="' . esc_url(portal_url('events')) . '">Alle Termine →</a></section>';
+    echo '<a class="text-link" href="' .
+        esc_url(portal_url('events')) .
+        '">Alle Termine und Geburtstage →</a></section>';
 
     // Open requests, or an invitation to the service area.
     $open = open_member_requests();

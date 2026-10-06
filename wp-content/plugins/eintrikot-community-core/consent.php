@@ -9,7 +9,7 @@
  * bestätigter Text); Aufbewahrung bis drei Jahre nach dem 18. Geburtstag.
  *
  * Jugendregeln: Solange ein Mitglied unter 18 ist, sehen andere nur Name, Team, Altersklasse und
- * Region – kein Alter, kein Wohnort, keine weiteren Angaben, kein Geburtstag in den Vereinsinfos.
+ * Region – kein Alter, kein Wohnort, keine weiteren Angaben, kein Geburtstag (auch nicht unter „Termine“).
  */
 namespace Eintrikot\Community;
 if (!defined('ABSPATH')) {
@@ -110,7 +110,7 @@ function send_consent_kid_mail($user_id, $reminder = false) {
                 mail_note(
                     'Der Link gilt ' .
                         CONSENT_VALID_DAYS .
-                        ' Tage. Sobald deine Eltern zugestimmt haben, bekommst du deine Zugangsdaten zur EINTRIKOT-App.'
+                        ' Tage. Sobald deine Eltern zugestimmt haben, bekommst du deinen persönlichen Aktivierungslink für die EINTRIKOT-App.'
                 ) .
                 mail_signoff()
         ),
@@ -248,7 +248,7 @@ function record_consent($user_id, $record) {
                             esc_html(wp_date('d.m.Y \u\m H:i \U\h\r', $record['time'])) .
                             ' eingegangen. ' .
                             esc_html(first_name($user->display_name)) .
-                            ' bekommt jetzt die Zugangsdaten zur EINTRIKOT-App.'
+                            ' bekommt jetzt den persönlichen Aktivierungslink für die EINTRIKOT-App.'
                     ) .
                     mail_note(
                         'Möchten Sie Ihre Zustimmung widerrufen oder haben Sie Fragen? Antworten Sie einfach auf diese E-Mail.'
@@ -284,7 +284,7 @@ function render_consent() {
     // Shows no name: this page is reachable without a token.
     if ($step === 'done') {
         return consent_page(
-            '<h1>Vielen Dank.</h1><p>Ihre Zustimmung ist eingegangen. Eine Bestätigung ist per E-Mail unterwegs, und Ihr Kind bekommt jetzt die Zugangsdaten zur EINTRIKOT-App.</p><p>Fragen? Schreiben Sie uns an <a class="text-link" href="mailto:info@eintrikot.de">info@eintrikot.de</a>.</p>'
+            '<h1>Vielen Dank.</h1><p>Ihre Zustimmung ist eingegangen. Eine Bestätigung ist per E-Mail unterwegs, und Ihr Kind bekommt jetzt den persönlichen Aktivierungslink für die EINTRIKOT-App.</p><p>Fragen? Schreiben Sie uns an <a class="text-link" href="mailto:info@eintrikot.de">info@eintrikot.de</a>.</p>'
         );
     }
     if (
@@ -316,7 +316,7 @@ function render_consent() {
                     $first .
                     '.</h1><p>Wir haben eine E-Mail an <strong>' .
                     esc_html(mask_email($parent)) .
-                    '</strong> geschickt. Sag deinen Eltern am besten kurz Bescheid – die Mail kommt von EINTRIKOT e.V. und landet manchmal im Spam-Ordner.</p><p>Sobald sie zugestimmt haben, bekommst du deine Zugangsdaten zur EINTRIKOT-App.</p><a class="text-link" href="' .
+                    '</strong> geschickt. Sag deinen Eltern am besten kurz Bescheid – die Mail kommt von EINTRIKOT e.V. und landet manchmal im Spam-Ordner.</p><p>Sobald sie zugestimmt haben, bekommst du deinen persönlichen Aktivierungslink für die EINTRIKOT-App.</p><a class="text-link" href="' .
                     esc_url(consent_url('kid', $user_id, $token)) .
                     '">Adresse falsch? Neu eingeben</a>'
             );
@@ -474,7 +474,7 @@ add_filter(
         if ($user instanceof \WP_User && consent_pending($user->ID)) {
             return new \WP_Error(
                 'et_consent',
-                'Deine Mitgliedschaft wartet noch auf die Zustimmung deiner Eltern. Danach bekommst du deine Zugangsdaten per E-Mail.'
+                'Deine Mitgliedschaft wartet noch auf die Zustimmung deiner Eltern. Danach bekommst du per E-Mail deinen persönlichen Aktivierungslink.'
             );
         }
         return $user;

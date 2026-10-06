@@ -141,3 +141,18 @@ dialog.et-join-dialog button.button:focus-visible {
     outline: 3px solid #000;
     outline-offset: 3px;
 }
+
+/* Hilfen zur IBAN und zum Formular: eingeklappt, damit der Dialog kurz bleibt */
+.et-join-help {
+    margin: -8px 0 24px;
+    font-size: 14px;
+    line-height: 1.55;
+}
+.et-join-help summary {
+    cursor: pointer;
+    font-weight: 700;
+    padding: 6px 0;
+}
+.et-join-help p {
+    margin: 8px 0 0;
+}
