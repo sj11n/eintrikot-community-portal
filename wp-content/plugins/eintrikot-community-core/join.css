@@ -113,3 +113,31 @@ dialog.et-join-dialog::before {
     display: inline;
     padding: 0;
 }
+
+/* Der Weiter-Button muss in jedem Zustand lesbar bleiben: Farben ausdrücklich setzen, damit weder Theme-Regeln
+   (z. B. die Gold-Regel für Links mit "mitglied-werden" im Namen) noch besuchte Links oder der Fokus ihn unleserlich machen. */
+dialog.et-join-dialog a.button.solid,
+dialog.et-join-dialog a.button.solid:link,
+dialog.et-join-dialog a.button.solid:visited,
+dialog.et-join-dialog button.button.solid {
+    background: #000 !important;
+    border-color: #000 !important;
+    color: #fff !important;
+    text-decoration: none;
+    font-weight: 700;
+}
+dialog.et-join-dialog a.button.solid:hover,
+dialog.et-join-dialog a.button.solid:focus-visible,
+dialog.et-join-dialog a.button.solid:active,
+dialog.et-join-dialog button.button.solid:hover,
+dialog.et-join-dialog button.button.solid:focus-visible {
+    background: #ffcc4e !important;
+    border-color: #ffcc4e !important;
+    color: #000 !important;
+    text-decoration: none;
+}
+dialog.et-join-dialog a.button.solid:focus-visible,
+dialog.et-join-dialog button.button:focus-visible {
+    outline: 3px solid #000;
+    outline-offset: 3px;
+}
