@@ -64,7 +64,7 @@ function prepare_avatar() {
     $size = wp_getimagesize($file['tmp_name']);
     if (
         !$size ||
-        !in_array($size['mime'] ?? '', ['image/jpeg', 'image/png', 'image/webp'], true) ||
+        !in_array($size['mime'], ['image/jpeg', 'image/png', 'image/webp'], true) ||
         $size[0] * $size[1] > 24000000
     ) {
         return new \WP_Error('avatar', 'Bitte ein JPEG-, PNG- oder WebP-Bild bis 24 Megapixel verwenden.');
