@@ -28,7 +28,7 @@ Stand: 07.10.2026. Diese Liste gilt für den Weg von `http://eintrikot.myemmel.c
 - [ ] **V:** **Umstiegsmail lesen und freigeben** (Community-Aufbau → Aufnahme & Urkunde → „Umstiegsmail für Bestandsmitglieder“).
 - [ ] **D:** Datenschutzerklärung und Impressum lesen (neu seit September: Geburtstag mit Wahl des Mitglieds, Anmeldung zu Terminen, Zustimmung der Eltern, Herkunft der Daten aus NDAlumni, Aufbewahrung 180 Tage für Anmeldungen).
 - [ ] **B:** Social-Media-Adressen unter Community-Aufbau → Social Media eintragen (sonst fehlt „Folge uns“ im Footer).
-- [ ] **B:** Kennzahl **Mitglieder** unter Community-Aufbau → Kennzahlen fest auf **201** setzen (mit Stand-Datum), sonst zählt die Startseite nur die Konten im Portal.
+- [ ] **B:** Kennzahl **Mitglieder** unter Community-Aufbau → Kennzahlen **leer lassen**: Das Portal zählt selbst die Konten im Verzeichnis. Nur wenn die Zahl bewusst abweichen soll (z. B. Austritte, die noch nicht im Portal stehen), einen Wert mit Stand-Datum eintragen.
 - [ ] **B:** Termin für den Umzug festlegen: ruhiger Tag, mit Zeit für Fehlersuche. Keine Mitglieder-Mail vorher.
 - [ ] **C:** GitHub: Sicherung-Passwort (`BACKUP_PASSPHRASE`) im Passwortmanager vorhanden, ein Einspiel-Lauf mit Sicherung war grün (erledigt, Lauf #43).
 
@@ -71,7 +71,7 @@ Ablauf wie in `docs/06`. Hier die Prüfpunkte dazu.
    - Mitgliederverzeichnis zeigt die Mitglieder.
    - 5 Profile öffnen: Team, DHB-Vita mit plausiblen Jahren (nicht 1905), Länderspiele und Tore ohne „.0“, „Mehr dazu“ bei Mitgliedern mit mehreren Ausbildungen.
 7. [ ] **B:** Rollen vergeben: Vorstand und Redaktion bei den betreffenden Personen (Backend → Benutzer → Rolle, Anleitung in `docs/03`). Jede Änderung steht danach im Änderungsprotokoll. Dein eigenes Mitgliedskonto entsteht durch den Import (deine E-Mail steht in der Datei); das technische Administratorkonto bleibt getrennt.
-8. [ ] **B:** Kennzahlen prüfen (Startseite: Mitglieder 201).
+8. [ ] **B:** Kennzahl prüfen: Die Startseite zeigt nach dem Import automatisch **201 Mitglieder** (ohne eingetragenen Wert). Nicht mitgezählt werden das technische Administratorkonto, ausgeblendete Konten und Minderjährige ohne Zustimmung der Eltern.
 9. [ ] **B:** Die **Importdatei und alle Master-Downloads aus dem Ordner „Downloads“ löschen** (sie enthalten Namen, E-Mail-Adressen und Geburtsdaten; die Master selbst enthält zusätzlich IBAN).
 
 **Wenn etwas nicht stimmt:** Nichts weiter anklicken, Datenbank-Sicherung von Schritt 1 zurückspielen, Ursache klären (C), Importdatei neu erzeugen, Schritt 3 wiederholen. Konten lassen sich so ohne Spuren zurücknehmen; eine verschickte Einladung nicht.
