@@ -91,4 +91,24 @@ Das Geburtsdatum kommt aus MeinVerein bzw. dem Antrag und ist zunächst **privat
 - **Tore:** neues Profilfeld im Hockey-Abschnitt, aus „Anzahl von Toren“.
 - **Weitere Ausbildungen:** Das Profil hat einen strukturierten Eintrag. Weitere Einträge aus „Akademische Daten 2–5“ kommen als eine Zeile „Weitere Ausbildung: …“ unter „Mehr dazu“.
 - **Gekündigt oder verstorben** (Spalten „Gekündigt am/zum“, „Gestorben am“): werden nicht übernommen.
-- **Team:** Steht in „Mannschaft“ nichts oder nur „Staff“, leitet der Import das Team aus der Anrede ab und meldet das in den Hinweisen. Wer es genauer will, trägt „Damen“ oder „Herren“ in die Spalte „Mannschaft“ ein; das wird übernommen.
+- **Team:** Steht in „Mannschaft“ nichts oder nur „Staff“, bleibt das Team **leer** (seit 0.20.4 wird es nicht mehr aus der Anrede geraten). Mitglieder ergänzen es selbst. Wer es vorab eintragen will, nutzt die Spalte „Team“ im Blatt „Team-Zuordnung“ oder „Damen“/„Herren“ in der Spalte „Mannschaft“.
+
+## Bereinigte Importdatei erzeugen (0.20.3)
+
+Aus der Master-Tabelle (Download als Excel) entsteht mit `tools/importdatei.php` eine Datei nur mit den Spalten, die das Portal braucht. Sie enthält **keine** IBAN, kein Mandat, keine Anschrift, kein Telefon, keinen Geburtsnamen, keine Notizen, keinen Tarif und keine Beiträge.
+
+```bash
+tools/lokal-test.sh setup     # einmalig: lokales WordPress
+WP_ROOT=.lokal/wordpress php tools/importdatei.php "<Master>.xlsx" [--eintritt=<CSV>]
+```
+
+Ergebnis in `~/Downloads/Portal-Import/` (nie im Repository): `Portal-Import.xlsx` (Blätter „Export WisoMV“ und „Import_Roh“) und `Pruefbericht.txt` mit Zahlen und offenen Punkten, ohne Namen. Die Datei lässt sich beliebig oft neu erzeugen. Das Skript liest sie am Ende so zurück, wie es das Portal beim Upload tut.
+
+**Korrekturen kommen aus der Master:**
+- Blatt **Team-Zuordnung**: Spalte „Team“ (Damen, Herren oder beides) und „Altersklasse“. „Beides“ lässt das Team im Profil leer.
+- Blatt **Stationen Staff**: Korrekturen für Rolle, Damen/Herren und Altersklasse einer Station. Steht eine Station in zwei Zeilen (z. B. dieselbe Aufgabe für Damen und Herren), wird die zweite Zeile eine zusätzliche Station. Bis zu zehn Stationen sind möglich.
+- Wo nichts eingetragen ist, gilt die Ableitung des Importers: Rolle aus dem Positionstext und Damen/Herren aus Text oder Anrede bei den Stationen. Das Team im Profilkopf wird nicht geraten.
+- **Ohne Geburtsdatum** (Pflichtangabe): Der Bericht listet die Nummern. Diese Mitglieder werden separat eingeladen, sobald das Datum vorliegt.
+- **Eintrittsdaten** stehen in der Master. Mit `--eintritt=<CSV>` lassen sich Korrekturen einsetzen, bevor sie in der Master stehen.
+
+Nicht übernommen werden Personen mit „Gekündigt am/zum“ oder „Gestorben am“ sowie NDAlumni-Konten ohne MeinVerein-Eintrag.

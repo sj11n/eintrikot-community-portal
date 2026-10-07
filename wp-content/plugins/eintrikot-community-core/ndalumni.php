@@ -162,11 +162,18 @@ function nda_profile($r, &$notes) {
     }
     $set('club', $g('aktuellesvereinsteam'));
     $team = $g('mannschaft');
-    if ($team !== '' && $team !== 'Staff') {
+    // Corrections from the board (columns "Team (Korrektur)" and "Altersklasse (Korrektur)") come first.
+    $team_fix = $g('teamkorrektur');
+    if (in_array($team_fix, ['Damen', 'Herren'], true)) {
+        $d['team'] = $team_fix;
+    } elseif ($team_fix === 'beides') {
+        // Worked with both teams (staff): the profile team stays empty, the DHB-Vita tells it per station.
+        nda_note($notes, 'Team bewusst leer (Damen und Herren)');
+    } elseif ($team !== '' && $team !== 'Staff') {
         $d['team'] = nda_side($team, $salutation)[0];
-    } elseif ($salutation !== '') {
-        $d['team'] = $salutation === 'Frau' ? 'Damen' : 'Herren';
-        nda_note($notes, 'Team aus der Anrede abgeleitet');
+    } else {
+        // No team in NDAlumni and none entered by the board: it stays empty. Every member completes it in their profile.
+        nda_note($notes, 'Team leer (keine Angabe)');
     }
     $t = str_replace(['mU', 'wU'], 'U', $team);
     foreach (['U16', 'U18', 'U21'] as $age) {
@@ -178,6 +185,10 @@ function nda_profile($r, &$notes) {
         $d['age_class'] = 'A-Nationalteam';
     } elseif (str_starts_with($team, 'Masters')) {
         $d['age_class'] = 'Masters';
+    }
+    $age_fix = $g('altersklassekorrektur');
+    if (in_array($age_fix, station_options()['age_class'], true)) {
+        $d['age_class'] = $age_fix;
     }
     $now = mb_strtolower((string) ($r['aktuellindernatio'] ?? ''));
     if (in_array($now, ['ja', 'nein'], true)) {
@@ -231,7 +242,8 @@ function nda_profile($r, &$notes) {
     }
     // DHB-Vita
     $stations = [];
-    for ($n = 1; $n <= 5; $n++) {
+    // Up to ten stations: five from NDAlumni, more where a station was split into Damen and Herren.
+    for ($n = 1; $n <= 10; $n++) {
         $unit = nda_text($r['hockeylebenslauf' . $n . 'mannschaft'] ?? '');
         if ($unit === '') {
             continue;
@@ -239,6 +251,14 @@ function nda_profile($r, &$notes) {
         $raw = nda_text($r['hockeylebenslauf' . $n . 'position'] ?? '');
         [$side, $guessed] = nda_side($raw, $salutation);
         $role = nda_role($raw, $unit);
+        $side_fix = $g('hockeylebenslauf' . $n . 'teamkorrektur');
+        if (in_array($side_fix, ['Damen', 'Herren'], true)) {
+            [$side, $guessed] = [$side_fix, false];
+        }
+        $role_fix = $g('hockeylebenslauf' . $n . 'rollekorrektur');
+        if (in_array($role_fix, station_options()['role'], true)) {
+            $role = $role_fix;
+        }
         if ($guessed && $role !== 'Spieler/in') {
             nda_note($notes, 'Station: Damen/Herren bei Staff oder Trainer geraten');
         }
@@ -250,6 +270,10 @@ function nda_profile($r, &$notes) {
                 'U18' => 'U18',
                 'U21' => 'U21'
             ][trim($unit)] ?? '';
+        $age_station_fix = $g('hockeylebenslauf' . $n . 'altersklassekorrektur');
+        if (in_array($age_station_fix, station_options()['age_class'], true)) {
+            $age = $age_station_fix;
+        }
         if ($age === '') {
             nda_note($notes, 'Station ohne Altersklasse (' . trim($unit) . ')');
         }

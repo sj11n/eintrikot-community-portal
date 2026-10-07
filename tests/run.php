@@ -348,6 +348,25 @@ $notes_y = [];
 $station_profile = nda_profile(['hockeylebenslauf1mannschaft' => 'A-Kader', 'hockeylebenslauf1position' => 'Sturm', 'hockeylebenslauf1von' => '2003.0', 'hockeylebenslauf1bis' => '2010.0', 'anrede' => 'Herr', 'akademischedaten1abschluss' => 'Master', 'akademischedaten1von' => '2004.0', 'akademischedaten1bis' => '2009.0'], $notes_y);
 check('Import: Station mit Jahren 2003 bis 2010', ($station_profile['stations'][0]['from'] ?? '') === '2003' && ($station_profile['stations'][0]['to'] ?? '') === '2010');
 check('Import: Ausbildungszeitraum 2004–2009', ($station_profile['education_period'] ?? '') === '2004–2009');
+$n_fix = [];
+$fixed = nda_profile(['anrede' => 'Herr', 'mannschaft' => '', 'teamkorrektur' => 'Damen', 'altersklassekorrektur' => 'A-Nationalteam'], $n_fix);
+check('Korrektur: Team aus der Tabelle statt Anrede', ($fixed['team'] ?? '') === 'Damen');
+check('Kein Team ohne Angabe: die Anrede wird nicht als Team geraten', !isset(nda_profile(['anrede' => 'Frau', 'mannschaft' => ''], $n_fix)['team']) && !isset(nda_profile(['anrede' => 'Herr', 'mannschaft' => 'Staff'], $n_fix)['team']));
+check('Team aus "Mannschaft" bleibt', (nda_profile(['anrede' => 'Herr', 'mannschaft' => 'A-Kader Damen'], $n_fix)['team'] ?? '') === 'Damen');
+check('Korrektur: Altersklasse aus der Tabelle', ($fixed['age_class'] ?? '') === 'A-Nationalteam');
+$both = nda_profile(['anrede' => 'Herr', 'teamkorrektur' => 'beides'], $n_fix);
+check('Korrektur: "beides" lässt das Team leer', !isset($both['team']));
+$stat = nda_profile([
+    'anrede' => 'Herr',
+    'hockeylebenslauf1mannschaft' => 'Staff', 'hockeylebenslauf1position' => 'Trainer', 'hockeylebenslauf1von' => '2010.0', 'hockeylebenslauf1bis' => '2012.0',
+    'hockeylebenslauf1rollekorrektur' => 'Athletiktrainer/in', 'hockeylebenslauf1teamkorrektur' => 'Damen', 'hockeylebenslauf1altersklassekorrektur' => 'U21',
+    'hockeylebenslauf6mannschaft' => 'Staff', 'hockeylebenslauf6position' => 'Trainer', 'hockeylebenslauf6von' => '2013.0', 'hockeylebenslauf6bis' => '2015.0',
+    'hockeylebenslauf6teamkorrektur' => 'Herren', 'hockeylebenslauf6altersklassekorrektur' => 'A-Nationalteam'
+], $n_fix);
+$st = $stat['stations'] ?? [];
+check('Korrektur: Station mit Rolle, Team und Altersklasse', ($st[0]['role'] ?? '') === 'Athletiktrainer/in' && ($st[0]['organisation'] ?? '') === 'Damen' && ($st[0]['age_class'] ?? '') === 'U21');
+check('Korrektur: sechste Station (für Herren) wird gelesen', count($st) === 2 && ($st[1]['organisation'] ?? '') === 'Herren' && ($st[1]['from'] ?? '') === '2013');
+check('Korrektur: ungültige Rolle wird ignoriert', (nda_profile(['hockeylebenslauf1mannschaft' => 'U16', 'hockeylebenslauf1position' => 'Sturm', 'hockeylebenslauf1rollekorrektur' => 'Zauberer', 'anrede' => 'Frau'], $n_fix)['stations'][0]['role'] ?? '') === 'Spieler/in');
 check('Profil kennt das Feld Tore', isset(profile_fields()['goals']));
 $map = nda_map([
     ['Bevorzugte E-Mail-Adresse', 'Vorname', 'Nachname', 'Gestorben am', 'Gekündigt am'],
