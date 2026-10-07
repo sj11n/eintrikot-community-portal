@@ -366,6 +366,11 @@ function event_signup($event_id, $user_id) {
     );
     return '';
 }
+// When an account is deleted, its event sign-ups go with it at once (not only after 180 days).
+add_action('deleted_user', function ($user_id) {
+    global $wpdb;
+    $wpdb->delete(signup_table(), ['user_id' => (int) $user_id], ['%d']);
+});
 function event_unsign($event_id, $user_id) {
     global $wpdb;
     $wpdb->delete(signup_table(), ['event_id' => (int) $event_id, 'user_id' => (int) $user_id], ['%d', '%d']);

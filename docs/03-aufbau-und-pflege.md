@@ -71,6 +71,32 @@ Rollen vergibt nur ein **Administrator im WordPress-Backend**, bewusst nicht im 
 4. Im Änderungsprotokoll prüfen, dass der Wechsel steht.
 5. Neue Person: Rolle „EINTRIKOT Vorstand“, danach im Portal ansehen, ob „Verwaltung“ im Kontomenü erscheint.
 
+## Mitglieder löschen, Austritt und Löschwunsch
+
+**Wer löscht?** Nur ein **Administrator im WordPress-Backend**: Benutzer → Alle Benutzer → Konto → „Löschen“. Der Vorstand hat im Portal keine Löschfunktion (bewusst: nicht umkehrbar, datenschutzrelevant). Einzelne Konten anlegen geht für den Vorstand mit einer Datei mit einer Zeile (Neue Mitglieder aufnehmen), nicht über Backend → Benutzer → Neu hinzufügen (dort fehlt die Mitgliedsnummer).
+
+**Was beim Löschen mit den Daten passiert**
+- Profil, Profilbild, Geburtsdatum, Einwilligungsnachweis und alle weiteren Profildaten werden mit dem Konto gelöscht.
+- **Termin-Anmeldungen** werden sofort mit gelöscht (seit 0.21.2).
+- **Service-Anfragen** der Person: WordPress fragt beim Löschen, ob sie gelöscht oder einem anderen Konto zugeordnet werden. Bei Löschwünschen „löschen“ wählen.
+- Im **Änderungsprotokoll** bleibt stehen, wer wann welches Feld geändert hat (mit „Benutzer #Nummer“, bis 24 Monate). Die **Werte und Gründe** der gelöschten Person werden beim Löschen durch „[gelöscht]“ ersetzt, und die Löschung selbst wird mit Datum und ausführender Person eingetragen.
+- Beiträge, Spendenbescheinigungen und Buchführung liegen in MeinVerein und unterliegen den gesetzlichen Aufbewahrungsfristen; das Portal ist davon getrennt.
+
+**Austritt** (Mitglied tritt aus, kein Löschwunsch)
+1. In MeinVerein den Austritt erfassen (führend).
+2. Im Portal bis zur Löschung den Zugang sperren: Backend → Benutzer → Rolle auf „Abonnent“ (ohne Portalrecht). Das Konto bleibt, das Mitglied kommt nicht mehr ins Portal und erscheint nicht im Verzeichnis.
+3. Nach der vereinbarten Frist (zum Beispiel Ende des Beitragsjahrs) das Konto löschen.
+
+**Löschwunsch nach Art. 17 DSGVO** (Frist: ein Monat)
+1. Absender prüfen: Die Bitte kommt von der E-Mail-Adresse im Konto, sonst rückfragen.
+2. Konto im Backend löschen, Service-Anfragen mitlöschen.
+3. Abgleichen: Im Verzeichnis und bei den Terminen ist die Person nicht mehr zu sehen.
+4. Im Änderungsprotokoll prüfen: Die Werte der Person stehen dort als „[gelöscht]“, die Löschung ist eingetragen.
+5. E-Mails zur Person im Postfach `info@eintrikot.de` löschen, soweit keine Aufbewahrungspflicht besteht. Newsletter-Verteiler prüfen.
+6. Der Person bestätigen, was gelöscht wurde und was aus gesetzlichen Gründen bleibt (MeinVerein; im Änderungsprotokoll nur noch, wer wann welches Feld geändert hat).
+
+**Wenn beim Import ein Konto zu viel entsteht:** im Backend löschen. Ist der Import als Ganzes falsch, die Datenbank-Sicherung vom Importtag zurückspielen (`docs/09`).
+
 ## Offen
 
 - Eigenes Mitgliedskonto für Björn (Nr. 1, Rolle Vorstand) neben dem technischen Admin-Konto.
