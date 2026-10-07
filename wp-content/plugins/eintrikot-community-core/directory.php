@@ -400,6 +400,7 @@ function render_member($id) {
         (birthday_text($data) !== ''
             ? '<p class="member-birthday">Geburtstag: ' . esc_html(birthday_text($data)) . '</p>'
             : '') .
+        (manager_access() ? '<p class="member-role">Rolle: ' . esc_html(user_role_text($id)) . '</p>' : '') .
         ($id === get_current_user_id() || manager_access() ? membership_line($id) : '') .
         social_links($data) .
         '</div>';

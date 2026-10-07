@@ -49,6 +49,28 @@ Nur Theme und Plugin werden eingespielt. Alles andere bleibt im Repository.
 
 Isoliertes WordPress mit SQLite und synthetischen Testmitgliedern (Rollen Mitglied, Vorstand, Administrator), ausgehende Mails werden abgefangen. Aufbau und Regeltests: `tools/lokal-test.sh` (siehe docs/05). Prüfung der Oberfläche jeweils am Desktop sowie bei 390 und 320 px.
 
+## Rollen vergeben und entziehen
+
+Rollen vergibt nur ein **Administrator im WordPress-Backend**, bewusst nicht im Portal: Es geht um die heikelste Berechtigung im System, um wenige Personen und um seltene Änderungen. Eine eigene Oberfläche brächte mehr Risiko und Code als Nutzen. Neu prüfen, wenn mehrere Personen ohne Administratorrecht regelmäßig Rollen verwalten sollen.
+
+**Vergeben:** Backend → Benutzer → Alle Benutzer → Person öffnen → **Rolle** wählen → „Benutzer aktualisieren“. Mehrere auf einmal: Personen ankreuzen, „Ändern der Rolle in …“ wählen, „Ändern“.
+
+| Rolle | Rechte |
+|---|---|
+| EINTRIKOT Mitglied | Portal, Profil, Verzeichnis, Aktuelles, Service |
+| EINTRIKOT Redaktion | wie Mitglied, dazu Vereinsinfos und Termine pflegen |
+| EINTRIKOT Vorstand | wie Redaktion, dazu Verwaltung: Mitglieder aufnehmen, fremde Profile bearbeiten, Service-Anfragen, Einladungen, Protokoll |
+| Administrator | alles, auch Backend-Einstellungen, Plugins, Kennzahlen |
+
+**Nachvollziehen:** Jeder Rollenwechsel steht im Änderungsprotokoll (Verwaltung → Änderungsprotokoll, Feld „Rolle“: wer, wann, von welcher auf welche Rolle). Neue Konten aus dem Import erscheinen dort nicht als Rollenwechsel. Die Verwaltung sieht die Rolle außerdem im Profil des Mitglieds („Rolle: EINTRIKOT Vorstand“), Mitglieder nicht.
+
+**Wechsel im Vorstand:**
+1. Rolle der ausscheidenden Person auf „EINTRIKOT Mitglied“ setzen (oder Redaktion).
+2. Prüfen, dass sie keine Administratorrolle hat.
+3. Zugänge außerhalb des Portals entziehen: STRATO, GitHub (Repository und Environment), Passwortmanager, Postfach `info@eintrikot.de`, MeinVerein.
+4. Im Änderungsprotokoll prüfen, dass der Wechsel steht.
+5. Neue Person: Rolle „EINTRIKOT Vorstand“, danach im Portal ansehen, ob „Verwaltung“ im Kontomenü erscheint.
+
 ## Offen
 
 - Eigenes Mitgliedskonto für Björn (Nr. 1, Rolle Vorstand) neben dem technischen Admin-Konto.

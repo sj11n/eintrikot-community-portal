@@ -3,6 +3,38 @@ namespace Eintrikot\Community;
 if (!defined('ABSPATH')) {
     exit();
 }
+/** Role name as shown in the backend, e.g. "EINTRIKOT Vorstand". */
+function role_label($slug) {
+    $names = wp_roles()->get_names();
+    return isset($names[$slug]) ? translate_user_role($names[$slug]) : (string) $slug;
+}
+/** All roles of an account, as readable text. */
+function user_role_text($user_id) {
+    $user = get_user_by('id', (int) $user_id);
+    return $user ? implode(', ', array_map(__NAMESPACE__ . '\role_label', (array) $user->roles)) : '';
+}
+/**
+ * A role change is the most sensitive change there is, so it goes into the change log: who gave which role to whom.
+ * New accounts (the import sets the role while creating them) and unchanged roles are not logged.
+ */
+add_action(
+    'set_user_role',
+    function ($user_id, $role, $old_roles) {
+        $old_roles = (array) $old_roles;
+        if (!$old_roles || $old_roles === [$role]) {
+            return;
+        }
+        log_change(
+            $user_id,
+            'role',
+            implode(', ', array_map(__NAMESPACE__ . '\role_label', $old_roles)),
+            role_label($role),
+            'Rolle geändert (WordPress-Backend)'
+        );
+    },
+    10,
+    3
+);
 function audit_url() {
     return get_option('eintrikot_audit_page')
         ? get_permalink((int) get_option('eintrikot_audit_page'))
@@ -64,6 +96,7 @@ function render_audit() {
                     'import' => 'Übernahme aus NDAlumni',
                     'review' => 'Profil geprüft',
                     'public_photo' => 'Profilbild auf der Website',
+                    'role' => 'Rolle',
                     'birthday_visibility' => 'Geburtstag für Mitglieder sichtbar'
                 ])[$row->field] ?? $row->field
             ) .
