@@ -267,6 +267,7 @@ foreach (array_slice(sheet_rows($master, 'Stationen Staff'), 1) as $r) {
 
 $mv_out = [['Mitgliedsnr.', 'Vorname', 'Nachname', 'E-Mail', 'Geburtstag', 'Mitglied seit', 'Jahresspende']];
 $nda_out = [array_values($columns)];
+$no_birthday = [];
 $stats = ['donation' => 0, 'no_birthday' => 0, 'minors' => 0, 'team_fix' => 0, 'age_fix' => 0, 'station_fix' => 0, 'split' => 0, 'entry_fix' => 0, 'invalid_entry' => []];
 foreach ($people as $number => $p) {
     $row = $p['mv'];
@@ -286,6 +287,7 @@ foreach ($people as $number => $p) {
     }
     if ($row['birthday'] === '') {
         $stats['no_birthday']++;
+        $no_birthday[] = $number;
     } elseif (is_minor_data(['birthday' => $row['birthday']])) {
         $stats['minors']++;
     }
@@ -374,7 +376,8 @@ if ($entry_fix) {
 $report[] = '';
 $report[] = '3. Daten';
 $report[] = '   Mit Jahresspende: ' . $stats['donation'];
-$report[] = '   Ohne Geburtsdatum: ' . $stats['no_birthday'] . ' (Beitrag wird ohne Altersregel angezeigt)';
+$report[] = '   Ohne Geburtsdatum: ' . $stats['no_birthday'] . ' (Geburtsdatum ist Pflicht: separat einladen, sobald es vorliegt)';
+$report[] = '   Nr. ' . implode(', ', $no_birthday);
 $report[] = '   Unter 18: ' . $stats['minors'];
 $report[] = '';
 $report[] = '4. Profile aus NDAlumni';

@@ -171,9 +171,9 @@ function nda_profile($r, &$notes) {
         nda_note($notes, 'Team bewusst leer (Damen und Herren)');
     } elseif ($team !== '' && $team !== 'Staff') {
         $d['team'] = nda_side($team, $salutation)[0];
-    } elseif ($salutation !== '') {
-        $d['team'] = $salutation === 'Frau' ? 'Damen' : 'Herren';
-        nda_note($notes, 'Team aus der Anrede abgeleitet');
+    } else {
+        // No team in NDAlumni and none entered by the board: it stays empty. Every member completes it in their profile.
+        nda_note($notes, 'Team leer (keine Angabe)');
     }
     $t = str_replace(['mU', 'wU'], 'U', $team);
     foreach (['U16', 'U18', 'U21'] as $age) {

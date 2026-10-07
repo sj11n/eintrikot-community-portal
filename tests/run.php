@@ -350,7 +350,9 @@ check('Import: Station mit Jahren 2003 bis 2010', ($station_profile['stations'][
 check('Import: Ausbildungszeitraum 2004–2009', ($station_profile['education_period'] ?? '') === '2004–2009');
 $n_fix = [];
 $fixed = nda_profile(['anrede' => 'Herr', 'mannschaft' => '', 'teamkorrektur' => 'Damen', 'altersklassekorrektur' => 'A-Nationalteam'], $n_fix);
-check('Korrektur: Team aus der Tabelle statt Anrede', ($fixed['team'] ?? '') === 'Damen' && !isset($n_fix['Team aus der Anrede abgeleitet']));
+check('Korrektur: Team aus der Tabelle statt Anrede', ($fixed['team'] ?? '') === 'Damen');
+check('Kein Team ohne Angabe: die Anrede wird nicht als Team geraten', !isset(nda_profile(['anrede' => 'Frau', 'mannschaft' => ''], $n_fix)['team']) && !isset(nda_profile(['anrede' => 'Herr', 'mannschaft' => 'Staff'], $n_fix)['team']));
+check('Team aus "Mannschaft" bleibt', (nda_profile(['anrede' => 'Herr', 'mannschaft' => 'A-Kader Damen'], $n_fix)['team'] ?? '') === 'Damen');
 check('Korrektur: Altersklasse aus der Tabelle', ($fixed['age_class'] ?? '') === 'A-Nationalteam');
 $both = nda_profile(['anrede' => 'Herr', 'teamkorrektur' => 'beides'], $n_fix);
 check('Korrektur: "beides" lässt das Team leer', !isset($both['team']));
