@@ -211,6 +211,10 @@ add_shortcode('eintrikot_portal', function () {
             '</div></main></div>';
     }
     $view = current_view();
+    // A member account without a birthday sees only the page that asks for it (birthday.php).
+    if (birthday_needed(get_current_user_id())) {
+        $view = 'birthday';
+    }
     $member = isset($_GET['member']) && is_scalar($_GET['member']) ? absint($_GET['member']) : 0;
     $denied =
         '<div class="portal-empty"><h1>Kein Zugriff</h1><p>Dieser Bereich ist für deine Rolle nicht freigeschaltet.</p></div>';
@@ -219,6 +223,9 @@ add_shortcode('eintrikot_portal', function () {
         echo '<p role="status" class="portal-success" tabindex="-1">Gespeichert. Deine Änderungen sind jetzt sichtbar.</p>';
     }
     switch ($view) {
+        case 'birthday':
+            render_birthday_page();
+            break;
         case 'profile':
             render_profile(get_current_user_id());
             break;

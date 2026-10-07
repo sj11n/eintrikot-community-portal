@@ -144,7 +144,7 @@ $page_token = consent_token($page_user, 'kid');
 $render = function ($error) use ($page_user, $page_token) {
     $_GET = ['step' => 'kid', 'u' => (string) $page_user, 'k' => $page_token];
     if ($error !== null) {
-        $_GET['error'] = $error;
+        $_GET['fehler'] = $error;
     }
     return render_consent();
 };
@@ -375,6 +375,52 @@ $map = nda_map([
     ['weg@example.test', 'Eee', 'Fff', '', '2025-12-31']
 ]);
 check('Import: Verstorbene und Gekündigte werden ausgeschlossen', count($map['people']) === 1 && ($map['notes']['Gekündigt oder verstorben: nicht übernommen'] ?? 0) === 2);
+
+/* ---------- Geburtsdatum nachfragen ---------- */
+
+$bd_none = make_user('eintrikot_member', ['city' => 'Test'], ['eintrikot_member_number' => '9101']);
+$bd_has = make_user('eintrikot_member', ['birthday' => day('-40 years')], ['eintrikot_member_number' => '9102']);
+$bd_tech = make_user('administrator');
+check('Geburtsdatum fehlt: Seite nötig', birthday_needed($bd_none));
+check('Geburtsdatum da: Seite nicht nötig', !birthday_needed($bd_has));
+check('Technisches Konto ohne Mitgliedsnummer: nicht nötig', !birthday_needed($bd_tech));
+check('Nicht angemeldet: nicht nötig', !birthday_needed(0));
+foreach (['', 'abc', '2020-02-31', day('+1 day'), '1899-12-31', '17.05.1990'] as $bad_date) {
+    check('Ungültiges Datum abgelehnt: "' . $bad_date . '"', save_member_birthday($bd_none, $bad_date) === 'invalid');
+}
+check('Unter 18 wird abgelehnt und nicht gespeichert', save_member_birthday($bd_none, day('-15 years')) === 'minor' && birthday_needed($bd_none));
+check('Genau 18 ist erlaubt', save_member_birthday($bd_none, day('-18 years')) === '' && !birthday_needed($bd_none));
+update_user_meta($bd_none, 'eintrikot_profile', ['city' => 'Test']);
+$before_page = save_member_birthday($bd_none, '1990-05-17');
+check('Gültiges Datum wird gespeichert', $before_page === '' && (profile_data($bd_none)['birthday'] ?? '') === '1990-05-17');
+check('Andere Profilangaben bleiben', (profile_data($bd_none)['city'] ?? '') === 'Test');
+check('Ein vorhandenes Geburtsdatum wird nicht überschrieben', save_member_birthday($bd_none, '1985-01-01') === '' && (profile_data($bd_none)['birthday'] ?? '') === '1990-05-17');
+global $wpdb;
+check('Eintrag im Änderungsprotokoll', (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'birthday'", $bd_none)) >= 1);
+$bd_page = (function () { ob_start(); render_birthday_page(); return ob_get_clean(); })();
+check('Seite: Frage, Begründung mit Beitrag und Knopf', str_contains($bd_page, 'name="birthday"') && str_contains($bd_page, 'ab 32 Jahren') && str_contains($bd_page, 'Speichern und weiter'));
+$_GET = ['fehler' => 'minor'];
+$bd_err = (function () { ob_start(); render_birthday_page(); return ob_get_clean(); })();
+check('Seite: Hinweis bei unter 18', str_contains($bd_err, 'Zustimmung deiner Eltern'));
+$_GET = ['fehler' => '<script>alert(1)</script>'];
+$bd_xss = (function () { ob_start(); render_birthday_page(); return ob_get_clean(); })();
+check('Seite: erfundene Meldung wird nicht angezeigt', !str_contains($bd_xss, '<script>alert'));
+$gate_user = make_user('eintrikot_member', ['city' => 'Test'], ['eintrikot_member_number' => '9103', 'eintrikot_activated_at' => time()]);
+wp_set_current_user($gate_user);
+$_GET = ['view' => 'members'];
+$gated = do_shortcode('[eintrikot_portal]');
+check('Portal: ohne Geburtsdatum nur die Abfrage, auch bei anderer Ansicht', str_contains($gated, 'Noch eine Angabe') && !str_contains($gated, 'class="member-search'));
+save_member_birthday($gate_user, '1980-03-04');
+$_GET = ['view' => 'profile'];
+$free = do_shortcode('[eintrikot_portal]');
+check('Portal: mit Geburtsdatum normale Ansicht', !str_contains($free, 'Noch eine Angabe') && str_contains($free, 'Profil bearbeiten'));
+wp_set_current_user(0);
+$_GET = [];
+
+/* ---------- WordPress löscht ?error aus der Adresse: Meldungen laufen über ?fehler ---------- */
+
+$_SERVER['QUERY_STRING'] = 'error=1';
+check('Der Parameter heißt nicht "error" (reserviert in WordPress)', !str_contains(file_get_contents(dirname(__DIR__) . '/wp-content/plugins/eintrikot-community-core/consent.php') . file_get_contents(dirname(__DIR__) . '/wp-content/plugins/eintrikot-community-core/birthday.php'), "directory_param('error')"));
 
 /* ---------- Login-Sperre ---------- */
 
