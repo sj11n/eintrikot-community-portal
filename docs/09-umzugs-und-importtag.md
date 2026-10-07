@@ -29,6 +29,7 @@ Stand: 07.10.2026. Diese Liste gilt für den Weg von `http://eintrikot.myemmel.c
 - [ ] **D:** Datenschutzerklärung und Impressum lesen (neu seit September: Geburtstag mit Wahl des Mitglieds, Anmeldung zu Terminen, Zustimmung der Eltern, Herkunft der Daten aus NDAlumni, Aufbewahrung 180 Tage für Anmeldungen).
 - [ ] **B:** Social-Media-Adressen unter Community-Aufbau → Social Media eintragen (sonst fehlt „Folge uns“ im Footer).
 - [ ] **B:** Kennzahl **Mitglieder** unter Community-Aufbau → Kennzahlen **leer lassen**: Das Portal zählt selbst die Konten im Verzeichnis. Nur wenn die Zahl bewusst abweichen soll (z. B. Austritte, die noch nicht im Portal stehen), einen Wert mit Stand-Datum eintragen.
+- [ ] **B:** **Technisches Administrator-Konto** anlegen (Benutzer → Neu hinzufügen, Rolle Administrator): Benutzername ohne Personenbezug, z. B. `eintrikot-admin`, Adresse `info@eintrikot.de`, langes Passwort aus dem Passwortmanager. Nur für Notfälle, Updates und Löschungen; im Alltag mit dem persönlichen Konto arbeiten. Danach prüfen, dass Anmeldung und Passwort-Zurücksetzen funktionieren, und festhalten, wer Zugriff auf das Passwort hat (Vorstand, Nachfolge).
 - [ ] **B:** Termin für den Umzug festlegen: ruhiger Tag, mit Zeit für Fehlersuche. Keine Mitglieder-Mail vorher.
 - [ ] **C:** GitHub: Sicherung-Passwort (`BACKUP_PASSPHRASE`) im Passwortmanager vorhanden, ein Einspiel-Lauf mit Sicherung war grün (erledigt, Lauf #43).
 
