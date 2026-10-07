@@ -17,7 +17,7 @@ Stand: 07.10.2026. Diese Liste gilt für den Weg von `http://eintrikot.myemmel.c
 ### Daten
 - [ ] **B:** Die 12 Eintrittsdaten in der Master ändern (Nr. 1–7 auf 23.09.2025, die anderen laut `Eintrittsdaten-Korrektur-Vorschlag.csv`), danach in MeinVerein angleichen. Master und MeinVerein müssen dasselbe sagen.
 - [x] **B:** Blätter „Team-Zuordnung“ und „Stationen Staff“ ausgefüllt (erledigt 07.10.).
-- [ ] **B:** Die 18 Mitglieder ohne Geburtsdatum klären (Nummern stehen im Prüfbericht): Geburtsdatum nachfragen und in der Master ergänzen. Das Geburtsdatum ist Pflicht (Mitgliedsbeitrag ab 32). Diese 18 werden **wie alle anderen eingeladen**; das Portal muss sie nach der ersten Anmeldung zur Eingabe auffordern (siehe Abschnitt „Offen“).
+- [ ] **B:** Die 18 Mitglieder ohne Geburtsdatum klären (Nummern stehen im Prüfbericht): Geburtsdatum nachfragen und in der Master ergänzen. Das Geburtsdatum ist Pflicht (Mitgliedsbeitrag ab 32). Diese 18 werden **wie alle anderen eingeladen**; das Portal fragt sie nach der ersten Anmeldung auf einer eigenen Seite nach dem Geburtsdatum (seit 0.21).
 - [ ] **B:** Master als Excel herunterladen (neueste Version).
 - [ ] **C:** Importdatei neu erzeugen: `WP_ROOT=.lokal/wordpress php tools/importdatei.php "<Master>.xlsx"` und den `Pruefbericht.txt` lesen. Erwartung: **201 Mitglieder, alle „Neu“, 0 Fehler**. Sind die Eintrittsdaten in der Master noch alt, dazu `--eintritt=<CSV>`.
 - [ ] **B:** Stichprobe in Excel: 3 Mitglieder in `Portal-Import.xlsx` gegen die Master vergleichen (Nummer, Name, E-Mail, Eintritt, Geburtstag, Jahresspende).
@@ -85,7 +85,7 @@ Ablauf wie in `docs/06`. Hier die Prüfpunkte dazu.
 3. [ ] **B:** **Erste Charge**: „25 Einladungen jetzt senden“. Ein bis zwei Tage beobachten: Rückläufer, Antworten, Fragen.
 4. [ ] **B:** Weitere Chargen mit jeweils 25 (bei 201 Mitgliedern sind das 9 Klicks), zum Beispiel 50 bis 75 pro Tag, damit Rückfragen bearbeitbar bleiben.
 5. [ ] **B:** Nach 14 Tagen laufen Links ab. Der Stand in der Liste heißt dann „Link abgelaufen“; die Zeile hat den Knopf „Erneut senden“.
-6. [ ] **B:** **Die 18 ohne Geburtsdatum** laufen mit den anderen. Nach ihrer ersten Anmeldung fragt das Portal nach dem Geburtsdatum. Wer es nicht eingibt, wird nachgefasst; im Notfall trägt die Verwaltung es nach Rückmeldung ein (Profil bearbeiten, Grund angeben).
+6. [ ] **B:** **Die 18 ohne Geburtsdatum** laufen mit den anderen. Nach der ersten Anmeldung sehen sie nur die Seite „Noch eine Angabe“ und können erst danach weiter. Wer sich nicht meldet, wird nachgefasst; im Notfall trägt die Verwaltung das Datum nach Rückmeldung ein (Profil bearbeiten, Grund angeben).
 7. [ ] **V:** Newsletter: im Portal gilt neues Opt-in. Das Mitglied entscheidet im Profil („EINTRIKOT-Newsletter erhalten“).
 
 ---
@@ -112,7 +112,3 @@ Ablauf wie in `docs/06`. Hier die Prüfpunkte dazu.
 | Woche danach | weitere Chargen, die 18 klären |
 
 ---
-
-## Offen vor den Einladungen
-
-- **Abfrage des Geburtsdatums nach der Anmeldung** für die 18 Mitglieder ohne Geburtsdatum (und für künftige Fälle): eine eigene, kurze Seite direkt nach dem Einloggen mit Erklärung („Dein Geburtsdatum bestimmt deinen Mitgliedsbeitrag: bis 31 beitragsfrei, ab 32 50 € im Jahr“). Entscheidung und Umsetzung stehen noch aus.

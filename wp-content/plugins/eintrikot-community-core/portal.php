@@ -152,4 +152,6 @@ require_once __DIR__ . '/login.php';
 
 require_once __DIR__ . '/consent.php';
 
+require_once __DIR__ . '/birthday.php';
+
 require_once __DIR__ . '/retention.php';

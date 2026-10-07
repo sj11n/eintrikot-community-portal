@@ -112,3 +112,13 @@ Ergebnis in `~/Downloads/Portal-Import/` (nie im Repository): `Portal-Import.xls
 - **Eintrittsdaten** stehen in der Master. Mit `--eintritt=<CSV>` lassen sich Korrekturen einsetzen, bevor sie in der Master stehen.
 
 Nicht übernommen werden Personen mit „Gekündigt am/zum“ oder „Gestorben am“ sowie NDAlumni-Konten ohne MeinVerein-Eintrag.
+
+## Geburtsdatum nachfragen (0.21)
+
+Wer ein Mitgliedskonto (mit Mitgliedsnummer) hat, aber kein gültiges Geburtsdatum, sieht nach der Anmeldung **nur** die Seite „Noch eine Angabe“ mit einem Feld, bis es eingetragen ist. Sie erklärt, warum: Das Datum bestimmt den Beitrag (bis 31 beitragsfrei, ab 32 50 € im Jahr) und ist für andere nicht sichtbar. Danach erscheint sie nie wieder.
+
+- Ungültige oder zukünftige Daten werden abgelehnt. Ein Datum, das unter 18 ergäbe, wird **nicht gespeichert**; die Seite verweist auf `info@eintrikot.de`, weil für Jugendliche die Zustimmung der Eltern nötig ist.
+- Ein vorhandenes Geburtsdatum lässt sich über diese Seite nicht überschreiben (das geht nur im Profil).
+- Der Eintrag steht im Änderungsprotokoll („Geburtsdatum nach der Anmeldung ergänzt“, ohne den Wert).
+- Technische Konten ohne Mitgliedsnummer (Administrator) sind nicht betroffen.
+- Fehlermeldungen laufen über den Adressparameter `fehler`, nicht `error`: WordPress löscht `error` aus der Adresse (reserviert für 404). Das galt vorher auch für die Meldungen der Eltern-Seite, die dadurch nie erschienen.

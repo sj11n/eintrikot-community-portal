@@ -301,9 +301,9 @@ function render_consent() {
         '"><input type="hidden" name="k" value="' .
         esc_attr($token) .
         '">';
-    $notice = isset(consent_errors()[directory_param('error')])
+    $notice = isset(consent_errors()[directory_param('fehler')])
         ? '<div class="form-error" role="alert" tabindex="-1"><p>' .
-            esc_html(consent_errors()[directory_param('error')]) .
+            esc_html(consent_errors()[directory_param('fehler')]) .
             '</p></div>'
         : '';
     $first = esc_html(first_name($user->display_name));
@@ -412,7 +412,7 @@ foreach (['admin_post_et_consent_kid', 'admin_post_nopriv_et_consent_kid'] as $e
             $error = 'email_limit';
         }
         if ($error) {
-            consent_redirect('kid', $user_id, $token, ['error' => $error]);
+            consent_redirect('kid', $user_id, $token, ['fehler' => $error]);
         }
         update_user_meta($user_id, 'eintrikot_consent_parent_email', $email);
         update_user_meta(
@@ -422,7 +422,7 @@ foreach (['admin_post_et_consent_kid', 'admin_post_nopriv_et_consent_kid'] as $e
         );
         delete_user_meta($user_id, 'eintrikot_consent_reminded');
         if (!send_consent_parent_mail($user_id)) {
-            consent_redirect('kid', $user_id, $token, ['error' => 'mail_failed']);
+            consent_redirect('kid', $user_id, $token, ['fehler' => 'mail_failed']);
         }
         consent_redirect('kid', $user_id, $token, ['sent' => 1]);
     });
@@ -440,7 +440,7 @@ foreach (['admin_post_et_consent_parent', 'admin_post_nopriv_et_consent_parent']
         $name = trim(sanitize_text_field(wp_unslash((string) ($_POST['parent_name'] ?? ''))));
         $custody = post_choice('custody', ['joint', 'sole']);
         if (mb_strlen($name) < 3 || !$custody || empty($_POST['agree'])) {
-            consent_redirect('parent', $user_id, $token, ['error' => 'parent_incomplete']);
+            consent_redirect('parent', $user_id, $token, ['fehler' => 'parent_incomplete']);
         }
         $user = get_user_by('id', $user_id);
         $record = [
