@@ -35,6 +35,23 @@ add_action(
     10,
     3
 );
+/**
+ * Deleting an account: the change log keeps who changed which field when, but not what stood there. The old and new
+ * values and the reasons of that person's entries are replaced, and the deletion itself is noted.
+ */
+add_action('deleted_user', function ($user_id) {
+    global $wpdb;
+    $wpdb->query(
+        $wpdb->prepare(
+            "UPDATE {$wpdb->prefix}eintrikot_audit SET before_value = %s, after_value = %s, reason = %s WHERE target = %d",
+            '"[gelöscht]"',
+            '"[gelöscht]"',
+            '[gelöscht]',
+            (int) $user_id
+        )
+    );
+    log_change((int) $user_id, 'account', 'vorhanden', 'gelöscht', 'Konto gelöscht');
+});
 function audit_url() {
     return get_option('eintrikot_audit_page')
         ? get_permalink((int) get_option('eintrikot_audit_page'))

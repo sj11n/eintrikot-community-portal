@@ -442,6 +442,25 @@ wp_set_current_user($m1);
 check('Mitglieder sehen die Rolle nicht', !str_contains($role_view($role_user), 'Rolle:'));
 wp_set_current_user(0);
 
+/* ---------- Konto löschen: Anmeldungen verschwinden sofort ---------- */
+
+require_once ABSPATH . 'wp-admin/includes/user.php';
+$del_event = make_event('Test Löschung', ['et_date' => day('+20 days'), 'et_signup' => '1']);
+$del_user = make_user('eintrikot_member', ['birthday' => day('-33 years')], ['eintrikot_activated_at' => time()]);
+$stay_user = make_user('eintrikot_member', ['birthday' => day('-34 years')], ['eintrikot_activated_at' => time()]);
+event_signup($del_event, $del_user);
+event_signup($del_event, $stay_user);
+check('Vor dem Löschen: zwei Anmeldungen', count(event_attendee_ids($del_event)) === 2);
+log_change($del_user, 'city', 'Köln', 'Berlin', 'Umzug gemeldet');
+wp_delete_user($del_user);
+check('Nach dem Löschen: Anmeldung des Kontos ist weg', !in_array($del_user, event_attendee_ids($del_event), true));
+$del_rows = $wpdb->get_results($wpdb->prepare("SELECT field, before_value, after_value, reason FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d", $del_user));
+check('Protokoll: Werte und Gründe der gelöschten Person sind ersetzt', $del_rows && !array_filter($del_rows, fn($r) => $r->field !== 'account' && ($r->before_value !== '"[gelöscht]"' || $r->after_value !== '"[gelöscht]"' || $r->reason !== '[gelöscht]')));
+check('Protokoll: die Löschung selbst steht drin', (bool) array_filter($del_rows, fn($r) => $r->field === 'account' && $r->reason === 'Konto gelöscht'));
+check('Anmeldung anderer bleibt', event_is_signed($del_event, $stay_user));
+wp_delete_post($del_event, true);
+$wpdb->delete(signup_table(), ['event_id' => $del_event], ['%d']);
+
 /* ---------- Login-Sperre ---------- */
 
 $locked_id = make_user('eintrikot_member');
