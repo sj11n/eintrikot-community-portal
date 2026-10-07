@@ -2188,7 +2188,8 @@
     color: #555;
     font-size: 13px;
 }
-.et-app .member-birthday {
+.et-app .member-birthday,
+.et-app .member-role {
     margin: 4px 0 0;
     font-size: 14px;
     color: #333;

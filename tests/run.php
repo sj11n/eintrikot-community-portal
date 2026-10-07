@@ -422,6 +422,26 @@ $_GET = [];
 $_SERVER['QUERY_STRING'] = 'error=1';
 check('Der Parameter heißt nicht "error" (reserviert in WordPress)', !str_contains(file_get_contents(dirname(__DIR__) . '/wp-content/plugins/eintrikot-community-core/consent.php') . file_get_contents(dirname(__DIR__) . '/wp-content/plugins/eintrikot-community-core/birthday.php'), "directory_param('error')"));
 
+/* ---------- Rollenwechsel im Änderungsprotokoll ---------- */
+
+$role_admin = make_user('administrator');
+$role_user = make_user('eintrikot_member', ['city' => 'Test'], ['eintrikot_member_number' => '9301', 'eintrikot_activated_at' => time()]);
+$role_count = fn($target) => (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'role'", $target));
+check('Neues Konto: keine Rolle im Protokoll', $role_count($role_user) === 0);
+wp_set_current_user($role_admin);
+(new \WP_User($role_user))->set_role('eintrikot_board');
+check('Rollenwechsel steht im Protokoll', $role_count($role_user) === 1);
+$role_row = $wpdb->get_row($wpdb->prepare("SELECT actor, before_value, after_value FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'role' ORDER BY id DESC LIMIT 1", $role_user));
+check('Protokoll: wer, vorher, nachher', (int) $role_row->actor === $role_admin && str_contains($role_row->before_value, 'EINTRIKOT Mitglied') && str_contains($role_row->after_value, 'EINTRIKOT Vorstand'));
+(new \WP_User($role_user))->set_role('eintrikot_board');
+check('Gleiche Rolle noch einmal: kein neuer Eintrag', $role_count($role_user) === 1);
+check('Rolle als Text', user_role_text($role_user) === 'EINTRIKOT Vorstand');
+$role_view = (function ($id) { ob_start(); render_member($id); return ob_get_clean(); });
+check('Verwaltung sieht die Rolle im Profil', str_contains($role_view($role_user), 'Rolle: EINTRIKOT Vorstand'));
+wp_set_current_user($m1);
+check('Mitglieder sehen die Rolle nicht', !str_contains($role_view($role_user), 'Rolle:'));
+wp_set_current_user(0);
+
 /* ---------- Login-Sperre ---------- */
 
 $locked_id = make_user('eintrikot_member');

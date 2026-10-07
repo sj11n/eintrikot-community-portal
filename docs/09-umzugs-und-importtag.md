@@ -70,7 +70,7 @@ Ablauf wie in `docs/06`. Hier die Prüfpunkte dazu.
    - Schritt 3 „Einladungen“: **201 Konten**, alle „Noch nicht eingeladen“.
    - Mitgliederverzeichnis zeigt die Mitglieder.
    - 5 Profile öffnen: Team, DHB-Vita mit plausiblen Jahren (nicht 1905), Länderspiele und Tore ohne „.0“, „Mehr dazu“ bei Mitgliedern mit mehreren Ausbildungen.
-7. [ ] **B:** Rollen vergeben: Vorstand, Redaktion und Verwaltung bei den betreffenden Personen (Benutzer → Rolle). Dein eigenes Mitgliedskonto entsteht durch den Import (deine E-Mail steht in der Datei); das technische Administratorkonto bleibt getrennt.
+7. [ ] **B:** Rollen vergeben: Vorstand und Redaktion bei den betreffenden Personen (Backend → Benutzer → Rolle, Anleitung in `docs/03`). Jede Änderung steht danach im Änderungsprotokoll. Dein eigenes Mitgliedskonto entsteht durch den Import (deine E-Mail steht in der Datei); das technische Administratorkonto bleibt getrennt.
 8. [ ] **B:** Kennzahlen prüfen (Startseite: Mitglieder 201).
 9. [ ] **B:** Die **Importdatei und alle Master-Downloads aus dem Ordner „Downloads“ löschen** (sie enthalten Namen, E-Mail-Adressen und Geburtsdaten; die Master selbst enthält zusätzlich IBAN).
 
