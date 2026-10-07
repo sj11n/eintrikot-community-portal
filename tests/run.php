@@ -376,6 +376,17 @@ $map = nda_map([
 ]);
 check('Import: Verstorbene und Gekündigte werden ausgeschlossen', count($map['people']) === 1 && ($map['notes']['Gekündigt oder verstorben: nicht übernommen'] ?? 0) === 2);
 
+/* ---------- Einladung nur mit Geburtsdatum ---------- */
+
+$no_bd = make_user('eintrikot_member', ['city' => 'Test'], ['eintrikot_member_number' => '9001']);
+$with_bd = make_user('eintrikot_member', ['birthday' => day('-40 years')], ['eintrikot_member_number' => '9002']);
+check('Einladung: ohne Geburtsdatum gesperrt', invite_state($no_bd)[0] === 'blocked');
+check('Einladung: mit Geburtsdatum offen', invite_state($with_bd)[0] === 'open');
+$blocked = send_invitation($no_bd);
+check('Einladung einzeln: ohne Geburtsdatum Fehler', is_wp_error($blocked));
+update_user_meta($no_bd, 'eintrikot_profile', ['birthday' => day('-30 years')]);
+check('Einladung: nach dem Eintragen des Geburtsdatums offen', invite_state($no_bd)[0] === 'open');
+
 /* ---------- Login-Sperre ---------- */
 
 $locked_id = make_user('eintrikot_member');

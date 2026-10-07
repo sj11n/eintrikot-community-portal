@@ -14,6 +14,7 @@
 | [06 Umzug auf eintrikot.de](docs/06-umzug-eintrikot-de.md) | Ablauf am Umzugstag |
 | [07 Aufnahme, Service, Anmeldung](docs/07-aufnahme-service-anmeldung.md) | neue Mitglieder, Urkunde, Service-Bearbeitung, Passwort |
 | [08 Aktuelles, Termine, Anmeldung](docs/08-aktuelles-termine.md) | Bereich Aktuelles, Termine anlegen, Anmeldung und Teilnehmerliste |
+| [09 Umzugs- und Importtag](docs/09-umzugs-und-importtag.md) | Checkliste: Umzug auf eintrikot.de, Import der Mitglieder, Einladungen |
 
 ## Ablauf einer Änderung
 

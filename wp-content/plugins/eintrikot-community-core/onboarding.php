@@ -563,6 +563,12 @@ function send_invitation($user_id) {
             'Einladungen gehen erst nach dem Umzug auf eintrikot.de mit HTTPS raus. Es wurde nichts verschickt.'
         );
     }
+    if (member_birthday(profile_data($user_id)) === null) {
+        return new \WP_Error(
+            'invite',
+            $user->display_name . ': Das Geburtsdatum fehlt. Bitte zuerst ergänzen.'
+        );
+    }
     // Under 18: first the parents (the welcome follows after their consent).
     if (consent_pending($user_id)) {
         $sent =
@@ -797,6 +803,10 @@ function invite_state($user_id) {
             ($expired ? 'Link abgelaufen · eingeladen am ' : 'Eingeladen am ') . wp_date('d.m.Y', $invited)
         ];
     }
+    // The birthday is required (fee rule, age check): without it nobody is invited, neither in bulk nor one by one.
+    if (member_birthday(profile_data($user_id)) === null) {
+        return ['blocked', 'Geburtsdatum fehlt: separat einladen'];
+    }
     return ['open', 'Noch nicht eingeladen'];
 }
 
@@ -995,6 +1005,7 @@ function render_onboarding() {
                     'invited' => 'review',
                     'consent' => 'review',
                     'expired' => 'rejected',
+                    'blocked' => 'rejected',
                     'open' => 'received'
                 ][$state]
             ) .
@@ -1009,7 +1020,7 @@ function render_onboarding() {
         if (consent_pending($u->ID)) {
             echo consent_manual_form($u->ID);
         }
-        if ($state !== 'active') {
+        if (!in_array($state, ['active', 'blocked'], true)) {
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             wp_nonce_field('et_invite');
             echo '<input type="hidden" name="action" value="et_invite"><input type="hidden" name="user" value="' .
