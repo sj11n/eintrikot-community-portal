@@ -279,7 +279,7 @@ function render_request($id) {
     $state = request_state($id);
     $kind = get_post_meta($id, 'et_kind', true);
     $labels = request_labels($kind);
-    $manager = manager_access();
+    $manager = view_manager();
     $author = get_user_by('id', $row->post_author);
     echo '<a class="text-link service-back" href="' .
         esc_url(portal_url($manager ? 'requests' : 'service')) .

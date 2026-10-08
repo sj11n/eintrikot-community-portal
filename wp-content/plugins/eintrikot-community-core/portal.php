@@ -120,6 +120,7 @@ function post_text($key, $default = '', $max = 4000) {
     return $value;
 }
 
+require_once __DIR__ . '/preview.php';
 require_once __DIR__ . '/services.php';
 
 require_once __DIR__ . '/avatar.php';

@@ -656,7 +656,7 @@ function render_profile($id) {
         '">Förderanfrage vorbereiten →</a></section><section class="form-section"><h2>In Verbindung bleiben</h2><label class="check"><input type="checkbox" name="newsletter" value="1" ' .
         checked(!empty($data['newsletter']), true, false) .
         '><span>EINTRIKOT-Newsletter erhalten<br><small>Du kannst diese Einstellung jederzeit ändern.</small></span></label></section>';
-    if (manager_access()) {
+    if (view_manager()) {
         $listing = $data['directory_listing'] ?? '';
         $auto = directory_listed_by_role($user)
             ? 'Automatisch: wird angezeigt'

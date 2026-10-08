@@ -400,11 +400,11 @@ function render_member($id) {
         (birthday_text($data) !== ''
             ? '<p class="member-birthday">Geburtstag: ' . esc_html(birthday_text($data)) . '</p>'
             : '') .
-        (manager_access() ? '<p class="member-role">Rolle: ' . esc_html(user_role_text($id)) . '</p>' : '') .
-        ($id === get_current_user_id() || manager_access() ? membership_line($id) : '') .
+        (view_manager() ? '<p class="member-role">Rolle: ' . esc_html(user_role_text($id)) . '</p>' : '') .
+        ($id === get_current_user_id() || view_manager() ? membership_line($id) : '') .
         social_links($data) .
         '</div>';
-    if (manager_access() || $id === get_current_user_id()) {
+    if (view_manager() || $id === get_current_user_id()) {
         echo '<a class="button" href="' .
             esc_url(
                 portal_url($id === get_current_user_id() ? 'profile' : 'edit-member', ['member' => $id])
