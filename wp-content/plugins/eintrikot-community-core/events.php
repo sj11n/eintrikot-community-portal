@@ -573,7 +573,7 @@ function event_card($event) {
 
 /** "Termine": events for the next year, grouped by month; birthdays folded away below. */
 function render_events_body() {
-    if (current_user_can('eintrikot_edit_infos')) {
+    if (view_can_edit_infos()) {
         echo '<p><a class="text-link" href="' .
             esc_url(admin_url('edit.php?post_type=et_calendar')) .
             '">Termine pflegen →</a></p>';

@@ -477,6 +477,42 @@ $unknown = wp_authenticate('niemand_' . wp_generate_password(6, false) . '@examp
 check('Unbekannte Adresse: gleiche Meldung wie falsches Passwort', is_wp_error($unknown) && $unknown->get_error_code() === 'et_failed');
 delete_transient(login_throttle_key($locked_login));
 
+/* ---------- Ansicht wechseln (Vorschau für Administratoren) ---------- */
+
+$pv_admin = make_user('administrator');
+$pv_member = make_user('eintrikot_member');
+wp_set_current_user($pv_admin);
+check('Vorschau: ohne Auswahl die eigene Ansicht', preview_role() === '' && view_admin() && view_manager() && view_can_edit_infos());
+$expect = [
+    'member' => [false, false, false],
+    'editor' => [true, false, false],
+    'board' => [true, true, false]
+];
+foreach ($expect as $role => $want) {
+    update_user_meta($pv_admin, PREVIEW_META, $role);
+    check(
+        "Vorschau $role: Redaktion, Verwaltung, Administrator",
+        [view_can_edit_infos(), view_manager(), view_admin()] === $want
+    );
+    check("Vorschau $role: echte Rechte bleiben", manager_access() && current_user_can('manage_options'));
+    check("Vorschau $role: Leiste sichtbar", str_contains(preview_bar(), 'Zurück zu Administrator'));
+    check("Vorschau $role: Verwaltung nicht im Menü", $role === 'board' ? isset(portal_nav_items()['admin']) : !isset(portal_nav_items()['admin']));
+}
+update_user_meta($pv_admin, PREVIEW_META, 'unsinn');
+check('Vorschau: unbekannter Wert = eigene Ansicht', preview_role() === '' && preview_bar() === '');
+delete_user_meta($pv_admin, PREVIEW_META);
+wp_set_current_user($pv_member);
+update_user_meta($pv_member, PREVIEW_META, 'board');
+check('Vorschau: Mitglied kann sich keine Rechte geben', preview_role() === '' && !view_manager() && !view_can_edit_infos() && preview_bar() === '');
+ob_start();
+render_preview_page();
+check('Vorschau: Auswahlseite für Mitglied gesperrt', str_contains(ob_get_clean(), 'Kein Zugriff'));
+wp_set_current_user($pv_admin);
+update_user_meta($pv_admin, PREVIEW_META, 'member');
+do_action('wp_logout', $pv_admin);
+check('Vorschau: endet beim Abmelden', preview_role() === '');
+wp_set_current_user(0);
+
 /* ---------- Eingabehilfen ---------- */
 
 $_POST['k'] = ['kein', 'Text'];

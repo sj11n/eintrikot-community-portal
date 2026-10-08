@@ -11,10 +11,10 @@ function portal_nav_items() {
         'aktuelles' => 'Aktuelles',
         'service' => 'Service'
     ];
-    if (current_user_can('eintrikot_edit_infos')) {
+    if (view_can_edit_infos()) {
         $items['editorial'] = 'Redaktion';
     }
-    if (manager_access()) {
+    if (view_manager()) {
         $items['admin'] = 'Verwaltung';
     }
     return $items;
@@ -41,6 +41,7 @@ function portal_nav_section($view) {
         'request' => 'service',
         'documents' => 'service',
         'requests' => 'admin',
+        'preview' => 'admin',
         'audit' => 'admin',
         'onboarding' => 'admin',
         'profile' => 'account'
@@ -114,10 +115,10 @@ function portal_account_menu($user) {
         [portal_url('member', ['member' => $user->ID]), 'Mein Profil ansehen'],
         [portal_url('profile'), 'Profil bearbeiten']
     ];
-    if (current_user_can('eintrikot_edit_infos')) {
+    if (view_can_edit_infos()) {
         $links[] = [portal_url('editorial'), 'Redaktion', 'role'];
     }
-    if (manager_access()) {
+    if (view_manager()) {
         $links[] = [portal_url('admin'), 'Verwaltung', 'role'];
     }
     $links[] = [home_url('/'), 'Zur öffentlichen Website'];
@@ -156,7 +157,7 @@ function portal_shell($content, $view) {
     $user = wp_get_current_user();
     $selected = portal_nav_section($view);
     // The administration opens requests from "Verwaltung", members from "Service".
-    if ($view === 'request' && manager_access()) {
+    if ($view === 'request' && view_manager()) {
         $selected = 'admin';
     }
     return '<div class="et-app shell tone-' .
@@ -172,6 +173,7 @@ function portal_shell($content, $view) {
         '</div>' .
         portal_account_menu($user) .
         '<main class="portal-main" id="main" tabindex="-1">' .
+        preview_bar() .
         $content .
         '</main></div><nav class="bottom-nav" aria-label="Mobile Mitgliedernavigation">' .
         portal_nav_links(portal_mobile_items(), $selected) .
@@ -236,7 +238,7 @@ add_shortcode('eintrikot_portal', function () {
             render_member($member);
             break;
         case 'edit-member':
-            if (manager_access()) {
+            if (view_manager()) {
                 render_profile($member);
             } else {
                 echo '<div class="portal-empty"><h1>Kein Zugriff</h1><p>Du kannst nur dein eigenes Profil bearbeiten.</p></div>';
@@ -255,8 +257,8 @@ add_shortcode('eintrikot_portal', function () {
             render_request(absint(directory_param('request')));
             break;
         case 'requests':
-            echo manager_access() ? '' : wp_kses_post($denied);
-            if (manager_access()) {
+            echo view_manager() ? '' : wp_kses_post($denied);
+            if (view_manager()) {
                 render_requests(true);
             }
             break;
@@ -264,13 +266,16 @@ add_shortcode('eintrikot_portal', function () {
             render_onboarding();
             break;
         case 'audit':
-            echo manager_access() ? '' : wp_kses_post($denied);
-            if (manager_access()) {
+            echo view_manager() ? '' : wp_kses_post($denied);
+            if (view_manager()) {
                 render_audit();
             }
             break;
+        case 'preview':
+            render_preview_page();
+            break;
         case 'admin':
-            if (!manager_access()) {
+            if (!view_manager()) {
                 echo wp_kses_post($denied);
                 break;
             }
@@ -285,14 +290,19 @@ add_shortcode('eintrikot_portal', function () {
                 service_link(portal_url('members'), 'Mitgliederprofile pflegen') .
                 service_link(audit_url(), 'Änderungsprotokoll öffnen') .
                 '</section>';
-            if (current_user_can('manage_options')) {
+            if (view_admin()) {
                 echo '<section class="portal-section"><h2>Website</h2>' .
+                    service_link(
+                        portal_url('preview'),
+                        'Ansicht wechseln',
+                        'Das Portal als Mitglied, Redakteur oder Vorstand sehen'
+                    ) .
                     service_link(admin_url('admin.php?page=eintrikot-metrics'), 'Kennzahlen bearbeiten') .
                     '</section>';
             }
             break;
         case 'editorial':
-            if (!current_user_can('eintrikot_edit_infos')) {
+            if (!view_can_edit_infos()) {
                 echo wp_kses_post($denied);
                 break;
             }

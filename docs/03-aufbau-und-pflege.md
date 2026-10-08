@@ -71,6 +71,17 @@ Rollen vergibt nur ein **Administrator im WordPress-Backend**, bewusst nicht im 
 4. Im Änderungsprotokoll prüfen, dass der Wechsel steht.
 5. Neue Person: Rolle „EINTRIKOT Vorstand“, danach im Portal ansehen, ob „Verwaltung“ im Kontomenü erscheint.
 
+## Ansicht wechseln (nur Administratoren)
+
+Administratoren können das Portal so ansehen, wie es andere Rollen sehen (seit 0.22.0).
+
+- **Wo:** Portal → Verwaltung → Website → „Ansicht wechseln“. Wählbar sind Mitglied, Redakteur, Vorstand und zurück zu Administrator.
+- **Während der Vorschau** steht oben auf jeder Portalseite ein gelber Streifen „Du siehst das Portal als …“ mit „Ansicht wechseln“ und „Zurück zu Administrator“.
+- **Was sich ändert:** nur die Anzeige im Portal (Menü, Bereiche, Schaltflächen, Rollenzeile im Profil). Das WordPress-Backend bleibt immer die Administrator-Ansicht.
+- **Was sich nicht ändert:** Das Konto behält seine Rolle. Es gibt keinen Eintrag im Änderungsprotokoll. Speichern und Aktionen prüfen weiter die echten Rechte, es gibt also keine Aussperrung.
+- **Ende:** Beim Abmelden endet die Vorschau. Mitglieder, Redakteure und Vorstand sehen die Funktion nie, und eine manipulierte Anfrage bewirkt bei ihnen nichts.
+- **Grenze:** Die Daten sind die des Administrator-Kontos (eigenes Profil, eigene Anmeldungen). Eine „Anmelden als Mitglied“-Funktion gibt es bewusst nicht.
+
 ## Mitglieder löschen, Austritt und Löschwunsch
 
 **Wer löscht?** Nur ein **Administrator im WordPress-Backend**: Benutzer → Alle Benutzer → Konto → „Löschen“. Der Vorstand hat im Portal keine Löschfunktion (bewusst: nicht umkehrbar, datenschutzrelevant). Einzelne Konten anlegen geht für den Vorstand mit einer Datei mit einer Zeile (Neue Mitglieder aufnehmen), nicht über Backend → Benutzer → Neu hinzufügen (dort fehlt die Mitgliedsnummer).

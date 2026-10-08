@@ -75,12 +75,12 @@ function render_service_overview($types) {
             : '') .
         service_link(portal_url('documents'), 'Dokumente', 'Satzung, Protokolle und Unterlagen') .
         '</section>';
-    if (current_user_can('eintrikot_edit_infos') || manager_access()) {
+    if (view_can_edit_infos() || view_manager()) {
         echo '<section class="portal-section"><h2>Vereinsarbeit</h2>';
-        if (current_user_can('eintrikot_edit_infos')) {
+        if (view_can_edit_infos()) {
             echo service_link(portal_url('editorial'), 'Redaktion', 'News, Vereinsinfos, Termine');
         }
-        if (manager_access()) {
+        if (view_manager()) {
             echo service_link(portal_url('admin'), 'Verwaltung', 'Anfragen, Profile, Protokoll');
         }
         echo '</section>';

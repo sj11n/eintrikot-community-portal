@@ -61,7 +61,7 @@ function render_infos_body() {
     if (!member_access()) {
         return;
     }
-    if (current_user_can('eintrikot_edit_infos')) {
+    if (view_can_edit_infos()) {
         echo '<p><a class="text-link" href="' .
             esc_url(admin_url('post-new.php?post_type=et_info')) .
             '">Vereinsinfo schreiben →</a></p>';

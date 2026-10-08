@@ -2,7 +2,7 @@
 /**
  * Plugin Name: EINTRIKOT Community Core
  * Description: Getrennte Einrichtung und Berechtigungen für das EINTRIKOT-Portal. Entwicklungsstand.
- * Version: 0.21.2
+ * Version: 0.22.0
  * Requires PHP: 8.1
  */
 namespace Eintrikot\Community;
