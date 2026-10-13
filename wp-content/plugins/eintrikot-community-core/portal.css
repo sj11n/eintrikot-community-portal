@@ -2415,3 +2415,48 @@
     font: inherit;
     cursor: pointer;
 }
+.et-app .test-bar {
+    margin: 0 0 20px;
+    padding: 10px 14px;
+    background: #f1d1dd;
+    border: 1px solid #da525d;
+    color: #000;
+    font-size: 14px;
+}
+.et-app .test-bar p {
+    margin: 0 0 6px;
+}
+.et-app .test-bar summary {
+    cursor: pointer;
+    display: inline-block;
+    min-height: 40px;
+    line-height: 40px;
+    padding: 0 14px;
+    border: 1px solid #000;
+    background: #fff;
+}
+.et-app .test-bar form {
+    display: grid;
+    gap: 10px;
+    max-width: 520px;
+    margin-top: 10px;
+}
+.et-app .test-bar label {
+    display: grid;
+    gap: 4px;
+}
+.et-app .test-bar select,
+.et-app .test-bar textarea {
+    font: inherit;
+    padding: 8px;
+    border: 1px solid #595959;
+    background: #fff;
+}
+.et-app .test-bar button {
+    min-height: 44px;
+    border: 1px solid #000;
+    background: #fff;
+    color: #000;
+    font: inherit;
+    cursor: pointer;
+}

@@ -513,6 +513,38 @@ do_action('wp_logout', $pv_admin);
 check('Vorschau: endet beim Abmelden', preview_role() === '');
 wp_set_current_user(0);
 
+/* ---------- Testphase: Mails aus, Testdaten anlegen und restlos entfernen ---------- */
+
+$tp_mail = ['to' => 'a@example.test', 'subject' => 's', 'message' => 'm', 'headers' => [], 'attachments' => []];
+check('Testphase: lokal nicht aktiv', !testphase_active() && testphase_bar() === '');
+add_filter('eintrikot_testphase', '__return_true');
+check('Testphase: aktiv per Filter, Banner da', testphase_active() && str_contains(testphase_bar(), 'Rückmeldung geben'));
+check('Testphase: keine E-Mail wird verschickt', apply_filters('pre_wp_mail', null, $tp_mail) === false);
+remove_filter('eintrikot_testphase', '__return_true');
+check('Testphase: Mailsperre nur während der Phase', apply_filters('pre_wp_mail', null, $tp_mail) !== false);
+
+$tp_users_before = count(get_users(['fields' => 'ID']));
+check('Testphase: Demo-Daten', testphase_create_demo() === 18 && count(testphase_user_ids()) === 18 && count(testphase_post_ids()) === 5);
+check('Testphase: Demo-Daten nicht doppelt', testphase_create_demo() === 0 && count(testphase_user_ids()) === 18);
+$demo_user = get_user_by('login', 'testmitglied1');
+check('Testphase: Demo-Mitglied im Verzeichnis, mit Geburtstag, kein Gate', $demo_user && directory_listed($demo_user) && !birthday_needed($demo_user->ID) && str_ends_with($demo_user->user_email, '@example.test'));
+$tp_rows = testphase_create_testers([['name' => 'Erika Teststein', 'email' => 'erika.teststein@example.test'], ['name' => '', 'email' => 'x@example.test'], ['name' => 'Ohne Mail', 'email' => 'keine-mail']]);
+check('Testphase: nur gültige Zeilen werden Konten', count($tp_rows) === 1 && $tp_rows[0][1] === 'erika.teststein' && strlen($tp_rows[0][2]) === 14);
+$tp_tester = get_user_by('login', 'erika.teststein');
+check('Testphase: Beiratskonto ist Mitglied und hat die Geburtstagsseite vor sich', $tp_tester && in_array('eintrikot_member', $tp_tester->roles, true) && birthday_needed($tp_tester->ID));
+$tp_event = array_values(array_filter(testphase_post_ids(), fn($id) => get_post_type($id) === 'et_calendar'))[0];
+event_signup($tp_event, $tp_tester->ID);
+$tp_request = wp_insert_post(['post_type' => 'et_request', 'post_status' => 'publish', 'post_title' => 'Testanfrage', 'post_author' => $tp_tester->ID]);
+$tp_feedback = wp_insert_post(['post_type' => 'et_feedback', 'post_status' => 'publish', 'post_author' => 0, 'post_title' => 'Beispiel', 'post_content' => 'Das war unklar.']);
+update_post_meta($tp_feedback, 'et_fb_status', 'new');
+check('Testphase: Rückmeldung als Text', str_contains(feedback_as_text(), 'Das war unklar.'));
+$left = testphase_end();
+check('Testphase beenden: nichts bleibt übrig', $left['users'] === 0 && $left['posts'] === 0 && count(get_users(['fields' => 'ID'])) === $tp_users_before);
+check('Testphase beenden: Anfrage des Testkontos ist weg', get_post($tp_request) === null);
+check('Testphase beenden: Anmeldungen sind weg', !in_array($tp_tester->ID, event_attendee_ids($tp_event), true));
+check('Testphase beenden: Rückmeldungen bleiben', get_post($tp_feedback) !== null);
+wp_delete_post($tp_feedback, true);
+
 /* ---------- Eingabehilfen ---------- */
 
 $_POST['k'] = ['kein', 'Text'];

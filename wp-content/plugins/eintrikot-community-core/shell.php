@@ -173,6 +173,7 @@ function portal_shell($content, $view) {
         '</div>' .
         portal_account_menu($user) .
         '<main class="portal-main" id="main" tabindex="-1">' .
+        testphase_bar() .
         preview_bar() .
         $content .
         '</main></div><nav class="bottom-nav" aria-label="Mobile Mitgliedernavigation">' .
@@ -210,6 +211,9 @@ add_shortcode('eintrikot_portal', function () {
             (is_user_logged_in()
                 ? ''
                 : '<aside class="auth-first"><h2>Zum ersten Mal hier?</h2><p>Sobald deine Mitgliedschaft bestätigt ist, bekommst du per E-Mail einen persönlichen Link. Damit legst du dein Passwort selbst fest.</p><p>Link nicht erhalten oder abgelaufen? Unter „Passwort vergessen?“ deine E-Mail-Adresse eingeben – du bekommst sofort einen neuen Link.</p></aside>') .
+            (testphase_active()
+                ? '<aside class="auth-first"><h2>Testumgebung</h2><p>Hier werden keine E-Mails verschickt. Passwort vergessen? Dann schreib kurz an die Person, die dir den Zugang geschickt hat.</p></aside>'
+                : '') .
             '</div></main></div>';
     }
     $view = current_view();
