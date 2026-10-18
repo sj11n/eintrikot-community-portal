@@ -10,6 +10,14 @@ function eintrikot_asset_version($file) {
     $path = get_theme_file_path($file);
     return file_exists($path) ? (string) filemtime($path) : null;
 }
+// A class per page (seite-<slug>) lets single pages get their own rules.
+add_filter('body_class', function ($classes) {
+    if (is_page()) {
+        $classes[] =
+            'seite-' . sanitize_html_class((string) get_post_field('post_name', get_queried_object_id()));
+    }
+    return $classes;
+});
 add_action('after_setup_theme', function () {
     add_theme_support('editor-styles');
     add_editor_style(['assets/mvp.css', 'assets/editor.css', 'assets/refresh.css']);
