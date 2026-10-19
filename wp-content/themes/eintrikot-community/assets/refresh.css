@@ -730,3 +730,18 @@ body.seite-community-unterstuetzen .entry-content .wp-block-image img {
     aspect-ratio: auto !important;
     object-fit: cover;
 }
+
+/* Blockstil „Banner“ für Bilder: volle Breite, höchstens 400 px hoch (Handy 200 px), Ausschnitt über den Fokuspunkt. */
+.wp-block-image.is-style-banner {
+    display: block;
+    max-width: none;
+    margin-block: 0;
+}
+.wp-block-image.is-style-banner img {
+    display: block;
+    width: 100%;
+    max-width: none;
+    height: clamp(200px, 40vw, 400px) !important;
+    aspect-ratio: auto !important;
+    object-fit: cover;
+}
