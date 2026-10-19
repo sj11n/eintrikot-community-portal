@@ -545,6 +545,18 @@ check('Testphase beenden: Anmeldungen sind weg', !in_array($tp_tester->ID, event
 check('Testphase beenden: Rückmeldungen bleiben', get_post($tp_feedback) !== null);
 wp_delete_post($tp_feedback, true);
 
+/* ---------- News wird Stories ---------- */
+
+$st_page = wp_insert_post(['post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'News', 'post_content' => '<h1>News.</h1><a href="/community-news/">Alle News →</a> Newsletter und "label": "News"']);
+$st_nav = wp_insert_post(['post_type' => 'wp_navigation', 'post_status' => 'publish', 'post_title' => 'Test', 'post_content' => '<!-- wp:navigation-link {"label": "News", "url": "/community-news/"} /-->']);
+$st_msg = update_news_to_stories();
+$st_after = get_post($st_page);
+check('Stories: Titel, Überschrift, Link, Menüpunkt ersetzt', $st_after->post_title === 'Stories' && str_contains($st_after->post_content, '<h1>Stories.</h1>') && str_contains($st_after->post_content, 'Alle Stories') && str_contains(get_post($st_nav)->post_content, 'Stories') && !str_contains(get_post($st_nav)->post_content, '"News"'));
+check('Stories: Newsletter und Adresse bleiben', str_contains($st_after->post_content, 'Newsletter') && str_contains($st_after->post_content, '/community-news/'));
+check('Stories: zweiter Lauf ändert nichts', str_contains(update_news_to_stories(), 'Nichts zu ändern'));
+wp_delete_post($st_page, true);
+wp_delete_post($st_nav, true);
+
 /* ---------- Eingabehilfen ---------- */
 
 $_POST['k'] = ['kein', 'Text'];
