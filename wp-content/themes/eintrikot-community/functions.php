@@ -10,6 +10,13 @@ function eintrikot_asset_version($file) {
     $path = get_theme_file_path($file);
     return file_exists($path) ? (string) filemtime($path) : null;
 }
+// Block style "Banner" for images: full width, at most 400 px high (200 px on phones). Picked in the editor sidebar under "Stile".
+add_action('init', function () {
+    register_block_style('core/image', [
+        'name' => 'banner',
+        'label' => 'Banner (volle Breite, max. 400 px)'
+    ]);
+});
 // A class per page (seite-<slug>) lets single pages get their own rules.
 add_filter('body_class', function ($classes) {
     if (is_page()) {
