@@ -714,3 +714,19 @@ a.button[href*='mitglied-werden']:focus-visible {
         grid-column: auto;
     }
 }
+
+/* Unterstützen: das Bild im Inhalt geht über die ganze Breite und ist höchstens 400 px hoch (Ausschnitt über den Fokuspunkt). */
+body.seite-community-unterstuetzen .entry-content .wp-block-image {
+    display: block;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+body.seite-community-unterstuetzen .entry-content .wp-block-image img {
+    display: block;
+    width: 100%;
+    max-width: none;
+    height: clamp(200px, 40vw, 400px) !important;
+    aspect-ratio: auto !important;
+    object-fit: cover;
+}
