@@ -715,14 +715,13 @@ a.button[href*='mitglied-werden']:focus-visible {
     }
 }
 
-/* Unterstützen: das Bild im Inhalt geht über die ganze Breite und ist höchstens 400 px hoch (Ausschnitt über den Fokuspunkt). */
-body.seite-community-unterstuetzen .entry-content .wp-block-image {
+/* Blockstil „Banner“ für Bilder: höchstens 400 px hoch (Handy 200 px), Ausschnitt über den Fokuspunkt. Auf der Website geht er zusätzlich über die ganze Fensterbreite, auch aus dem schmaleren Inhaltsbereich heraus. */
+.wp-block-image.is-style-banner {
     display: block;
-    width: 100%;
     max-width: none;
-    margin: 0;
+    margin-block: 0;
 }
-body.seite-community-unterstuetzen .entry-content .wp-block-image img {
+.wp-block-image.is-style-banner img {
     display: block;
     width: 100%;
     max-width: none;
@@ -730,14 +729,23 @@ body.seite-community-unterstuetzen .entry-content .wp-block-image img {
     aspect-ratio: auto !important;
     object-fit: cover;
 }
-
-/* Blockstil „Banner“ für Bilder: volle Breite, höchstens 400 px hoch (Handy 200 px), Ausschnitt über den Fokuspunkt. */
-.wp-block-image.is-style-banner {
+.entry-content:has(.is-style-banner),
+body.seite-community-unterstuetzen .entry-content {
+    overflow-x: clip;
+}
+.entry-content .wp-block-image.is-style-banner,
+body.seite-community-unterstuetzen .entry-content .wp-block-image {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin-left: calc(50% - 50vw) !important;
+    margin-right: 0 !important;
+}
+/* Unterstützen: das Bild im Inhalt verhält sich wie ein Banner-Bild. */
+body.seite-community-unterstuetzen .entry-content .wp-block-image {
     display: block;
-    max-width: none;
     margin-block: 0;
 }
-.wp-block-image.is-style-banner img {
+body.seite-community-unterstuetzen .entry-content .wp-block-image img {
     display: block;
     width: 100%;
     max-width: none;

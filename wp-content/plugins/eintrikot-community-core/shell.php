@@ -314,7 +314,7 @@ add_shortcode('eintrikot_portal', function () {
                 '<section class="portal-section"><h2>Schreiben</h2>' .
                 service_link(
                     admin_url('post-new.php'),
-                    'Öffentliche News schreiben',
+                    'Öffentliche Stories schreiben',
                     'Erscheint auf der Website'
                 ) .
                 service_link(

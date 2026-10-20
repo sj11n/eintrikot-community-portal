@@ -4,7 +4,7 @@
  *
  * - Adressen unter Community-Aufbau → Social Media. Ohne Adresse erscheint nichts.
  * - Footer: „Folge uns“ mit den einfarbigen Logos (club_social_html() im Footer-Muster, auch als [eintrikot_social]).
- * - News: unter den Beitragslisten ein Hinweis auf LinkedIn.
+ * - Stories: unter den Beitragslisten ein Hinweis auf LinkedIn.
  * - Suchmaschinen: die Adressen als „sameAs“ der Organisation (schema.org).
  * Alles sind einfache Links: keine eingebetteten Inhalte, keine Daten an die Netzwerke vor einem Klick.
  */
@@ -51,7 +51,7 @@ function club_social_page() {
             esc_html(sanitize_text_field(wp_unslash($_GET['invalid']))) .
             ' ist keine Adresse dieses Netzwerks.</p></div>';
     }
-    echo '<p>Diese Links erscheinen im Footer jeder Seite („Folge uns“), LinkedIn zusätzlich unter den News. Leere Felder erscheinen nirgends. Es sind einfache Links ohne eingebettete Inhalte.</p><form method="post" action="' .
+    echo '<p>Diese Links erscheinen im Footer jeder Seite („Folge uns“), LinkedIn zusätzlich unter den Stories. Leere Felder erscheinen nirgends. Es sind einfache Links ohne eingebettete Inhalte.</p><form method="post" action="' .
         esc_url(admin_url('admin-post.php')) .
         '">';
     wp_nonce_field('et_club_social');
@@ -140,7 +140,7 @@ function club_social_html() {
 }
 add_shortcode('eintrikot_social', __NAMESPACE__ . '\club_social_html');
 
-// News: after every public list of posts (start page and news page) a pointer to LinkedIn.
+// Stories: after every public list of posts (start page and stories page) a pointer to LinkedIn.
 add_filter(
     'render_block',
     function ($html, $block) {

@@ -43,6 +43,12 @@ function content_updates() {
                 'Ersetzt unter „Unsere Werte“ die drei alten Kästen (Gemeinschaft, Verantwortung, Unabhängigkeit) durch die neuen Werte mit Icons: „Ein Trikot verbindet“, „Wir geben zurück“, „Wir stehen zu unserem Wort“. Der übrige Inhalt der Seite bleibt unverändert.',
             'run' => __NAMESPACE__ . '\\update_values'
         ],
+        '0.24-stories' => [
+            'title' => '„News“ durch „Stories“ ersetzen',
+            'text' =>
+                'Ändert auf der öffentlichen Website „News“ in „Stories“: Menüpunkt in Kopfzeile und Fußzeile, Überschrift und Titel der Seite, „Alle Stories“ auf Startseite, Beitrag, Archiv und Suche. Adressen (z. B. /community-news/) bleiben unverändert, damit bestehende Links weiter funktionieren. Wörter wie „Newsletter“ bleiben unberührt.',
+            'run' => __NAMESPACE__ . '\\update_news_to_stories'
+        ],
         '0.7-vision' => [
             'title' => 'Schreibweise „EINTRIKOT" in der Vision 2030',
             'text' =>
@@ -121,6 +127,33 @@ function update_privacy_page() {
         update_option('wp_page_for_privacy_policy', $page->ID);
     }
     return is_wp_error($result) ? $result : 'Datenschutzerklärung aktualisiert.';
+}
+
+/** "News" becomes "Stories" in pages, navigation and customised templates. Only fixed phrases are replaced. */
+function update_news_to_stories() {
+    $pairs = [
+        '"label": "News"' => '"label": "Stories"',
+        '"label":"News"' => '"label":"Stories"',
+        '>News.<' => '>Stories.<',
+        'Alle News' => 'Alle Stories'
+    ];
+    $changed = 0;
+    $posts = get_posts([
+        'post_type' => ['page', 'wp_navigation', 'wp_template', 'wp_template_part'],
+        'post_status' => 'any',
+        'numberposts' => -1
+    ]);
+    foreach ($posts as $post) {
+        $content = str_replace(array_keys($pairs), array_values($pairs), $post->post_content, $count);
+        $title = $post->post_type === 'page' && $post->post_title === 'News' ? 'Stories' : $post->post_title;
+        if ($count || $title !== $post->post_title) {
+            wp_update_post(wp_slash(['ID' => $post->ID, 'post_content' => $content, 'post_title' => $title]));
+            $changed++;
+        }
+    }
+    return $changed
+        ? $changed . ' Stellen/Seiten angepasst.'
+        : 'Nichts zu ändern – „News“ kommt nicht mehr vor.';
 }
 
 function update_vision_spelling() {

@@ -78,7 +78,7 @@ function render_service_overview($types) {
     if (view_can_edit_infos() || view_manager()) {
         echo '<section class="portal-section"><h2>Vereinsarbeit</h2>';
         if (view_can_edit_infos()) {
-            echo service_link(portal_url('editorial'), 'Redaktion', 'News, Vereinsinfos, Termine');
+            echo service_link(portal_url('editorial'), 'Redaktion', 'Stories, Vereinsinfos, Termine');
         }
         if (view_manager()) {
             echo service_link(portal_url('admin'), 'Verwaltung', 'Anfragen, Profile, Protokoll');
