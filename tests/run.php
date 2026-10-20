@@ -581,6 +581,24 @@ foreach ([$pp_ok, $pp_d1, $pp_d2, $pp_no] as $uid) {
     wp_delete_user($uid);
 }
 
+/* ---------- Mitglieder: Sortierung und Buchstaben ---------- */
+
+$ab_a = wp_insert_user(['user_login' => 'zz_ab1', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_ab1@example.test', 'role' => 'eintrikot_member', 'display_name' => 'Zora Älbrecht', 'first_name' => 'Zora', 'last_name' => 'Älbrecht']);
+$ab_b = wp_insert_user(['user_login' => 'zz_ab2', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_ab2@example.test', 'role' => 'eintrikot_member', 'display_name' => 'Anton van der Berg']);
+$ab_c = wp_insert_user(['user_login' => 'zz_ab3', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_ab3@example.test', 'role' => 'eintrikot_member', 'display_name' => 'Cher']);
+[$f1, $l1] = directory_name_parts(get_user_by('id', $ab_a));
+[$f2, $l2] = directory_name_parts(get_user_by('id', $ab_b));
+[$f3, $l3] = directory_name_parts(get_user_by('id', $ab_c));
+check('Namen: gespeicherter Nachname', $f1 === 'Zora' && $l1 === 'Älbrecht');
+check('Namen: ohne Nachname zählt das letzte Wort', $f2 === 'Anton van der' && $l2 === 'Berg');
+check('Namen: ein Wort ist der Vorname', $f3 === 'Cher' && $l3 === '');
+check('Buchstabe: Umlaut zählt zu A', directory_letter('Älbrecht') === 'A' && directory_letter('Östlund') === 'O' && directory_letter('éric') === 'E');
+check('Buchstabe: Zahl und Sonderzeichen unter #', directory_letter('1. FC') === '#' && directory_letter('"x') === '#' && directory_letter('') === '#');
+foreach ([$ab_a, $ab_b, $ab_c] as $uid) {
+    require_once ABSPATH . 'wp-admin/includes/user.php';
+    wp_delete_user($uid);
+}
+
 /* ---------- Eingabehilfen ---------- */
 
 $_POST['k'] = ['kein', 'Text'];

@@ -39,7 +39,7 @@ function directory_listed($user) {
 
 /** Directory state (search, filters, page) that a profile visit carries along and restores. */
 function directory_state_keys() {
-    return ['q', 'team', 'age_class', 'phase', 'region', 'member_page'];
+    return ['q', 'team', 'age_class', 'phase', 'region', 'sort', 'letter', 'member_page'];
 }
 function directory_state() {
     $state = [];
@@ -66,6 +66,23 @@ function directory_back_url($member_id) {
     return portal_url('members', $args) . '#m-' . (int) $member_id;
 }
 
+/** First and last name of an account. Without a stored last name the last word of the display name counts. */
+function directory_name_parts($user) {
+    $first = trim((string) get_user_meta($user->ID, 'first_name', true));
+    $last = trim((string) get_user_meta($user->ID, 'last_name', true));
+    if ($last === '') {
+        $words = preg_split('/\s+/u', trim($user->display_name));
+        $last = count($words) > 1 ? (string) array_pop($words) : '';
+        $first = $first !== '' ? $first : implode(' ', $words);
+    }
+    return [$first !== '' ? $first : $user->display_name, $last];
+}
+/** Section letter of a name: A to Z (Ä counts as A), everything else is "#". */
+function directory_letter($name) {
+    $first = mb_strtoupper(mb_substr(remove_accents(trim($name)), 0, 1));
+    return preg_match('/^[A-Z]$/', $first) ? $first : '#';
+}
+
 function directory_projection($user) {
     $data = profile_data($user->ID);
     $shared = [];
@@ -85,8 +102,11 @@ function directory_projection($user) {
             }
         }
     }
+    [$first, $last] = directory_name_parts($user);
     return [
         'user' => $user,
+        'first' => $first,
+        'last' => $last,
         'shared' => $shared,
         'search' => mb_strtolower(
             implode(' ', array_merge([$user->display_name], array_values($shared), $station_words))
@@ -144,6 +164,25 @@ function render_directory() {
             return true;
         })
     );
+    // Order by last or first name (default last name); ä, ö, ü sort as a, o, u.
+    $sort = directory_param('sort') === 'first' ? 'first' : 'last';
+    $key = fn($row) => strtolower(
+        remove_accents(
+            $sort === 'first' ? $row['first'] . ' ' . $row['last'] : $row['last'] . ' ' . $row['first']
+        )
+    );
+    foreach ($matches as $i => $row) {
+        $matches[$i]['letter'] = directory_letter(
+            $sort === 'first' ? $row['first'] : ($row['last'] !== '' ? $row['last'] : $row['first'])
+        );
+    }
+    usort($matches, fn($a, $b) => strnatcmp($key($a), $key($b)));
+    $letters = array_count_values(array_column($matches, 'letter'));
+    $letter = strtoupper(directory_param('letter'));
+    $letter = isset($letters[$letter]) ? $letter : '';
+    if ($letter !== '') {
+        $matches = array_values(array_filter($matches, fn($row) => $row['letter'] === $letter));
+    }
     $total = count($matches);
     $pages = max(1, (int) ceil($total / 25));
     $page = min($pages, max(1, (int) directory_param('member_page')));
@@ -157,13 +196,14 @@ function render_directory() {
                 ($listed === 1 ? 'Mitglied' : 'Mitglieder') .
                 ' aus Jugend, Damen, Herren und Ehemaligen. Du siehst nur, was jede und jeder teilt.'
         ),
-        member_search_form($q, $filters),
+        member_search_form($q, array_merge($filters, ['sort' => $sort === 'first' ? 'first' : ''])),
         'members'
     );
     echo '<form class="directory-filters-form" action="' .
         esc_url(get_permalink((int) get_option('eintrikot_portal_page'))) .
         '" method="get"><input type="hidden" name="view" value="members">' .
         ($q !== '' ? '<input type="hidden" name="q" value="' . esc_attr($q) . '">' : '') .
+        ($sort === 'first' ? '<input type="hidden" name="sort" value="first">' : '') .
         '<details class="directory-filters"' .
         ($active ? ' open' : '') .
         '><summary>Filter' .
@@ -190,10 +230,16 @@ function render_directory() {
     echo '<button class="button filter-apply" type="submit">Anwenden</button></div></details></form>';
 
     // Active search and filters as chips; each chip removes exactly its own criterion.
-    $state = array_merge(['q' => $q], $filters);
+    $state = array_merge(['q' => $q], $filters, [
+        'sort' => $sort === 'first' ? 'first' : '',
+        'letter' => $letter
+    ]);
     $chips = [];
     if ($q !== '') {
         $chips[] = ['„' . $q . '“', 'q'];
+    }
+    if ($letter !== '') {
+        $chips[] = ['Buchstabe: ' . $letter, 'letter'];
     }
     foreach ($keys as $key => $label) {
         if ($filters[$key] !== '') {
@@ -223,10 +269,58 @@ function render_directory() {
         }
         echo '</ul>';
     }
-    echo '</div><div class="member-grid">';
+    echo '</div>';
+    // Sorting and one click per letter. Letters without members are greyed out.
+    $base = array_filter(array_merge(['q' => $q], $filters, ['sort' => $sort === 'first' ? 'first' : '']));
+    echo '<p class="sort-bar">Sortiert nach: ';
+    foreach (['last' => 'Nachname', 'first' => 'Vorname'] as $mode => $label) {
+        $args = array_merge($base, ['sort' => $mode === 'first' ? 'first' : '']);
+        echo $mode === $sort
+            ? '<strong aria-current="true">' . esc_html($label) . '</strong>'
+            : '<a href="' .
+                esc_url(portal_url('members', array_filter($args))) .
+                '">' .
+                esc_html($label) .
+                '</a>';
+        echo $mode === 'last' ? ' · ' : '';
+    }
+    echo '</p><nav class="letter-bar" aria-label="Nach Buchstaben">';
+    echo '<a href="' .
+        esc_url(portal_url('members', $base)) .
+        '"' .
+        ($letter === '' ? ' aria-current="true" class="active"' : '') .
+        '>Alle</a>';
+    $all_letters = array_merge(range('A', 'Z'), ['#']);
+    // Counted before the letter filter, so the other letters stay clickable while one is picked.
+    $available = $letters;
+    foreach ($all_letters as $l) {
+        if (empty($available[$l])) {
+            if ($l !== '#') {
+                echo '<span aria-disabled="true">' . esc_html($l) . '</span>';
+            }
+            continue;
+        }
+        echo '<a href="' .
+            esc_url(portal_url('members', array_merge($base, ['letter' => $l]))) .
+            '"' .
+            ($l === $letter ? ' aria-current="true" class="active"' : '') .
+            '>' .
+            esc_html($l) .
+            '</a>';
+    }
+    echo '</nav><div class="member-grid">';
     $back = http_build_query(array_filter(array_merge($state, ['member_page' => $page > 1 ? $page : ''])));
+    $heading = '';
     foreach (array_slice($matches, ($page - 1) * 25, 25) as $row) {
         $u = $row['user'];
+        if ($row['letter'] !== $heading) {
+            $heading = $row['letter'];
+            echo '<h2 class="member-letter" id="buchstabe-' .
+                esc_attr($heading === '#' ? 'sonst' : strtolower($heading)) .
+                '">' .
+                esc_html($heading) .
+                '</h2>';
+        }
         $data = $row['shared'];
         $meta = array_filter([$data['team'], $data['age_class'], $data['phase']]);
         $line = esc_html(implode(' · ', $meta));
@@ -269,7 +363,12 @@ function render_directory() {
     }
     if ($pages > 1) {
         echo '<nav class="pagination" aria-label="Mitgliederseiten">';
-        $args = array_filter(array_merge(['q' => $q], $filters));
+        $args = array_filter(
+            array_merge(['q' => $q], $filters, [
+                'sort' => $sort === 'first' ? 'first' : '',
+                'letter' => $letter
+            ])
+        );
         if ($page > 1) {
             echo '<a class="button" href="' .
                 esc_url(portal_url('members', array_merge($args, ['member_page' => $page - 1]))) .
