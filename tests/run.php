@@ -599,6 +599,21 @@ foreach ([$ab_a, $ab_b, $ab_c] as $uid) {
     wp_delete_user($uid);
 }
 
+/* ---------- Stories: Kopfbereich wird Cover-Block ---------- */
+
+ob_start();
+include WP_PLUGIN_DIR . '/../themes/eintrikot-community/patterns/mvp-news.php';
+$st_pattern = ob_get_clean();
+$st_group = '<!-- wp:group {"tagName":"section","className":"section page-intro","layout":{"type":"default"}} --><section class="wp-block-group section page-intro"><!-- wp:paragraph --><p>Aus dem Netzwerk</p><!-- /wp:paragraph --><!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Stories.</h1><!-- /wp:heading --></section><!-- /wp:group --><!-- wp:group {"className":"rest"} --><div class="wp-block-group rest"><p>Rest</p></div><!-- /wp:group -->';
+check('Stories: Muster nutzt einen Cover-Block', str_contains($st_pattern, 'wp:cover') && str_contains($st_pattern, 'et-mvp-page-hero') && !str_contains($st_pattern, 'wp:group {"tagName":"section","className":"section page-intro"'));
+$st_existing = get_page_by_path('community-news');
+$st_new = !$st_existing ? wp_insert_post(['post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Stories', 'post_name' => 'community-news', 'post_content' => $st_group]) : 0;
+if ($st_new) {
+    check('Stories-Kopf: wird Cover, Inhalt und Rest bleiben', str_contains(update_stories_hero(), 'Cover-Block') && str_contains(get_post($st_new)->post_content, 'wp:cover') && str_contains(get_post($st_new)->post_content, '<h1 class="wp-block-heading">Stories.</h1>') && str_contains(get_post($st_new)->post_content, '<p>Rest</p>') && !str_contains(get_post($st_new)->post_content, 'wp:group {"tagName":"section"'));
+    check('Stories-Kopf: zweiter Lauf ändert nichts', str_contains(update_stories_hero(), 'Nichts zu ändern'));
+    wp_delete_post($st_new, true);
+}
+
 /* ---------- Eingabehilfen ---------- */
 
 $_POST['k'] = ['kein', 'Text'];

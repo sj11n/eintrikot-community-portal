@@ -49,6 +49,12 @@ function content_updates() {
                 'Ändert auf der öffentlichen Website „News“ in „Stories“: Menüpunkt in Kopfzeile und Fußzeile, Überschrift und Titel der Seite, „Alle Stories“ auf Startseite, Beitrag, Archiv und Suche. Adressen (z. B. /community-news/) bleiben unverändert, damit bestehende Links weiter funktionieren. Wörter wie „Newsletter“ bleiben unberührt.',
             'run' => __NAMESPACE__ . '\\update_news_to_stories'
         ],
+        '0.27-stories-hero' => [
+            'title' => 'Kopfbereich der Seite „Stories“ mit Bildoption',
+            'text' =>
+                'Macht den Kopfbereich der Seite „Stories“ zu einem Cover-Block wie auf den anderen Seiten (Verein, Engagement, Unterstützen, Menschen). Dann lässt sich dort im Editor ein Bild einsetzen. Texte und Überschrift bleiben unverändert.',
+            'run' => __NAMESPACE__ . '\\update_stories_hero'
+        ],
         '0.7-vision' => [
             'title' => 'Schreibweise „EINTRIKOT" in der Vision 2030',
             'text' =>
@@ -154,6 +160,35 @@ function update_news_to_stories() {
     return $changed
         ? $changed . ' Stellen/Seiten angepasst.'
         : 'Nichts zu ändern – „News“ kommt nicht mehr vor.';
+}
+
+/** The head of the stories page was a plain group; as a cover block it can take an image like the other pages. */
+function update_stories_hero() {
+    $page = get_page_by_path('community-news');
+    if (!$page) {
+        return new \WP_Error('missing', 'Die Seite „Stories“ (community-news) wurde nicht gefunden.');
+    }
+    $open =
+        '<!-- wp:group {"tagName":"section","className":"section page-intro","layout":{"type":"default"}} --><section class="wp-block-group section page-intro">';
+    $close = '</section><!-- /wp:group -->';
+    $content = ltrim($page->post_content);
+    if (!str_starts_with($content, $open)) {
+        return 'Nichts zu ändern – der Kopfbereich ist schon ein Cover-Block oder wurde im Editor umgebaut.';
+    }
+    $end = strpos($content, $close);
+    if ($end === false) {
+        return new \WP_Error('shape', 'Der Kopfbereich hat eine unerwartete Form. Bitte im Editor prüfen.');
+    }
+    $inner = substr($content, strlen($open), $end - strlen($open));
+    $cover =
+        '<!-- wp:cover {"overlayColor":"blue","dimRatio":100,"isUserOverlayColor":true,"className":"section page-intro et-mvp-page-hero"} --><div class="wp-block-cover section page-intro et-mvp-page-hero"><span aria-hidden="true" class="wp-block-cover__background has-blue-background-color has-background-dim-100 has-background-dim"></span><div class="wp-block-cover__inner-container">' .
+        $inner .
+        '</div></div><!-- /wp:cover -->';
+    $result = wp_update_post(
+        wp_slash(['ID' => $page->ID, 'post_content' => $cover . substr($content, $end + strlen($close))]),
+        true
+    );
+    return is_wp_error($result) ? $result : 'Kopfbereich der Seite „Stories“ ist jetzt ein Cover-Block.';
 }
 
 function update_vision_spelling() {

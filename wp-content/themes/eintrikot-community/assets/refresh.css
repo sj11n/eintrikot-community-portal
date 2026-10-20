@@ -753,3 +753,21 @@ body.seite-community-unterstuetzen .entry-content .wp-block-image img {
     aspect-ratio: auto !important;
     object-fit: cover;
 }
+
+/* Stories: niedriger Kopfbereich, damit man gleich die Beiträge sieht (auch mit Bild). */
+body.seite-community-news .entry-content .page-intro {
+    min-height: 280px;
+    padding-top: 48px;
+    padding-bottom: 48px;
+}
+body.seite-community-news .entry-content .page-intro h1 {
+    font-size: clamp(36px, 4.5vw, 60px);
+    margin: 12px 0;
+}
+@media (max-width: 800px) {
+    body.seite-community-news .entry-content .page-intro {
+        min-height: 220px;
+        padding-top: 36px;
+        padding-bottom: 36px;
+    }
+}
