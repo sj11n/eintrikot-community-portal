@@ -2,7 +2,9 @@
 /**
  * Erzeugt aus der Master-Tabelle (Excel-Download) die bereinigte Importdatei für das Portal.
  *
- *   WP_ROOT=.lokal/wordpress php tools/importdatei.php "<Master.xlsx>" [--ausgabe=<Ordner>] [--eintritt=<CSV>]
+ *   WP_ROOT=.lokal/wordpress php tools/importdatei.php "<Master.xlsx>" [--ausgabe=<Ordner>] [--eintritt=<CSV>] [--ohne=<Nr,Nr>]
+ *
+ *   --ohne=1   lässt diese Mitgliedsnummern aus (z. B. wer schon ein Konto im Portal hat und dort selbst nachträgt)
  *
  * Voraussetzung ist das lokale WordPress aus tools/lokal-test.sh (nutzt die Import-Funktionen des Plugins).
  *
@@ -30,7 +32,7 @@ foreach ($args as $arg) {
     }
 }
 if ($master === '' || !is_file($master)) {
-    fwrite(STDERR, "Aufruf: php tools/importdatei.php \"<Master.xlsx>\" [--ausgabe=<Ordner>] [--eintritt=<CSV>]\n");
+    fwrite(STDERR, "Aufruf: php tools/importdatei.php \"<Master.xlsx>\" [--ausgabe=<Ordner>] [--eintritt=<CSV>] [--ohne=<Nr,Nr>]\n");
     exit(2);
 }
 $wp_root = getenv('WP_ROOT') ?: dirname(__DIR__) . '/.lokal/wordpress';
@@ -209,6 +211,8 @@ $people = []; // member number => ['mv' => row, 'nda' => record]
 $no_nda = [];
 $matched = [];
 $gone = [];
+$skip = array_filter(array_map('intval', explode(',', $options['ohne'] ?? '')));
+$left_out = [];
 foreach ($mv as $row) {
     $i = $by_email[$row['email']] ?? null;
     $rec = $i === null ? [] : $nda_records[$i];
@@ -225,6 +229,10 @@ foreach ($mv as $row) {
             nda_text($rec['gekundigtzum'] ?? '') !== '')
     ) {
         $gone[] = $row['number'];
+        continue;
+    }
+    if (in_array((int) $row['number'], $skip, true)) {
+        $left_out[] = $row['number'];
         continue;
     }
     $people[(int) $row['number']] = ['mv' => $row, 'nda' => $rec];
@@ -361,6 +369,7 @@ arsort($fields);
 
 $report[] = '1. Personen';
 $report[] = '   Mitglieder im MeinVerein-Blatt: ' . count($mv) . ', davon in die Datei übernommen: ' . count($people);
+$report[] = '   Auf Wunsch ausgelassen (--ohne): ' . ($left_out ? count($left_out) . ' (Nr. ' . implode(', ', $left_out) . ')' : 'keine');
 $report[] = '   Gekündigt oder verstorben (nicht übernommen): ' . ($gone ? count($gone) . ' (Nr. ' . implode(', ', $gone) . ')' : 'keine');
 $report[] = '   NDAlumni-Personen: ' . count($nda_records) . ', davon ohne MeinVerein-Eintrag (nicht übernommen): ' . (count($nda_records) - count($matched));
 $report[] = '   Mitglieder ohne NDAlumni-Profil: ' . count($no_nda) . ($no_nda ? ' (Nr. ' . implode(', ', $no_nda) . ')' : '');
