@@ -19,7 +19,7 @@ Stand: 07.10.2026. Diese Liste gilt für den Weg von `http://eintrikot.myemmel.c
 - [x] **B:** Blätter „Team-Zuordnung“ und „Stationen Staff“ ausgefüllt (erledigt 07.10.).
 - [ ] **B:** Die 18 Mitglieder ohne Geburtsdatum klären (Nummern stehen im Prüfbericht): Geburtsdatum nachfragen und in der Master ergänzen. Das Geburtsdatum ist Pflicht (Mitgliedsbeitrag ab 32). Diese 18 werden **wie alle anderen eingeladen**; das Portal fragt sie nach der ersten Anmeldung auf einer eigenen Seite nach dem Geburtsdatum (seit 0.21).
 - [ ] **B:** Master als Excel herunterladen (neueste Version).
-- [ ] **C:** Importdatei neu erzeugen: `WP_ROOT=.lokal/wordpress php tools/importdatei.php "<Master>.xlsx"` und den `Pruefbericht.txt` lesen. Erwartung: **201 Mitglieder, alle „Neu“, 0 Fehler**. Sind die Eintrittsdaten in der Master noch alt, dazu `--eintritt=<CSV>`.
+- [ ] **C:** Importdatei neu erzeugen: `WP_ROOT=.lokal/wordpress php tools/importdatei.php "<Master>.xlsx" --ohne=1` und den `Pruefbericht.txt` lesen. Mitglied Nr. 1 (Björn) bleibt draußen, weil sein Konto schon besteht und er die Angaben selbst nachträgt. Erwartung: **200 Mitglieder, alle „Neu“, 0 Fehler** (Bericht: „201 im MeinVerein-Blatt, davon 200 übernommen“). Sind die Eintrittsdaten in der Master noch alt, dazu `--eintritt=<CSV>`.
 - [ ] **B:** Stichprobe in Excel: 3 Mitglieder in `Portal-Import.xlsx` gegen die Master vergleichen (Nummer, Name, E-Mail, Eintritt, Geburtstag, Jahresspende).
 
 ### Technik und Inhalt
@@ -29,6 +29,7 @@ Stand: 07.10.2026. Diese Liste gilt für den Weg von `http://eintrikot.myemmel.c
 - [ ] **D:** Datenschutzerklärung und Impressum lesen (neu seit September: Geburtstag mit Wahl des Mitglieds, Anmeldung zu Terminen, Zustimmung der Eltern, Herkunft der Daten aus NDAlumni, Aufbewahrung 180 Tage für Anmeldungen).
 - [ ] **B:** Social-Media-Adressen unter Community-Aufbau → Social Media eintragen (sonst fehlt „Folge uns“ im Footer).
 - [ ] **B:** Kennzahl **Mitglieder** unter Community-Aufbau → Kennzahlen **leer lassen**: Das Portal zählt selbst die Konten im Verzeichnis. Nur wenn die Zahl bewusst abweichen soll (z. B. Austritte, die noch nicht im Portal stehen), einen Wert mit Stand-Datum eintragen.
+- [ ] **B:** Eigenes Konto (bjoern@eintrikot.de): Anzeigename genau „Björn Emmerling“, unter Verwaltung → Mitgliederprofile pflegen Mitgliedsnummer 1 und Eintrittsdatum aus MeinVerein eintragen, „im Verzeichnis anzeigen“ setzen, fehlende Angaben nachtragen. Kontrolle: Backend → Community-Aufbau → Menschen prüfen zeigt „Alles in Ordnung“.
 - [ ] **B:** Beiratstest beendet (`docs/10`): Testphase beendet und Testdaten gelöscht, Rückmeldungen ausgewertet, danach die Test-Rückmeldungen im Backend gelöscht, **bevor** die Datenbank für den Umzug kopiert wird.
 - [ ] **B:** **Technisches Administrator-Konto** anlegen (Benutzer → Neu hinzufügen, Rolle Administrator): Benutzername ohne Personenbezug, z. B. `eintrikot-admin`, Adresse `info@eintrikot.de`, langes Passwort aus dem Passwortmanager. Nur für Notfälle, Updates und Löschungen; im Alltag mit dem persönlichen Konto arbeiten. Danach prüfen, dass Anmeldung und Passwort-Zurücksetzen funktionieren, und festhalten, wer Zugriff auf das Passwort hat (Vorstand, Nachfolge).
 - [ ] **B:** Termin für den Umzug festlegen: ruhiger Tag, mit Zeit für Fehlersuche. Keine Mitglieder-Mail vorher.
@@ -64,16 +65,16 @@ Ablauf wie in `docs/06`. Hier die Prüfpunkte dazu.
 2. [ ] **B:** Als Administrator anmelden.
 3. [ ] **B:** Verwaltung → **Neue Mitglieder aufnehmen** → Datei **`Portal-Import.xlsx`** hochladen (liegt in `~/Downloads/Portal-Import/`).
 4. [ ] **B:** Vorschau prüfen. Erwartung:
-   - **201 Neu**, keine „Fehler“, keine „Schon im Portal“.
-   - Der Hinweis „Die Datei enthält auch das NDAlumni-Blatt: Profilangaben für **201** Personen“.
+   - **200 Neu**, keine „Fehler“, keine „Schon im Portal“.
+   - Der Hinweis „Die Datei enthält auch das NDAlumni-Blatt: Profilangaben für **200** Personen“.
    - Stichprobe: Nummer, Eintritt (Nr. 1–7: 23.09.2025), Geburtsdatum, Spende.
 5. [ ] **B:** Auswahl **„Bestandsmitglieder (Umstieg von NDAlumni): Konten anlegen, später nur den Portalzugang mit der Bitte schicken, das Profil zu prüfen (ohne Urkunde)“**. Nicht „Begrüßung … sofort senden“. Dann **„Ausgewählte übernehmen“**.
 6. [ ] **B/C:** Ergebnis prüfen:
-   - Schritt 3 „Einladungen“: **201 Konten**, alle „Noch nicht eingeladen“.
+   - Schritt 3 „Einladungen“: **200 Konten**, alle „Noch nicht eingeladen“.
    - Mitgliederverzeichnis zeigt die Mitglieder.
    - 5 Profile öffnen: Team, DHB-Vita mit plausiblen Jahren (nicht 1905), Länderspiele und Tore ohne „.0“, „Mehr dazu“ bei Mitgliedern mit mehreren Ausbildungen.
 7. [ ] **B:** Rollen vergeben: Vorstand und Redaktion bei den betreffenden Personen (Backend → Benutzer → Rolle, Anleitung in `docs/03`). Jede Änderung steht danach im Änderungsprotokoll. Dein eigenes Mitgliedskonto entsteht durch den Import (deine E-Mail steht in der Datei); das technische Administratorkonto bleibt getrennt.
-8. [ ] **B:** Kennzahl prüfen: Die Startseite zeigt nach dem Import automatisch **201 Mitglieder** (ohne eingetragenen Wert). Nicht mitgezählt werden das technische Administratorkonto, ausgeblendete Konten und Minderjährige ohne Zustimmung der Eltern.
+8. [ ] **B:** Kennzahl prüfen: Die Startseite zeigt nach dem Import automatisch **200 Mitglieder**, mit deinem eigenen Konto **201**, wenn es unter Verwaltung → Mitgliederprofile pflegen auf „im Verzeichnis anzeigen“ steht (Administratoren stehen sonst nicht im Verzeichnis). Nicht mitgezählt werden das technische Administratorkonto, ausgeblendete Konten und Minderjährige ohne Zustimmung der Eltern.
 9. [ ] **B:** Die **Importdatei und alle Master-Downloads aus dem Ordner „Downloads“ löschen** (sie enthalten Namen, E-Mail-Adressen und Geburtsdaten; die Master selbst enthält zusätzlich IBAN).
 
 **Wenn etwas nicht stimmt:** Nichts weiter anklicken, Datenbank-Sicherung von Schritt 1 zurückspielen, Ursache klären (C), Importdatei neu erzeugen, Schritt 3 wiederholen. Konten lassen sich so ohne Spuren zurücknehmen; eine verschickte Einladung nicht.
@@ -85,7 +86,7 @@ Ablauf wie in `docs/06`. Hier die Prüfpunkte dazu.
 1. [ ] **V:** Vorstand und Beirat vorab informieren: Was kommt, wann, von welcher Absenderadresse. Auf Wunsch zuerst nur diese einladen.
 2. [ ] **B:** **Probelauf mit 2 bis 3 Personen** (in der Liste unter „Einladungen“ bei der Zeile auf „Einladen“, z. B. bei dir selbst und zwei Vorständen). Prüfen: Mail kommt an und liegt nicht im Spam, der Link führt zum Passwort festlegen, danach „Bitte prüfe dein Profil“, Profil speichern, Aktuelles, Termine, Abmelden.
 3. [ ] **B:** **Erste Charge**: „25 Einladungen jetzt senden“. Ein bis zwei Tage beobachten: Rückläufer, Antworten, Fragen.
-4. [ ] **B:** Weitere Chargen mit jeweils 25 (bei 201 Mitgliedern sind das 9 Klicks), zum Beispiel 50 bis 75 pro Tag, damit Rückfragen bearbeitbar bleiben.
+4. [ ] **B:** Weitere Chargen mit jeweils 25 (bei 200 Mitgliedern sind das 8 Klicks), zum Beispiel 50 bis 75 pro Tag, damit Rückfragen bearbeitbar bleiben.
 5. [ ] **B:** Nach 14 Tagen laufen Links ab. Der Stand in der Liste heißt dann „Link abgelaufen“; die Zeile hat den Knopf „Erneut senden“.
 6. [ ] **B:** **Die 18 ohne Geburtsdatum** laufen mit den anderen. Nach der ersten Anmeldung sehen sie nur die Seite „Noch eine Angabe“ und können erst danach weiter. Wer sich nicht meldet, wird nachgefasst; im Notfall trägt die Verwaltung das Datum nach Rückmeldung ein (Profil bearbeiten, Grund angeben).
 7. [ ] **V:** Newsletter: im Portal gilt neues Opt-in. Das Mitglied entscheidet im Profil („EINTRIKOT-Newsletter erhalten“).
