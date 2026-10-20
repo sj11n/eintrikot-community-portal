@@ -557,6 +557,30 @@ check('Stories: zweiter Lauf ändert nichts', str_contains(update_news_to_storie
 wp_delete_post($st_page, true);
 wp_delete_post($st_nav, true);
 
+/* ---------- Menschen-Seite prüfen ---------- */
+
+$pp_page = wp_insert_post(['post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'Menschen Test', 'post_name' => PEOPLE_PAGE, 'post_content' => '<h3>Pia Prüfstein</h3><h3>Doppel Name</h3><h3>Nora Ohnebild</h3><h3>Unbekannt Niemand</h3>']);
+delete_transient('eintrikot_people_names');
+$pp_img = 'data:image/jpeg;base64,/9j/4AAQ';
+$pp_ok = wp_insert_user(['user_login' => 'zz_pia', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_pia@example.test', 'role' => 'eintrikot_member', 'display_name' => 'Pia Prüfstein']);
+update_user_meta($pp_ok, 'eintrikot_avatar', $pp_img);
+update_user_meta($pp_ok, 'eintrikot_profile', ['public_photo' => '1']);
+$pp_d1 = wp_insert_user(['user_login' => 'zz_dop1', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_d1@example.test', 'role' => 'eintrikot_member', 'display_name' => 'Doppel Name']);
+$pp_d2 = wp_insert_user(['user_login' => 'zz_dop2', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_d2@example.test', 'role' => 'administrator', 'display_name' => 'Doppel Name']);
+$pp_no = wp_insert_user(['user_login' => 'zz_nora', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_nora@example.test', 'role' => 'eintrikot_member', 'display_name' => 'Nora Ohnebild']);
+update_user_meta($pp_no, 'eintrikot_profile', ['public_photo' => '1']);
+$pp = array_column(people_diagnosis(), null, 'name');
+check('Menschen prüfen: alles in Ordnung', str_contains($pp['Pia Prüfstein']['reason'], 'Alles in Ordnung'));
+check('Menschen prüfen: doppelter Name erkannt', count($pp['Doppel Name']['accounts']) === 2 && str_contains($pp['Doppel Name']['reason'], 'Mehrere Konten'));
+check('Menschen prüfen: Bild fehlt', str_contains($pp['Nora Ohnebild']['reason'], 'kein Profilbild'));
+check('Menschen prüfen: kein Konto', str_contains($pp['Unbekannt Niemand']['reason'], 'Kein Konto'));
+wp_delete_post($pp_page, true);
+delete_transient('eintrikot_people_names');
+foreach ([$pp_ok, $pp_d1, $pp_d2, $pp_no] as $uid) {
+    require_once ABSPATH . 'wp-admin/includes/user.php';
+    wp_delete_user($uid);
+}
+
 /* ---------- Eingabehilfen ---------- */
 
 $_POST['k'] = ['kein', 'Text'];
