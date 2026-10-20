@@ -35,6 +35,12 @@ Nur Theme und Plugin werden eingespielt. Alles andere bleibt im Repository.
 - **Community-Aufbau:** Kennzahlen (mit Stand-Datum), Beitritt (MeinVerein-Link), Social Media (Adressen der Vereinskanäle: Footer „Folge uns“, LinkedIn-Hinweis unter den Stories-Listen, „sameAs“ für Suchmaschinen; leer = nicht sichtbar), Aufnahme & Urkunde, Aktualisierungen (u. a. „Interne Links domainunabhängig machen" vor dem Umzug, „Datenschutzerklärung aktualisieren").
 - **Datenschutz:** Der Text liegt als Vorlage `patterns/mvp-datenschutz.php`. Bei Änderungen an Diensten, Abläufen oder Speicherfristen muss er angepasst werden. Übernahme aus NDAlumni und Jahresspende sind in 5.2 und 5.9 beschrieben. Speicherfristen, die der Code umsetzt: Änderungsprotokoll und abgeschlossene Service-Anfragen 24 Monate (`retention.php`), Nachweis der Elternzustimmung bis drei Jahre nach dem 18. Geburtstag (`consent.php`). Beim Geburtsdatum protokolliert das Änderungsprotokoll nur „geändert". Die Newsletter-Einstellung ist standardmäßig aus (Einwilligung).
 
+## Mitgliederverzeichnis: Sortierung und Buchstaben (seit 0.26.0)
+
+- Standard ist die Sortierung nach **Nachname**, umschaltbar auf Vorname. Der Nachname kommt aus dem Profilfeld „Nachname“; fehlt er, zählt das letzte Wort des Namens.
+- Über der Liste steht eine **A–Z-Leiste**: ein Klick zeigt nur diesen Buchstaben, „Alle“ zeigt alles. Buchstaben ohne Mitglieder sind grau. Ä, Ö, Ü zählen zu A, O, U; alles andere steht unter „#“.
+- Suche, Filter und Sortierung bleiben beim Klick auf einen Buchstaben und beim Blättern erhalten. Innerhalb der Liste stehen Buchstaben-Überschriften.
+
 ## Mitgliederportal
 
 - Navigation: Start · Mitglieder · Vereinsinfos · Termine · Service. Profil, Redaktion und Verwaltung im Konto-Menü.
