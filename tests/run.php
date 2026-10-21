@@ -627,6 +627,48 @@ if ($ht_page) {
     wp_delete_post($ht_page, true);
 }
 
+/* ---------- Stories: Rubriken, Filter, Platzhalter, Layout-Umbau ---------- */
+
+check('Stories: fünf Rubriken in fester Reihenfolge', array_keys(story_categories()) === ['menschen', 'teams', 'treffen', 'verein', 'hockeywelt']);
+$sc_term = wp_insert_term('Treffen', 'category', ['slug' => 'treffen']);
+$sc_term_id = is_wp_error($sc_term) ? (int) get_term_by('slug', 'treffen', 'category')->term_id : (int) $sc_term['term_id'];
+$sc_post = wp_insert_post(['post_type' => 'post', 'post_status' => 'publish', 'post_title' => 'Rubrik-Test', 'post_content' => 'Text', 'post_category' => [$sc_term_id]]);
+$_GET['rubrik'] = 'treffen';
+$sc_html = do_shortcode('[eintrikot_stories_filter]');
+check('Stories-Filter: Rubrik mit Beitrag erscheint, aktive ist markiert', (bool) preg_match('/class="chip on" href="[^"]*rubrik=treffen"[^>]*aria-current="true">Treffen</', $sc_html));
+$_GET['rubrik'] = 'treffen';
+$sc_list = new \WP_Block(['blockName' => 'core/post-template', 'attrs' => ['className' => 'story-list']]);
+check('Stories-Liste: Rubrik aus der Adresse filtert', (apply_filters('query_loop_block_query_vars', [], $sc_list, 1)['category_name'] ?? '') === 'treffen');
+$_GET['rubrik'] = 'gibt-es-nicht';
+check('Stories-Liste: unbekannte Rubrik wird ignoriert', !isset(apply_filters('query_loop_block_query_vars', [], $sc_list, 1)['category_name']));
+unset($_GET['rubrik']);
+$sc_other = new \WP_Block(['blockName' => 'core/post-template', 'attrs' => ['className' => 'andere']]);
+$_GET['rubrik'] = 'treffen';
+check('Andere Listen (Startseite, Archiv) bleiben unberührt', !isset(apply_filters('query_loop_block_query_vars', [], $sc_other, 1)['category_name']));
+unset($_GET['rubrik']);
+$sc_more = new \WP_Block(['blockName' => 'core/post-template', 'attrs' => ['className' => 'story-more']]);
+check('Mehr Stories: schließt die offene Story aus', array_key_exists('post__not_in', apply_filters('query_loop_block_query_vars', [], $sc_more, 1)));
+$sc_img = new \WP_Block(['blockName' => 'core/post-featured-image'], ['postId' => $sc_post]);
+$sc_filled = apply_filters('render_block_core/post-featured-image', '', [], $sc_img);
+check('Stories: ohne Bild eine Markenfläche in der Rubrikfarbe', str_contains($sc_filled, 'et-story-noimg') && str_contains($sc_filled, 'tone-gold'));
+check('Stories: mit Bild bleibt das Bild', apply_filters('render_block_core/post-featured-image', '<figure>x</figure>', [], $sc_img) === '<figure>x</figure>');
+wp_delete_post($sc_post, true);
+
+$sl_old = '<!-- wp:group {"tagName":"section","className":"section page-intro"} --><section>Kopf</section><!-- /wp:group --><!-- wp:group {"tagName":"section","className":"section news-archive","layout":{"type":"default"}} --><section class="wp-block-group section news-archive"><!-- wp:query {"queryId":23} --><div>alte Liste</div><!-- /wp:query --></section><!-- /wp:group --><!-- wp:group {"className":"rest"} --><div>Hinweis</div><!-- /wp:group -->';
+$sl_page = get_page_by_path('community-news') ? 0 : wp_insert_post(['post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Stories', 'post_name' => 'community-news', 'post_content' => $sl_old]);
+if ($sl_page) {
+    $sl_msg = update_stories_layout();
+    $sl_new = get_post($sl_page)->post_content;
+    check('Stories-Layout: Liste ersetzt, Kopf und Hinweis bleiben', str_contains($sl_msg, 'Karten') && str_contains($sl_new, 'story-list') && str_contains($sl_new, 'eintrikot_stories_filter') && str_contains($sl_new, 'Kopf') && str_contains($sl_new, 'Hinweis') && !str_contains($sl_new, 'alte Liste'));
+    check('Stories-Layout: zweiter Lauf ändert nichts', str_contains(update_stories_layout(), 'Nichts zu ändern'));
+    wp_delete_post($sl_page, true);
+}
+foreach (['single', 'index', 'search'] as $tpl) {
+    $tpl_html = file_get_contents(get_theme_file_path('templates/' . $tpl . '.html'));
+    check("Vorlage $tpl: Karten mit Rubrik und Datum", str_contains($tpl_html, 'story-meta') && str_contains($tpl_html, 'post-terms'));
+}
+check('Vorlage single: Mehr Stories und Hinweis', str_contains(file_get_contents(get_theme_file_path('templates/single.html')), 'story-more') && str_contains(file_get_contents(get_theme_file_path('templates/single.html')), 'story-tip'));
+
 /* ---------- Eingabehilfen ---------- */
 
 $_POST['k'] = ['kein', 'Text'];

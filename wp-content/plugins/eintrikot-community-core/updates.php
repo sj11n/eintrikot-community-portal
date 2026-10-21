@@ -61,6 +61,12 @@ function content_updates() {
                 'Hängt unten an die Seite „Stories“ den Hinweis: „Du bist schneller als wir und hast von Neuigkeiten gehört? …“ mit der Adresse info@eintrikot.de. Er lässt sich danach im Editor ändern. Läuft nur einmal.',
             'run' => __NAMESPACE__ . '\\update_stories_hint'
         ],
+        '0.29-stories-layout' => [
+            'title' => 'Stories-Seite: Karten mit Bild, Rubriken-Filter',
+            'text' =>
+                'Ersetzt auf der Seite „Stories“ die Liste durch Karten mit Bild, Rubrik, Datum und Vorschau, dazu eine Rubriken-Leiste (ein Klick pro Rubrik). Kopfbereich und der Hinweis unten bleiben unverändert. Beiträge ohne Bild bekommen eine Markenfläche.',
+            'run' => __NAMESPACE__ . '\\update_stories_layout'
+        ],
         '0.7-vision' => [
             'title' => 'Schreibweise „EINTRIKOT" in der Vision 2030',
             'text' =>
@@ -213,6 +219,28 @@ function update_stories_hint() {
         true
     );
     return is_wp_error($result) ? $result : 'Hinweis unten auf der Seite „Stories“ eingefügt.';
+}
+
+/** Swaps the old plain list on the Stories page for the card layout with the category filter. */
+function update_stories_layout() {
+    $page = get_page_by_path('community-news');
+    if (!$page) {
+        return new \WP_Error('missing', 'Die Seite „Stories“ (community-news) wurde nicht gefunden.');
+    }
+    $content = $page->post_content;
+    if (str_contains($content, 'story-list')) {
+        return 'Nichts zu ändern – die Seite hat das neue Layout schon.';
+    }
+    $open = '<!-- wp:group {"tagName":"section","className":"section news-archive"';
+    $close = '</section><!-- /wp:group -->';
+    $start = strpos($content, $open);
+    $end = $start === false ? false : strpos($content, $close, $start);
+    if ($start === false || $end === false) {
+        return new \WP_Error('shape', 'Die Liste auf der Seite wurde im Editor umgebaut. Bitte dort prüfen.');
+    }
+    $new = substr($content, 0, $start) . stories_archive_markup() . substr($content, $end + strlen($close));
+    $result = wp_update_post(wp_slash(['ID' => $page->ID, 'post_content' => $new]), true);
+    return is_wp_error($result) ? $result : 'Stories-Seite hat jetzt Karten mit Rubriken-Filter.';
 }
 
 function update_vision_spelling() {

@@ -9,16 +9,19 @@
 <!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Stories.</h1><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Geschichten, Interviews und Beiträge von EINTRIKOT.</p><!-- /wp:paragraph -->
 </div></div><!-- /wp:cover -->
-<!-- wp:group {"tagName":"section","className":"section news-archive","layout":{"type":"default"}} --><section class="wp-block-group section news-archive"><!-- wp:query {"queryId":23,"query":{"perPage":9,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","author":"","search":"","exclude":[],"sticky":"","inherit":false},"className":"news-query"} --><div class="wp-block-query news-query"><!-- wp:post-template {"layout":{"type":"grid","columnCount":3}} --><!-- wp:post-featured-image {"isLink":true,"aspectRatio":"4/3"} /-->
-<!-- wp:post-date {"format":"d.m.Y"} /-->
+<!-- wp:group {"tagName":"section","className":"section news-archive","layout":{"type":"default"}} --><section class="wp-block-group section news-archive"><!-- wp:shortcode -->[eintrikot_stories_filter]<!-- /wp:shortcode -->
+<!-- wp:query {"queryId":23,"query":{"perPage":9,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","author":"","search":"","exclude":[],"sticky":"","inherit":false},"className":"news-query story-list"} --><div class="wp-block-query news-query story-list">
+<!-- wp:post-template {"className":"story-list","layout":{"type":"grid","columnCount":3}} -->
+<!-- wp:post-featured-image {"isLink":true,"aspectRatio":"16/10"} /-->
+<!-- wp:group {"className":"story-meta","layout":{"type":"flex","flexWrap":"wrap"}} --><div class="wp-block-group story-meta"><!-- wp:post-terms {"term":"category"} /--><!-- wp:post-date {"format":"d.m.Y"} /--></div><!-- /wp:group -->
 <!-- wp:post-title {"isLink":true,"level":3} /-->
-<!-- wp:post-excerpt {"moreText":"Beitrag lesen →"} /-->
+<!-- wp:post-excerpt {"moreText":"","excerptLength":22} /-->
 <!-- /wp:post-template -->
-<!-- wp:query-no-results --><!-- wp:paragraph --><p>Hier erscheinen die nächsten Geschichten, Interviews und Beiträge aus unserem Netzwerk.</p><!-- /wp:paragraph -->
+<!-- wp:query-no-results {"className":"story-list"} --><!-- wp:paragraph --><p>Hier erscheinen die nächsten Geschichten, Interviews und Beiträge aus unserem Netzwerk.</p><!-- /wp:paragraph -->
 <!-- /wp:query-no-results -->
-<!-- wp:query-pagination --><!-- wp:query-pagination-previous {"label":"← Neuere Beiträge"} /-->
-<!-- wp:query-pagination-numbers /-->
-<!-- wp:query-pagination-next {"label":"Ältere Beiträge →"} /-->
+<!-- wp:query-pagination --><!-- wp:query-pagination-previous {"label":"← Neuere Beiträge","className":"story-list"} /-->
+<!-- wp:query-pagination-numbers {"className":"story-list"} /-->
+<!-- wp:query-pagination-next {"label":"Ältere Beiträge →","className":"story-list"} /-->
 <!-- /wp:query-pagination -->
 </div><!-- /wp:query -->
 </section><!-- /wp:group -->
