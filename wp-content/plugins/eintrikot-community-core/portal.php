@@ -122,6 +122,7 @@ function post_text($key, $default = '', $max = 4000) {
 
 require_once __DIR__ . '/preview.php';
 require_once __DIR__ . '/testphase.php';
+require_once __DIR__ . '/stories.php';
 require_once __DIR__ . '/services.php';
 
 require_once __DIR__ . '/avatar.php';
