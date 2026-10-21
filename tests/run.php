@@ -259,6 +259,7 @@ check('Termine: Felder gelesen', ($by[$ev_open]['place'] ?? '') === 'Test-Ort' &
 check('Termine: Uhrzeit-Text', event_time_text($by[$ev_open]) === '18:30–21:00 Uhr');
 check('Termine: mehrtägig hat Ende', ($by[$ev_multi]['end'] ?? '') === day('+31 days'));
 check('Termine: Jahrestag hat keine Anmeldung', ($by[$ev_annual]['signup'] ?? true) === false && str_contains($by[$ev_annual]['title'] ?? '', '3. Jahrestag'));
+check('Termine: Jahrestag zeigt immer das Format Jahrestag, auch wenn Sonstiges gewählt war', ($by[$ev_annual]['format'] ?? '') === 'jahrestag' && event_formats()['jahrestag'] === 'Jahrestag');
 check('Termine: unbekanntes Format wird Sonstiges', (event_from_post(get_post(make_event('Test Format', ['et_date' => day('+9 days'), 'et_format' => 'quatsch'])))['format'] ?? '') === 'sonstiges');
 $sorted = array_column($items, 'date');
 $copy = $sorted; sort($copy);

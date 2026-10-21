@@ -25,6 +25,7 @@ function event_formats() {
         'versammlung' => 'Mitgliederversammlung',
         'netzwerk' => 'Netzwerkabend',
         'online' => 'Online',
+        'jahrestag' => 'Jahrestag',
         'sonstiges' => 'Sonstiges'
     ];
 }
@@ -195,7 +196,8 @@ add_action('save_post_et_calendar', function ($id) {
     update_post_meta($id, 'et_format', $format);
     $deadline = post_text('et_deadline', '', 10);
     update_post_meta($id, 'et_deadline', $deadline !== '' && $valid_date($deadline) ? $deadline : '');
-    $annual = isset($_POST['et_annual']); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- the nonce is verified above
+    // The format Jahrestag is a yearly event by itself.
+    $annual = isset($_POST['et_annual']) || $format === 'jahrestag'; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- the nonce is verified above
     update_post_meta($id, 'et_annual', $annual ? '1' : '0');
     // A yearly anniversary has no sign-up: the sign-ups belong to one date.
     update_post_meta($id, 'et_signup', isset($_POST['et_signup']) && !$annual ? '1' : '0'); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- the nonce is verified above
@@ -254,7 +256,8 @@ function event_from_post($post, $today = null) {
         'meetpoint' => $m('et_meetpoint'),
         'contact' => $m('et_contact'),
         'link' => $m('et_link'),
-        'format' => isset(event_formats()[$format]) ? $format : 'sonstiges',
+        // Yearly events always show as Jahrestag, whatever the format field says (older entries say Sonstiges).
+        'format' => $annual ? 'jahrestag' : (isset(event_formats()[$format]) ? $format : 'sonstiges'),
         'content' => $post->post_content,
         'cancelled' => $m('et_cancelled') === '1',
         'signup' => $m('et_signup') === '1' && !$annual,
