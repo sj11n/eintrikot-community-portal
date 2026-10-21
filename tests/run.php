@@ -629,21 +629,21 @@ if ($ht_page) {
 
 /* ---------- Stories: Rubriken, Filter, Platzhalter, Layout-Umbau ---------- */
 
-check('Stories: fünf Rubriken in fester Reihenfolge', array_keys(story_categories()) === ['verein-netzwerk', 'alumni-portraets', 'nationalteams-turniere', 'beirat', 'masters']);
-$sc_term = wp_insert_term('Beirat', 'category', ['slug' => 'beirat']);
-$sc_term_id = is_wp_error($sc_term) ? (int) get_term_by('slug', 'beirat', 'category')->term_id : (int) $sc_term['term_id'];
+check('Stories: fünf Rubriken in fester Reihenfolge', array_keys(story_categories()) === ['menschen', 'teams', 'treffen', 'verein', 'hockeywelt']);
+$sc_term = wp_insert_term('Treffen', 'category', ['slug' => 'treffen']);
+$sc_term_id = is_wp_error($sc_term) ? (int) get_term_by('slug', 'treffen', 'category')->term_id : (int) $sc_term['term_id'];
 $sc_post = wp_insert_post(['post_type' => 'post', 'post_status' => 'publish', 'post_title' => 'Rubrik-Test', 'post_content' => 'Text', 'post_category' => [$sc_term_id]]);
-$_GET['rubrik'] = 'beirat';
+$_GET['rubrik'] = 'treffen';
 $sc_html = do_shortcode('[eintrikot_stories_filter]');
-check('Stories-Filter: Rubrik mit Beitrag erscheint, aktive ist markiert', (bool) preg_match('/class="chip on" href="[^"]*rubrik=beirat"[^>]*aria-current="true">Beirat</', $sc_html));
-$_GET['rubrik'] = 'beirat';
+check('Stories-Filter: Rubrik mit Beitrag erscheint, aktive ist markiert', (bool) preg_match('/class="chip on" href="[^"]*rubrik=treffen"[^>]*aria-current="true">Treffen</', $sc_html));
+$_GET['rubrik'] = 'treffen';
 $sc_list = new \WP_Block(['blockName' => 'core/post-template', 'attrs' => ['className' => 'story-list']]);
-check('Stories-Liste: Rubrik aus der Adresse filtert', (apply_filters('query_loop_block_query_vars', [], $sc_list, 1)['category_name'] ?? '') === 'beirat');
+check('Stories-Liste: Rubrik aus der Adresse filtert', (apply_filters('query_loop_block_query_vars', [], $sc_list, 1)['category_name'] ?? '') === 'treffen');
 $_GET['rubrik'] = 'gibt-es-nicht';
 check('Stories-Liste: unbekannte Rubrik wird ignoriert', !isset(apply_filters('query_loop_block_query_vars', [], $sc_list, 1)['category_name']));
 unset($_GET['rubrik']);
 $sc_other = new \WP_Block(['blockName' => 'core/post-template', 'attrs' => ['className' => 'andere']]);
-$_GET['rubrik'] = 'beirat';
+$_GET['rubrik'] = 'treffen';
 check('Andere Listen (Startseite, Archiv) bleiben unberührt', !isset(apply_filters('query_loop_block_query_vars', [], $sc_other, 1)['category_name']));
 unset($_GET['rubrik']);
 $sc_more = new \WP_Block(['blockName' => 'core/post-template', 'attrs' => ['className' => 'story-more']]);

@@ -11,11 +11,11 @@ if (!defined('ABSPATH')) {
 /** The five story categories in display order: slug => [label, tone]. */
 function story_categories() {
     return [
-        'verein-netzwerk' => ['Verein und Netzwerk', 'blue'],
-        'alumni-portraets' => ['Alumni-Porträts', 'pink'],
-        'nationalteams-turniere' => ['Nationalteams und Turniere', 'green'],
-        'beirat' => ['Beirat', 'gold'],
-        'masters' => ['Masters', 'mix']
+        'menschen' => ['Menschen', 'pink'],
+        'teams' => ['Teams', 'green'],
+        'treffen' => ['Treffen', 'gold'],
+        'verein' => ['Verein', 'blue'],
+        'hockeywelt' => ['Hockeywelt', 'mix']
     ];
 }
 
