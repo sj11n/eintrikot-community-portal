@@ -14,7 +14,7 @@ Stand: 22.10.2026. Die 41 öffentlichen Beiträge aus 2025 und 2026 (Sicherung i
 WP_ROOT=.lokal/wordpress php tools/stories-bundle.php "/Users/…/News sammeln Eintrikot"
 ```
 
-Ergebnis in `~/Downloads/Stories-Import` (außerhalb des Repositorys): `stories-1.zip`, `stories-2.zip` (je höchstens 25 MB Bilder, mit `--max-mb=10` kleiner, falls der Server weniger Upload erlaubt) und `Pruefbericht.txt`.
+Ergebnis in `~/Downloads/Stories-Import` (außerhalb des Repositorys): `stories-1.zip` bis `stories-6.zip` mit je höchstens 5 MB Bildern und `Pruefbericht.txt`. Die Pakete sind bewusst klein: Der STRATO-Server lehnt größere Anfragen mit „Request Entity Too Large“ ab, obwohl die Mediathek 128 MB erlaubt (sie schickt große Dateien in Stücken). Mit `--max-mb=3` werden sie noch kleiner.
 
 Was aufgeräumt wird:
 
@@ -22,7 +22,7 @@ Was aufgeräumt wird:
 - **Adressen** ohne Reste wie `und-ndash`; Umlaute als `ae`, `oe`, `ue`.
 - **Rubrik** aus dem Titel: Menschen („Was macht eigentlich…“, „Wer ist eigentlich…“, Beirat, Interviews, Danke), Treffen (Meetup, Bridge, Netzwerk-Coach), Teams (Turniere, U21, Pro League, Jugend-DM), Hockeywelt (Bundesliga, Podcast, Hockeyjahr, „OLY“), sonst Verein. Die Zuordnung steht im Prüfbericht.
 - **Text** als Blöcke (Absatz, Überschrift, Liste, Bild, Knopf); Links nur mit sicheren Adressen; Serienbrief-Anrede „Hallo {usersFirstname}“ entfernt.
-- **Bilder** auf höchstens 2000 Pixel; Alternativtext aus dem Titel; das erste Bild wird Titelbild (und nicht doppelt im Text gezeigt).
+- **Bilder** auf höchstens 2000 Pixel, PNG ohne Transparenz als JPEG (deutlich kleiner); Alternativtext aus dem Titel; das erste Bild wird Titelbild (und nicht doppelt im Text gezeigt).
 - **Vorschau** (Auszug) aus den ersten Wörtern.
 
 Der Prüfbericht nennt außerdem alle Links auf `eintrikot.de`. Sie zeigen heute auf die alte NDAlumni-Seite und müssen nach dem Umzug geprüft werden (derzeit 4).
@@ -30,10 +30,10 @@ Der Prüfbericht nennt außerdem alle Links auf `eintrikot.de`. Sie zeigen heute
 ## 2. Importieren
 
 1. **Vorher:** Datenbanksicherung im STRATO-Kundenbereich.
-2. Backend → Community-Aufbau → **Stories importieren** → `stories-1.zip` wählen → „Paket prüfen“.
+2. Backend → Community-Aufbau → **Stories importieren** → `stories-1.zip` wählen → „Paket prüfen“. Meldet der Server „Request Entity Too Large“, ist das Paket für ihn zu groß: Pakete mit kleinerem `--max-mb` neu erzeugen.
 3. **Probelauf:** Tabelle mit Datum, Rubrik, Titel, Bildern und Status (neu oder schon vorhanden). Es wird nichts angelegt.
 4. „Als Entwürfe importieren“. Das läuft in Etappen von vier Beiträgen und geht von selbst weiter.
-5. Danach `stories-2.zip` genauso. Schon importierte Beiträge werden an der alten Adresse erkannt und übersprungen, ein zweiter Lauf legt nichts doppelt an.
+5. Danach `stories-2.zip` bis `stories-6.zip` genauso, eines nach dem anderen. Schon importierte Beiträge werden an der alten Adresse erkannt und übersprungen, ein zweiter Lauf legt nichts doppelt an.
 
 Was die Funktion sicherstellt: nur Administratoren, Sicherheitsprüfung bei jedem Schritt; im Paket sind nur `stories.json` und JPEG/PNG-Bilder erlaubt (keine Pfade mit `..`, keine Skripte, Größen begrenzt); der entpackte Ordner ist für Besucher gesperrt und wird nach dem Import gelöscht; Text wird durch den WordPress-Filter für Beiträge geleitet; Adressen eigener Bilder bleiben relativ.
 
