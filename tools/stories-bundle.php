@@ -2,7 +2,7 @@
 /**
  * Bereitet die alten NDAlumni-Beiträge für den Stories-Import vor.
  *
- *   WP_ROOT=.lokal/wordpress php tools/stories-bundle.php "<Ordner News sammeln Eintrikot>" [--ausgabe=<Ordner>] [--max-mb=25]
+ *   WP_ROOT=.lokal/wordpress php tools/stories-bundle.php "<Ordner News sammeln Eintrikot>" [--ausgabe=<Ordner>] [--max-mb=5]
  *
  * Liest <Ordner>/wordpress-import/bundle/posts.json samt Bildern und schreibt in den Ausgabeordner (Standard:
  * ~/Downloads/Stories-Import, nie im Repository):
@@ -29,7 +29,7 @@ foreach (array_slice($argv, 1) as $arg) {
 }
 $bundle_dir = $source . '/wordpress-import/bundle';
 if ($source === '' || !is_file($bundle_dir . '/posts.json')) {
-    fwrite(STDERR, "Aufruf: php tools/stories-bundle.php \"<Ordner News sammeln Eintrikot>\" [--ausgabe=<Ordner>] [--max-mb=25]\n");
+    fwrite(STDERR, "Aufruf: php tools/stories-bundle.php \"<Ordner News sammeln Eintrikot>\" [--ausgabe=<Ordner>] [--max-mb=5]\n");
     exit(2);
 }
 $wp_root = getenv('WP_ROOT') ?: dirname(__DIR__) . '/.lokal/wordpress';
@@ -42,35 +42,41 @@ require $wp_root . '/wp-load.php';
 require_once __DIR__ . '/stories-lib.php';
 
 $out_dir = $options['ausgabe'] ?? getenv('HOME') . '/Downloads/Stories-Import';
-$max_bytes = (int) ($options['max-mb'] ?? 25) * 1024 * 1024;
+$max_bytes = (int) ($options['max-mb'] ?? 5) * 1024 * 1024;
 if (!is_dir($out_dir) && !mkdir($out_dir, 0700, true)) {
     fwrite(STDERR, "Ausgabeordner nicht anlegbar: $out_dir\n");
     exit(1);
 }
 
-/** Picture file for the package: at most 2000 px on the long side; smaller files are used as they are. */
+/**
+ * Picture file for the package: at most 2000 px on the long side. PNG files without transparency become JPEG
+ * (much smaller); everything else keeps its format. Returns [bytes, problem, converted to JPEG].
+ */
 function stories_prepare_image($file) {
     $info = @getimagesize($file);
     if (!$info || !in_array($info[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG], true)) {
-        return [null, 'kein JPEG/PNG'];
+        return [null, 'kein JPEG/PNG', false];
     }
     [$w, $h, $type] = $info;
-    if (max($w, $h) <= 2000) {
-        return [file_get_contents($file), ''];
+    // PNG colour type 2 = RGB, 0 = grey: no alpha channel, so JPEG loses nothing visible.
+    $opaque_png = $type === IMAGETYPE_PNG && in_array(ord((string) file_get_contents($file, false, null, 25, 1)), [0, 2], true);
+    $to_jpeg = $opaque_png && filesize($file) > 300000;
+    if (max($w, $h) <= 2000 && !$to_jpeg) {
+        return [file_get_contents($file), '', false];
     }
-    $scale = 2000 / max($w, $h);
+    $scale = min(1, 2000 / max($w, $h));
     $nw = (int) round($w * $scale);
     $nh = (int) round($h * $scale);
     $src = $type === IMAGETYPE_PNG ? imagecreatefrompng($file) : imagecreatefromjpeg($file);
     $dst = imagecreatetruecolor($nw, $nh);
-    if ($type === IMAGETYPE_PNG) {
+    if ($type === IMAGETYPE_PNG && !$to_jpeg) {
         imagealphablending($dst, false);
         imagesavealpha($dst, true);
     }
     imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
     ob_start();
-    $type === IMAGETYPE_PNG ? imagepng($dst, null, 7) : imagejpeg($dst, null, 85);
-    return [ob_get_clean(), ''];
+    $type === IMAGETYPE_PNG && !$to_jpeg ? imagepng($dst, null, 7) : imagejpeg($dst, null, 85);
+    return [ob_get_clean(), '', $to_jpeg];
 }
 
 $data = json_decode((string) file_get_contents($bundle_dir . '/posts.json'), true);
@@ -87,6 +93,7 @@ foreach ($posts as $post) {
     $rubric = stories_rubric($title);
     [$content, $paths, $warnings] = stories_html_to_blocks($post['content_html'], $title);
     $files = [];
+    $renamed = [];
     foreach (array_values(array_unique($paths)) as $path) {
         $file = $bundle_dir . '/' . ltrim($path, '/');
         if (!is_file($file)) {
@@ -94,15 +101,21 @@ foreach ($posts as $post) {
             $content = str_replace(['{{id:' . $path . '}}', '{{url:' . $path . '}}'], ['0', ''], $content);
             continue;
         }
-        [$bytes, $problem] = stories_prepare_image($file);
+        [$bytes, $problem, $to_jpeg] = stories_prepare_image($file);
         if ($bytes === null) {
             $warnings[] = "Bild nicht brauchbar ($problem): $path";
             continue;
         }
-        $files[$path] = $bytes;
+        $final = $to_jpeg ? preg_replace('/\.png$/i', '.jpg', $path) : $path;
+        if ($final !== $path) {
+            $content = str_replace($path, $final, $content);
+            $renamed[$path] = $final;
+        }
+        $files[$final] = $bytes;
     }
     $content = preg_replace('#<!-- wp:image \{"id":0[^}]*\} -->.*?<!-- /wp:image -->\s*#s', '', $content);
-    $featured = $post['featured_image'] && isset($files[$post['featured_image']]) ? $post['featured_image'] : (array_key_first($files) ?: '');
+    $wanted = $renamed[$post['featured_image']] ?? $post['featured_image'];
+    $featured = $wanted && isset($files[$wanted]) ? $wanted : (array_key_first($files) ?: '');
     // The title picture is shown at the top of the story; when the text starts with it, drop that copy.
     if ($featured !== '') {
         $lead = '{{id:' . $featured . '}}';
