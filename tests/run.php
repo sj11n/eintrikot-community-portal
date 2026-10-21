@@ -669,6 +669,68 @@ foreach (['single', 'index', 'search'] as $tpl) {
 }
 check('Vorlage single: Mehr Stories und Hinweis', str_contains(file_get_contents(get_theme_file_path('templates/single.html')), 'story-more') && str_contains(file_get_contents(get_theme_file_path('templates/single.html')), 'story-tip'));
 
+/* ---------- Stories-Import: Aufbereitung, Paket, Import, Zurücknehmen ---------- */
+
+require_once dirname(__DIR__) . '/tools/stories-lib.php';
+require_once ABSPATH . 'wp-admin/includes/file.php';
+check('Titel: Reihenfolge-Präfix und doppelte Leerzeichen', stories_clean_title('(M)EinTrikot – Was macht eigentlich…  Heike Wedekind?') === 'Was macht eigentlich… Heike Wedekind?');
+check('Titel: Punkte, Leerzeichen nach dem Auslassungszeichen', stories_clean_title('Was macht eigentlich...Lisa Altenburg?') === 'Was macht eigentlich… Lisa Altenburg?');
+check('Titel: Apostroph, Anführungszeichen, kaufmännisches Und, Newsletter', stories_clean_title('Axel ´ s Favourites') === 'Axel’s Favourites' && stories_clean_title('"Unser Spiel." Meetup') === '„Unser Spiel.“ Meetup' && stories_clean_title('Podium& hier vorab') === 'Podium – hier vorab' && stories_clean_title('News - Juli 2026') === 'Newsletter Juli 2026');
+$st_used = [];
+check('Adresse: Umlaute, Länge, eindeutig', stories_slug('Müde Beine waren gestern… U21 happy!', $st_used) === 'muede-beine-waren-gestern-u21-happy' && stories_slug('Müde Beine waren gestern… U21 happy!', $st_used) === 'muede-beine-waren-gestern-u21-happy-2' && strlen(stories_slug(str_repeat('Langer Titel ', 20), $st_used)) <= 70);
+check('Rubriken: Menschen, Teams, Treffen, Hockeywelt, Verein', [stories_rubric('Was macht eigentlich… X?'), stories_rubric('Der Alumni Beirat. Teil 4'), stories_rubric('Hallen-Europameisterschaften der Damen 2026'), stories_rubric('Einladung zum Bridge-Turnier'), stories_rubric('Ausgewählte Bundesliga-Spiele live'), stories_rubric('Besondere Ehrungen für Alumni')] === ['menschen', 'menschen', 'teams', 'treffen', 'hockeywelt', 'verein']);
+[$st_blocks, $st_images, $st_warn] = stories_html_to_blocks('<p><img src="media/a/x.png" data-eintrikot-media="media/a/x.png" class="align_center">Text <strong>fett</strong><br> neu <a href="https://x.de/a">Link</a></p><h3>Zwischentitel</h3><ul><li>Eins</li></ul><p><a class="btn btn-inverse" href="https://y.de">Knopf</a></p><p>Hallo {usersFirstname},<br> liebe Familie,</p><p><a href="javascript:alert(1)">böse</a> <span onclick="x()">Text</span></p>', 'Alt');
+check('Blöcke: Bild zuerst mit Platzhaltern und Alternativtext', $st_images === ['media/a/x.png'] && str_starts_with($st_blocks, '<!-- wp:image {"id":{{id:media/a/x.png}}') && str_contains($st_blocks, 'alt="Alt"') && !str_contains($st_blocks, 'align_center') && !str_contains($st_blocks, 'data-eintrikot'));
+check('Blöcke: Absatz, Fett, Zeilenumbruch, externer Link', str_contains($st_blocks, '<p>Text <strong>fett</strong><br>neu <a href="https://x.de/a" rel="noopener noreferrer">Link</a></p>'));
+check('Blöcke: Überschrift, Liste, Knopf', str_contains($st_blocks, '"level":3') && str_contains($st_blocks, '<!-- wp:list-item -->') && str_contains($st_blocks, 'wp:buttons') && str_contains($st_blocks, 'wp-block-button__link'));
+check('Blöcke: Serienbrief-Anrede weg, gefährlicher Link und Handler weg', !str_contains($st_blocks, 'usersFirstname') && str_contains($st_blocks, '<p>Liebe Familie,</p>') && !str_contains($st_blocks, 'javascript:') && !str_contains($st_blocks, 'onclick') && in_array('Serienbrief-Anrede entfernt', $st_warn, true));
+
+$im_admin = make_user('administrator');
+wp_set_current_user($im_admin);
+$im_png = imagecreatetruecolor(40, 30);
+ob_start();
+imagepng($im_png);
+$im_bytes = ob_get_clean();
+$im_zip_file = \wp_tempnam('stories-test') . '.zip';
+$im_zip = new \ZipArchive();
+$im_zip->open($im_zip_file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+$im_content = stories_image_block('media/test/bild.png', 'Bildtext') . "\n\n<!-- wp:paragraph -->\n<p>Hallo Welt</p>\n<!-- /wp:paragraph -->";
+$im_zip->addFromString('stories.json', wp_json_encode(['schema' => 1, 'posts' => [['title' => 'Importtest Story', 'slug' => 'importtest-story', 'date' => '2025-05-02 10:00:00', 'rubric' => 'menschen', 'content' => $im_content, 'excerpt' => 'Vorschau', 'source_url' => 'https://example.test/alt/importtest', 'featured' => 'media/test/bild.png', 'images' => [['path' => 'media/test/bild.png', 'alt' => 'Bildtext']]]]]));
+$im_zip->addFromString('media/test/bild.png', $im_bytes);
+$im_zip->close();
+[$im_state, $im_err] = stories_import_stage($im_zip_file);
+check('Import: Paket wird angenommen und geprüft', is_array($im_state) && $im_err === '' && $im_state['count'] === 1);
+$im_posts = stories_import_posts($im_state);
+check('Import: Probelauf legt nichts an', !stories_import_existing('https://example.test/alt/importtest') && count($im_posts) === 1);
+check('Import: Story wird angelegt', stories_import_one($im_state, $im_posts[0]) === 'created');
+$im_id = stories_import_existing('https://example.test/alt/importtest');
+$im_post = get_post($im_id);
+check('Import: Entwurf mit Datum, Adresse, Vorschau, Rubrik', $im_post->post_status === 'draft' && substr($im_post->post_date, 0, 10) === '2025-05-02' && $im_post->post_name === 'importtest-story' && $im_post->post_excerpt === 'Vorschau' && has_term('menschen', 'category', $im_post));
+check('Import: Bild in Mediathek, Titelbild gesetzt, Platzhalter ersetzt', (int) get_post_thumbnail_id($im_id) > 0 && !str_contains($im_post->post_content, '{{') && str_contains($im_post->post_content, 'wp-image-' . get_post_thumbnail_id($im_id)) && get_post_meta(get_post_thumbnail_id($im_id), '_wp_attachment_image_alt', true) === 'Bildtext');
+check('Import: Bildadresse im Text ist relativ (Umzug auf andere Domain)', (bool) preg_match('#<img src="/[^"]*uploads/#', $im_post->post_content));
+check('Import: zweiter Lauf legt nichts doppelt an', stories_import_one($im_state, $im_posts[0]) === 'skipped');
+stories_import_remove_dir(stories_import_base_dir() . '/' . $im_state['token']);
+check('Import: temporärer Ordner wird gelöscht', !is_dir(stories_import_base_dir() . '/' . $im_state['token']));
+[$im_removed, $im_pics] = stories_import_rollback();
+check('Zurücknehmen: Story und Bild sind weg', $im_removed >= 1 && $im_pics >= 1 && !stories_import_existing('https://example.test/alt/importtest') && get_post($im_id) === null);
+$im_bad = \wp_tempnam('stories-bad') . '.zip';
+$im_bad_zip = new \ZipArchive();
+$im_bad_zip->open($im_bad, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+$im_bad_zip->addFromString('stories.json', '{}');
+$im_bad_zip->addFromString('media/test/../../evil.php', '<?php echo 1;');
+$im_bad_zip->close();
+check('Import: Paket mit unerlaubter Datei wird abgelehnt', stories_import_stage($im_bad)[0] === null);
+$im_bad2 = \wp_tempnam('stories-bad2') . '.zip';
+$im_bad_zip = new \ZipArchive();
+$im_bad_zip->open($im_bad2, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+$im_bad_zip->addFromString('stories.json', wp_json_encode(['schema' => 1, 'posts' => [['title' => 'x', 'slug' => 'x', 'date' => '2025-05-02 10:00:00', 'rubric' => 'gibt-es-nicht', 'content' => 'x', 'source_url' => 'https://example.test/x']]]));
+$im_bad_zip->close();
+check('Import: unbekannte Rubrik wird abgelehnt', stories_import_stage($im_bad2)[0] === null);
+foreach ([$im_zip_file, $im_bad, $im_bad2] as $im_f) {
+    wp_delete_file($im_f);
+}
+wp_set_current_user(0);
+
 /* ---------- Eingabehilfen ---------- */
 
 $_POST['k'] = ['kein', 'Text'];
