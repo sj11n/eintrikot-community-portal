@@ -22,3 +22,4 @@
 <!-- /wp:query-pagination -->
 </div><!-- /wp:query -->
 </section><!-- /wp:group -->
+<!-- wp:group {"tagName":"section","className":"section story-tip","layout":{"type":"default"}} --><section class="wp-block-group section story-tip"><!-- wp:paragraph --><p>Du bist schneller als wir und hast von Neuigkeiten gehört? Oder du weißt, dass eines unserer Mitglieder etwas Tolles geleistet hat? Dann berichte uns doch davon!</p><!-- /wp:paragraph --><!-- wp:paragraph --><p><a class="text-link" href="mailto:info@eintrikot.de">info@eintrikot.de ↗</a></p><!-- /wp:paragraph --></section><!-- /wp:group -->

@@ -614,6 +614,19 @@ if ($st_new) {
     wp_delete_post($st_new, true);
 }
 
+/* ---------- Stories: Hinweis unten ---------- */
+
+ob_start();
+include WP_PLUGIN_DIR . '/../themes/eintrikot-community/patterns/mvp-news.php';
+$ht_pattern = ob_get_clean();
+check('Stories-Hinweis: Muster endet mit dem Hinweis', str_contains($ht_pattern, 'story-tip') && str_contains($ht_pattern, 'mailto:info@eintrikot.de'));
+$ht_page = get_page_by_path('community-news') ? 0 : wp_insert_post(['post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Stories', 'post_name' => 'community-news', 'post_content' => '<!-- wp:paragraph --><p>Liste</p><!-- /wp:paragraph -->']);
+if ($ht_page) {
+    check('Stories-Hinweis: wird unten angehängt', str_contains(update_stories_hint(), 'eingefügt') && str_ends_with(trim(get_post($ht_page)->post_content), '<!-- /wp:group -->') && str_contains(get_post($ht_page)->post_content, 'berichte uns doch davon'));
+    check('Stories-Hinweis: zweiter Lauf ändert nichts', str_contains(update_stories_hint(), 'Nichts zu ändern') && substr_count(get_post($ht_page)->post_content, 'story-tip') === 2);
+    wp_delete_post($ht_page, true);
+}
+
 /* ---------- Eingabehilfen ---------- */
 
 $_POST['k'] = ['kein', 'Text'];

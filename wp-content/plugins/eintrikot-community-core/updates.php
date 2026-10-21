@@ -55,6 +55,12 @@ function content_updates() {
                 'Macht den Kopfbereich der Seite „Stories“ zu einem Cover-Block wie auf den anderen Seiten (Verein, Engagement, Unterstützen, Menschen). Dann lässt sich dort im Editor ein Bild einsetzen. Texte und Überschrift bleiben unverändert.',
             'run' => __NAMESPACE__ . '\\update_stories_hero'
         ],
+        '0.28-stories-hinweis' => [
+            'title' => 'Hinweis „Story melden“ unten auf der Seite Stories',
+            'text' =>
+                'Hängt unten an die Seite „Stories“ den Hinweis: „Du bist schneller als wir und hast von Neuigkeiten gehört? …“ mit der Adresse info@eintrikot.de. Er lässt sich danach im Editor ändern. Läuft nur einmal.',
+            'run' => __NAMESPACE__ . '\\update_stories_hint'
+        ],
         '0.7-vision' => [
             'title' => 'Schreibweise „EINTRIKOT" in der Vision 2030',
             'text' =>
@@ -189,6 +195,24 @@ function update_stories_hero() {
         true
     );
     return is_wp_error($result) ? $result : 'Kopfbereich der Seite „Stories“ ist jetzt ein Cover-Block.';
+}
+
+/** The "tell us a story" box at the end of the stories page. */
+function update_stories_hint() {
+    $page = get_page_by_path('community-news');
+    if (!$page) {
+        return new \WP_Error('missing', 'Die Seite „Stories“ (community-news) wurde nicht gefunden.');
+    }
+    if (str_contains($page->post_content, 'story-tip')) {
+        return 'Nichts zu ändern – der Hinweis steht schon auf der Seite.';
+    }
+    $tip =
+        '<!-- wp:group {"tagName":"section","className":"section story-tip","layout":{"type":"default"}} --><section class="wp-block-group section story-tip"><!-- wp:paragraph --><p>Du bist schneller als wir und hast von Neuigkeiten gehört? Oder du weißt, dass eines unserer Mitglieder etwas Tolles geleistet hat? Dann berichte uns doch davon!</p><!-- /wp:paragraph --><!-- wp:paragraph --><p><a class="text-link" href="mailto:info@eintrikot.de">info@eintrikot.de ↗</a></p><!-- /wp:paragraph --></section><!-- /wp:group -->';
+    $result = wp_update_post(
+        wp_slash(['ID' => $page->ID, 'post_content' => rtrim($page->post_content) . "\n" . $tip]),
+        true
+    );
+    return is_wp_error($result) ? $result : 'Hinweis unten auf der Seite „Stories“ eingefügt.';
 }
 
 function update_vision_spelling() {
