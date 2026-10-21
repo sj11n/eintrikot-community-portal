@@ -96,11 +96,42 @@ add_filter(
         if (!$id) {
             return $html;
         }
-        return '<figure class="wp-block-post-featured-image et-story-noimg tone-' .
+        $banner = str_contains((string) ($parsed['attrs']['className'] ?? ''), 'story-banner')
+            ? ' story-banner is-wide'
+            : '';
+        return '<figure class="wp-block-post-featured-image et-story-noimg' .
+            $banner .
+            ' tone-' .
             esc_attr(story_tone($id)) .
             '" aria-hidden="true"></figure>';
     },
     10,
+    3
+);
+
+/**
+ * Title picture on the story page: a banner across the page only for large, wide pictures; small, square or
+ * upright ones sit in the text column below the title, where they stay sharp.
+ */
+add_filter(
+    'render_block_core/post-featured-image',
+    function ($html, $parsed, $block) {
+        if (
+            $html === '' ||
+            is_admin() ||
+            !str_contains((string) ($parsed['attrs']['className'] ?? ''), 'story-banner')
+        ) {
+            return $html;
+        }
+        $meta = wp_get_attachment_metadata(
+            (int) get_post_thumbnail_id((int) ($block->context['postId'] ?? 0))
+        );
+        $w = (int) ($meta['width'] ?? 0);
+        $h = (int) ($meta['height'] ?? 0);
+        $wide = $w >= 1400 && $h > 0 && $w / $h >= 1.5;
+        return preg_replace('/class="/', 'class="' . ($wide ? 'is-wide ' : 'is-column '), $html, 1);
+    },
+    5,
     3
 );
 

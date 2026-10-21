@@ -16,6 +16,7 @@
 | [08 Aktuelles, Termine, Anmeldung](docs/08-aktuelles-termine.md) | Bereich Aktuelles, Termine anlegen, Anmeldung und Teilnehmerliste |
 | [09 Umzugs- und Importtag](docs/09-umzugs-und-importtag.md) | Checkliste: Umzug auf eintrikot.de, Import der Mitglieder, Einladungen |
 | [10 Beiratstest](docs/10-beiratstest.md) | Testphase auf der Entwicklungsseite: Testdaten, Rückmeldungen, Leitfaden, Mail, Rückweg |
+| [11 Stories importieren](docs/11-stories-import.md) | Alte NDAlumni-Beiträge als Stories übernehmen: vorbereiten, importieren, veröffentlichen, zurücknehmen |
 
 ## Ablauf einer Änderung
 
