@@ -8,7 +8,7 @@ Unter Servicebereich → Redaktion → „Termine pflegen“ (WordPress-Backend,
 
 | Feld | Zweck |
 |---|---|
-| Format | Treffen, EINTRIKOT unterwegs, Mitgliederversammlung, Netzwerkabend, Online, Sonstiges |
+| Format | Treffen, EINTRIKOT unterwegs, Mitgliederversammlung, Netzwerkabend, Online, Jahrestag, Sonstiges |
 | Datum / Bis Datum | Beginn, bei mehreren Tagen auch Ende |
 | Beginn / Ende (Uhrzeit) | optional |
 | Ort | z. B. „Hockeypark Mönchengladbach“ |
@@ -17,7 +17,7 @@ Unter Servicebereich → Redaktion → „Termine pflegen“ (WordPress-Backend,
 | Mehr Informationen | optionaler https-Link |
 | Anmeldung | „Mitglieder können sich im Portal anmelden“, optional mit Anmeldeschluss |
 | Abgesagt | der Termin bleibt sichtbar, die Anmeldung ist geschlossen |
-| Jährlich wiederholen | für Jahrestage; ohne Anmeldung |
+| Jährlich wiederholen | für Jahrestage; ohne Anmeldung. Wer das Format „Jahrestag“ wählt, braucht den Haken nicht; Jahrestage zeigen immer „Jahrestag“ als Format |
 
 Die Beschreibung steht im großen Textfeld. Veröffentlichte Termine sind für Mitglieder bis ein Jahr im Voraus sichtbar; Entwürfe und vergangene Termine nicht. Mehrtägige Termine bleiben bis zum letzten Tag sichtbar. Die Termine gehören nicht zu einer festen Reihe: „EINTRIKOT unterwegs“ ist nur eines von mehreren Formaten.
 
