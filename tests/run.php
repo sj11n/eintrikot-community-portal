@@ -732,6 +732,54 @@ foreach ([$im_zip_file, $im_bad, $im_bad2] as $im_f) {
 }
 wp_set_current_user(0);
 
+/* ---------- Stories: Kopfbild getrennt vom Beitragsbild ---------- */
+
+$kb_admin = make_user('administrator');
+wp_set_current_user($kb_admin);
+$kb_post = wp_insert_post(['post_type' => 'post', 'post_status' => 'publish', 'post_title' => 'Kopfbild-Test', 'post_content' => 'Text']);
+function kb_attachment($w, $h) {
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+    $im = imagecreatetruecolor($w, $h);
+    $dir = wp_upload_dir();
+    $file = $dir['path'] . '/kopfbild-' . $w . 'x' . $h . '.png';
+    imagepng($im, $file);
+    $id = wp_insert_attachment(['post_mime_type' => 'image/png', 'post_title' => 'kb', 'post_status' => 'inherit'], $file);
+    wp_update_attachment_metadata($id, wp_generate_attachment_metadata($id, $file));
+    return $id;
+}
+$kb_wide = kb_attachment(2400, 900);
+$kb_small = kb_attachment(800, 600);
+$kb_block = new \WP_Block(['blockName' => 'core/post-featured-image'], ['postId' => $kb_post]);
+$kb_head = ['attrs' => ['className' => 'story-banner']];
+$kb_card = ['attrs' => []];
+$kb_run = fn($html, $parsed) => apply_filters('render_block_core/post-featured-image', $html, $parsed, $kb_block);
+check('Kopfbild: ohne Bild die Markenfläche als Band', str_contains($kb_run('', $kb_head), 'et-story-noimg story-banner is-wide'));
+update_post_meta($kb_post, '_et_head_image', $kb_wide);
+$kb_out = $kb_run('<figure class="wp-block-post-featured-image story-banner"><img src="x"></figure>', $kb_head);
+check('Kopfbild: eigenes breites Bild ersetzt das Beitragsbild und wird Banner', str_contains($kb_out, '<img') && !str_contains($kb_out, 'src="x"') && str_contains($kb_out, 'is-wide') && str_contains($kb_out, 'kopfbild-2400x900'));
+update_post_meta($kb_post, '_et_head_image', $kb_small);
+check('Kopfbild: kleines Bild steht in der Textspalte', str_contains($kb_run('', $kb_head), 'is-column'));
+check('Kopfbild: die Kachel bleibt beim Beitragsbild', $kb_run('<figure>Kachel</figure>', $kb_card) === '<figure>Kachel</figure>');
+update_post_meta($kb_post, '_et_head_hide', '1');
+check('Kopfbild: Haken „Oben kein Bild“ blendet es aus (auch ohne Markenfläche)', $kb_run('<figure>x</figure>', $kb_head) === '' && $kb_run('', $kb_head) === '');
+check('Kopfbild: Haken wirkt nicht auf die Kachel', $kb_run('<figure>Kachel</figure>', $kb_card) === '<figure>Kachel</figure>');
+delete_post_meta($kb_post, '_et_head_hide');
+delete_post_meta($kb_post, '_et_head_image');
+$_POST = ['et_story_head_nonce' => wp_create_nonce('et_story_head'), 'et_head_image' => (string) $kb_wide, 'et_head_hide' => '1'];
+do_action('save_post_post', $kb_post);
+check('Kopfbild: Speichern merkt Bild und Haken', story_head_state($kb_post) === ['hide' => true, 'id' => $kb_wide]);
+$_POST = ['et_story_head_nonce' => wp_create_nonce('et_story_head'), 'et_head_image' => '999999'];
+do_action('save_post_post', $kb_post);
+check('Kopfbild: unbekanntes Bild und fehlender Haken werden entfernt', story_head_state($kb_post) === ['hide' => false, 'id' => 0]);
+$_POST = ['et_head_image' => (string) $kb_wide, 'et_head_hide' => '1'];
+do_action('save_post_post', $kb_post);
+check('Kopfbild: ohne Sicherheitsschlüssel wird nichts gespeichert', story_head_state($kb_post) === ['hide' => false, 'id' => 0]);
+$_POST = [];
+wp_delete_post($kb_post, true);
+wp_delete_attachment($kb_wide, true);
+wp_delete_attachment($kb_small, true);
+wp_set_current_user(0);
+
 /* ---------- Eingabehilfen ---------- */
 
 $_POST['k'] = ['kein', 'Text'];

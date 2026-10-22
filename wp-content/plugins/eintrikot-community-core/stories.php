@@ -85,55 +85,139 @@ function story_tone($post_id) {
     return 'mix';
 }
 
-/** No featured image: a brand surface in the tone of the category instead of an empty gap. */
+/** Head picture settings of a story: own picture (attachment id) and whether to show none at all. */
+function story_head_state($post_id) {
+    $id = (int) get_post_meta($post_id, '_et_head_image', true);
+    return [
+        'hide' => get_post_meta($post_id, '_et_head_hide', true) === '1',
+        'id' => $id && wp_attachment_is_image($id) ? $id : 0
+    ];
+}
+
+/** "is-wide" for large, wide pictures (banner across the page), else "is-column" (in the text column, stays sharp). */
+function story_head_class($attachment_id) {
+    $meta = wp_get_attachment_metadata((int) $attachment_id);
+    $w = (int) ($meta['width'] ?? 0);
+    $h = (int) ($meta['height'] ?? 0);
+    return $w >= 1400 && $h > 0 && $w / $h >= 1.5 ? 'is-wide' : 'is-column';
+}
+
+/**
+ * Picture blocks of the stories. On the story page (class story-banner) the head picture is the own picture of
+ * the story, else the featured image; the checkbox can switch it off. In lists the featured image is used. Without
+ * any picture a brand surface in the tone of the category stands in instead of an empty gap.
+ */
 add_filter(
     'render_block_core/post-featured-image',
     function ($html, $parsed, $block) {
-        if ($html !== '' || is_admin()) {
+        $post_id = (int) ($block->context['postId'] ?? 0);
+        if (is_admin() || !$post_id) {
             return $html;
         }
-        $id = (int) ($block->context['postId'] ?? 0);
-        if (!$id) {
+        $head = str_contains((string) ($parsed['attrs']['className'] ?? ''), 'story-banner');
+        if ($head) {
+            $state = story_head_state($post_id);
+            if ($state['hide']) {
+                return '';
+            }
+            if ($state['id']) {
+                $alt = (string) get_post_meta($state['id'], '_wp_attachment_image_alt', true);
+                $html =
+                    '<figure class="wp-block-post-featured-image story-banner">' .
+                    wp_get_attachment_image($state['id'], 'full', false, [
+                        'alt' => $alt !== '' ? $alt : get_the_title($post_id),
+                        'loading' => 'eager'
+                    ]) .
+                    '</figure>';
+            }
+            $attachment = $state['id'] ?: (int) get_post_thumbnail_id($post_id);
+            if ($html !== '') {
+                return preg_replace('/class="/', 'class="' . story_head_class($attachment) . ' ', $html, 1);
+            }
+        }
+        if ($html !== '') {
             return $html;
         }
-        $banner = str_contains((string) ($parsed['attrs']['className'] ?? ''), 'story-banner')
-            ? ' story-banner is-wide'
-            : '';
         return '<figure class="wp-block-post-featured-image et-story-noimg' .
-            $banner .
+            ($head ? ' story-banner is-wide' : '') .
             ' tone-' .
-            esc_attr(story_tone($id)) .
+            esc_attr(story_tone($post_id)) .
             '" aria-hidden="true"></figure>';
     },
     10,
     3
 );
 
-/**
- * Title picture on the story page: a banner across the page only for large, wide pictures; small, square or
- * upright ones sit in the text column below the title, where they stay sharp.
- */
-add_filter(
-    'render_block_core/post-featured-image',
-    function ($html, $parsed, $block) {
-        if (
-            $html === '' ||
-            is_admin() ||
-            !str_contains((string) ($parsed['attrs']['className'] ?? ''), 'story-banner')
-        ) {
-            return $html;
-        }
-        $meta = wp_get_attachment_metadata(
-            (int) get_post_thumbnail_id((int) ($block->context['postId'] ?? 0))
+/** Box "Kopfbild der Story" on the edit screen of a post: own head picture and the switch to show none. */
+add_action('add_meta_boxes_post', function () {
+    add_meta_box(
+        'et_story_head',
+        'Kopfbild der Story',
+        function ($post) {
+            wp_nonce_field('et_story_head', 'et_story_head_nonce');
+            $state = story_head_state($post->ID);
+            echo '<div data-et-head><p class="description">Optional. Steht oben auf der Beitragsseite. Ohne Kopfbild steht dort das Beitragsbild. Die Kachel auf der Stories-Seite zeigt immer das Beitragsbild.</p>' .
+                '<input type="hidden" name="et_head_image" value="' .
+                esc_attr((string) $state['id']) .
+                '">' .
+                '<div data-et-head-preview>' .
+                ($state['id']
+                    ? wp_get_attachment_image($state['id'], 'medium', false, [
+                        'style' => 'max-width:100%;height:auto'
+                    ])
+                    : '') .
+                '</div>' .
+                '<p><button type="button" class="button" data-et-head-pick>Kopfbild wählen</button> ' .
+                '<button type="button" class="button-link button-link-delete" data-et-head-remove' .
+                ($state['id'] ? '' : ' hidden') .
+                '>Entfernen</button></p>' .
+                '<p class="description">Am besten breit: 2400 × 900 Pixel (Motiv in der Mitte).</p>' .
+                '<p><label><input type="checkbox" name="et_head_hide" value="1"' .
+                checked($state['hide'], true, false) .
+                '> Oben kein Bild zeigen</label></p></div>';
+        },
+        'post',
+        'side'
+    );
+});
+add_action('admin_enqueue_scripts', function ($hook) {
+    if (in_array($hook, ['post.php', 'post-new.php'], true) && get_post_type() === 'post') {
+        wp_enqueue_media();
+        wp_enqueue_script(
+            'eintrikot-story-head',
+            plugins_url('stories-head.js', __FILE__),
+            [],
+            asset_version('stories-head.js'),
+            true
         );
-        $w = (int) ($meta['width'] ?? 0);
-        $h = (int) ($meta['height'] ?? 0);
-        $wide = $w >= 1400 && $h > 0 && $w / $h >= 1.5;
-        return preg_replace('/class="/', 'class="' . ($wide ? 'is-wide ' : 'is-column '), $html, 1);
-    },
-    5,
-    3
-);
+    }
+});
+add_action('save_post_post', function ($id) {
+    if (
+        wp_is_post_revision($id) ||
+        (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) ||
+        !current_user_can('edit_post', $id) ||
+        empty($_POST['et_story_head_nonce'])
+    ) {
+        return;
+    }
+    $nonce = $_POST['et_story_head_nonce']; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- this is the nonce itself, checked on the next line
+    if (!is_string($nonce) || !wp_verify_nonce($nonce, 'et_story_head')) {
+        return;
+    }
+    $attachment = absint(post_text('et_head_image', '', 12));
+    if ($attachment && wp_attachment_is_image($attachment)) {
+        update_post_meta($id, '_et_head_image', $attachment);
+    } else {
+        delete_post_meta($id, '_et_head_image');
+    }
+    if (isset($_POST['et_head_hide'])) {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- the nonce is verified above
+        update_post_meta($id, '_et_head_hide', '1');
+    } else {
+        delete_post_meta($id, '_et_head_hide');
+    }
+});
 
 /** The archive part of the Stories page (filter, cards, paging). Same markup as the theme pattern. */
 function stories_archive_markup() {
