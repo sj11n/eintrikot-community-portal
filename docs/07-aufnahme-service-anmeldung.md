@@ -58,7 +58,7 @@ Die Vorlage (A4, ohne Name, Nummer, Datum, mit Unterschriften) wird unter Commun
 
 ## Voraussetzungen vor dem Einsatz
 
-- SMTP über das STRATO-Postfach (z. B. WP Mail SMTP), danach Test-E-Mail unter Aufnahme & Urkunde.
+- SMTP über Google Workspace (z. B. WP Mail SMTP, Absender `@eintrikot.de`), danach Test-E-Mail unter Aufnahme & Urkunde.
 - HTTPS: Einladungen an alle Mitglieder erst auf eintrikot.de mit HTTPS verschicken.
 
 ## Service-Bearbeitung
