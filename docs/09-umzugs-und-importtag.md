@@ -59,11 +59,11 @@ Ablauf wie in `docs/06`. Hier die Prüfpunkte dazu.
 | 13 | Quelltext der Startseite: `canonical`, `og:url` und `og:image` beginnen mit `https://www.eintrikot.de`, Sitemap (`/wp-sitemap.xml`) ebenso, keine Adressen mit `myemmel` oder `http://` | B/C | Keine Treffer für `myemmel` |
 | 14 | Der Hinweisbalken „Testumgebung“ ist weg, kein Testkonto und keine Testrückmeldung mehr vorhanden | B | Balken fehlt, Backend → Benutzer zeigt nur echte Konten |
 
-**Erst wenn Schritt 11 grün ist, geht es mit dem Import weiter.** Das Portal prüft das selbst: Einladungen sind gesperrt, bis die Seite unter HTTPS läuft.
+**Erst wenn Schritt 14 grün ist, geht es mit dem Import weiter.** Das Portal prüft das selbst: Einladungen sind gesperrt, bis die Seite unter HTTPS läuft.
 
 ---
 
-## 3. Importtag (nach Schritt 11)
+## 3. Importtag (nach Schritt 14)
 
 1. [ ] **B:** **Datenbank sichern** (STRATO), direkt vor dem Import. Das ist der Rückweg.
 2. [ ] **B:** Als Administrator anmelden.

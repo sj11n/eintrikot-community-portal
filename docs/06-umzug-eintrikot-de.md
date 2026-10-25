@@ -31,7 +31,7 @@ Community-Aufbau → Aktualisierungen → „Interne Links domainunabhängig mac
 10. **Mail:** Das Portal versendet über Google Workspace (SMTP-Plugin, Postfach `@eintrikot.de` als Absender). SPF und DKIM liegen dafür bei Google beziehungsweise im DNS der Domain, nicht bei STRATO. Test-E-Mail an Gmail, Outlook und web.de.
 11. **Prüfen:** Startseite, alle Menüpunkte, Anmeldung, Passwort vergessen, Profil speichern, Linkvorschau (LinkedIn Post Inspector), Browser-Konsole ohne „Mixed Content".
 
-Erst nach Schritt 11 echte Mitgliederdaten importieren und Einladungen verschicken. Die vollständige Checkliste mit Prüfpunkten, Import und Einladungen steht in docs/09.
+Erst nach Schritt 11 (und den Prüfpunkten 12 bis 14 in docs/09) echte Mitgliederdaten importieren und Einladungen verschicken. Die vollständige Checkliste mit Prüfpunkten, Import und Einladungen steht in docs/09.
 
 ## Zusätzlich vor und nach dem Umzug (Red-Team-Prüfung 25.10.2026)
 
