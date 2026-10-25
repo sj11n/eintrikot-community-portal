@@ -1,11 +1,11 @@
 # Checkliste: Umzug auf eintrikot.de und Import der Mitglieder
 
-Stand: 07.10.2026. Diese Liste gilt für den Weg von `http://eintrikot.myemmel.com` auf `https://eintrikot.de` und für den ersten Import der rund 200 Mitglieder. Sie baut auf `docs/06` (Umzug), `docs/07` (Aufnahme, Einladungen) und `docs/05` (Einspielen) auf und ersetzt sie nicht.
+Stand: 07.10.2026. Diese Liste gilt für den Weg von `http://eintrikot.myemmel.com` auf `https://www.eintrikot.de` und für den ersten Import der rund 200 Mitglieder. Sie baut auf `docs/06` (Umzug), `docs/07` (Aufnahme, Einladungen) und `docs/05` (Einspielen) auf und ersetzt sie nicht.
 
 **Wer macht was:** B = Björn, C = Claude, V = Vorstand oder Beirat, D = Datenschutzbeauftragte(r).
 
 **Grundregeln**
-- Echte Mitgliederdaten gibt es erst auf `https://eintrikot.de`. Auf der Entwicklungsseite wird nichts importiert.
+- Echte Mitgliederdaten gibt es erst auf `https://www.eintrikot.de`. Auf der Entwicklungsseite wird nichts importiert.
 - Der Import legt nur **Konten** an. Es geht keine Mail raus. Einladungen sind eine eigene, spätere Stufe.
 - Vor jedem Schritt, der Daten verändert, gibt es eine Sicherung.
 - Wird ein Prüfpunkt rot, wird angehalten. Nichts „durchziehen“.
@@ -23,8 +23,8 @@ Stand: 07.10.2026. Diese Liste gilt für den Weg von `http://eintrikot.myemmel.c
 - [ ] **B:** Stichprobe in Excel: 3 Mitglieder in `Portal-Import.xlsx` gegen die Master vergleichen (Nummer, Name, E-Mail, Eintritt, Geburtstag, Jahresspende).
 
 ### Technik und Inhalt
-- [ ] **B/C:** Altplugins und Altseiten bereinigt (`docs/04`): Registrierung geschlossen, Ultimate Member und Co. deaktiviert, Altseiten im Papierkorb.
-- [ ] **B:** **E-Mail-Versand einrichten:** STRATO-Postfach für den Absender (z. B. `info@eintrikot.de`), SMTP-Plugin (z. B. WP Mail SMTP), SPF und DKIM bei STRATO. Danach unter Community-Aufbau → Aufnahme & Urkunde **Absender und Signatur** eintragen und die **Test-E-Mail** senden. Kommt sie bei Gmail, Outlook und web.de im Posteingang an (nicht im Spam)?
+- [ ] **B/C:** Altplugins und Altseiten **vor dem Umzug** bereinigt (`docs/04`): Registrierung geschlossen, Ultimate Member und Co. deaktiviert **und gelöscht** (Dateien vom Server), Altseiten (`sample-page`, `welcome-to-…`, `user`, `login`, `register`, `members`, `logout`, `account`, `password-reset`) im Papierkorb und endgültig gelöscht. Danach von außen prüfen: `/register/` und `/wp-content/plugins/ultimate-member/readme.txt` liefern 404, die Sitemap enthält nur noch die `community-…`-Seiten.
+- [ ] **B:** **E-Mail-Versand einrichten (Google Workspace):** Postfach `@eintrikot.de` als Absender (z. B. `info@eintrikot.de`), SMTP-Plugin (z. B. WP Mail SMTP) mit Google-Anmeldung (OAuth oder App-Passwort). SPF und DKIM der Domain gehören zu Google Workspace (Stand 25.10.2026: SPF `-all` erlaubt nur Google, Amazon SES und die eigene Web-IP, DMARC `quarantine`); **nicht** bei STRATO eintragen. Die Website-Adresse in WordPress („Administrator-E-Mail“) muss auf diese Absenderadresse lauten. Danach unter Community-Aufbau → Aufnahme & Urkunde **Absender und Signatur** eintragen und die **Test-E-Mail** senden. Kommt sie bei Gmail, Outlook und web.de im Posteingang an (nicht im Spam)?
 - [ ] **V:** **Umstiegsmail lesen und freigeben** (Community-Aufbau → Aufnahme & Urkunde → „Umstiegsmail für Bestandsmitglieder“).
 - [ ] **D:** Datenschutzerklärung und Impressum lesen (neu seit September: Geburtstag mit Wahl des Mitglieds, Anmeldung zu Terminen, Zustimmung der Eltern, Herkunft der Daten aus NDAlumni, Aufbewahrung 180 Tage für Anmeldungen).
 - [ ] **B:** Social-Media-Adressen unter Community-Aufbau → Social Media eintragen (sonst fehlt „Folge uns“ im Footer).
@@ -32,7 +32,7 @@ Stand: 07.10.2026. Diese Liste gilt für den Weg von `http://eintrikot.myemmel.c
 - [ ] **B:** Stories aus NDAlumni importiert und geprüft (`docs/11`): Entwürfe veröffentlicht, nicht mehr aktuelle Beiträge aussortiert, die Links auf die alte Seite aus dem Prüfbericht notiert.
 - [ ] **B:** Eigenes Konto (bjoern@eintrikot.de): Anzeigename genau „Björn Emmerling“, unter Verwaltung → Mitgliederprofile pflegen Mitgliedsnummer 1 und Eintrittsdatum aus MeinVerein eintragen, „im Verzeichnis anzeigen“ setzen, fehlende Angaben nachtragen. Kontrolle: Backend → Community-Aufbau → Menschen prüfen zeigt „Alles in Ordnung“.
 - [ ] **B:** Beiratstest beendet (`docs/10`): Testphase beendet und Testdaten gelöscht, Rückmeldungen ausgewertet, danach die Test-Rückmeldungen im Backend gelöscht, **bevor** die Datenbank für den Umzug kopiert wird.
-- [ ] **B:** **Technisches Administrator-Konto** anlegen (Benutzer → Neu hinzufügen, Rolle Administrator): Benutzername ohne Personenbezug, z. B. `eintrikot-admin`, Adresse `info@eintrikot.de`, langes Passwort aus dem Passwortmanager. Nur für Notfälle, Updates und Löschungen; im Alltag mit dem persönlichen Konto arbeiten. Danach prüfen, dass Anmeldung und Passwort-Zurücksetzen funktionieren, und festhalten, wer Zugriff auf das Passwort hat (Vorstand, Nachfolge).
+- [ ] **B:** **Technisches Administrator-Konto** anlegen (Benutzer → Neu hinzufügen, Rolle Administrator): Benutzername ohne Personenbezug, z. B. `eintrikot-admin`, Adresse `info@eintrikot.de`, langes Passwort aus dem Passwortmanager. Es darf **keinen Benutzer mit Login `admin`** geben (der Name ist bekannt und wird zuerst probiert); gibt es ihn noch, umbenennen oder durch dieses Konto ersetzen. Nur für Notfälle, Updates und Löschungen; im Alltag mit dem persönlichen Konto arbeiten. Danach prüfen, dass Anmeldung und Passwort-Zurücksetzen funktionieren, und festhalten, wer Zugriff auf das Passwort hat (Vorstand, Nachfolge).
 - [ ] **B:** Termin für den Umzug festlegen: ruhiger Tag, mit Zeit für Fehlersuche. Keine Mitglieder-Mail vorher.
 - [ ] **C:** GitHub: Sicherung-Passwort (`BACKUP_PASSPHRASE`) im Passwortmanager vorhanden, ein Einspiel-Lauf mit Sicherung war grün (erledigt, Lauf #43).
 
@@ -45,22 +45,25 @@ Ablauf wie in `docs/06`. Hier die Prüfpunkte dazu.
 | # | Schritt (Kurzform) | Wer | Prüfpunkt (sonst anhalten) |
 |---|---|---|---|
 | 1 | Sicherung Dateien und Datenbank (STRATO) | B | Sicherung ist sichtbar und herunterladbar |
-| 2 | Domain `eintrikot.de` und `www` auf das Verzeichnis zeigen lassen | B | Seite lädt unter der neuen Adresse (noch ohne HTTPS) |
-| 3 | SSL-Zertifikat aktivieren | B | `https://eintrikot.de` lädt **ohne Warnung** |
-| 4 | WordPress- und Website-Adresse auf `https://eintrikot.de`, neu anmelden | B | Anmeldung klappt |
-| 5 | Suchen und Ersetzen (Probelauf, dann echt): `http://eintrikot.myemmel.com` → `https://eintrikot.de` | B/C | Probelauf zeigt nur erwartete Treffer |
+| 2 | Domain `eintrikot.de` und `www` in STRATO dem Verzeichnis zuordnen, beim DNS-Anbieter A/AAAA für `@` und `www` auf STRATO setzen (MX, SPF, DKIM, DMARC unverändert, `docs/06` Schritt 2) | B | Seite lädt unter der neuen Adresse (noch ohne HTTPS), Mail funktioniert weiter |
+| 3 | SSL-Zertifikat für `eintrikot.de` und `www` aktivieren | B | `https://www.eintrikot.de` lädt **ohne Warnung** |
+| 4 | WordPress- und Website-Adresse auf `https://www.eintrikot.de`, neu anmelden | B | Anmeldung klappt |
+| 5 | Suchen und Ersetzen (Probelauf, dann echt): `http://eintrikot.myemmel.com` → `https://www.eintrikot.de` | B/C | Probelauf zeigt nur erwartete Treffer |
 | 6 | Permalinks neu speichern | B | Alle Menüpunkte öffnen |
-| 7 | HTTPS erzwingen (STRATO oder `.htaccess`) | B | `http://eintrikot.de` leitet auf `https` um |
-| 8 | Alte Adresse (301) auf `https://eintrikot.de` | B | Alte Adresse leitet weiter |
-| 9 | GitHub: Variable `SITE_URL` auf `https://eintrikot.de` | B/C | Nächster Einspiel-Lauf prüft die neue Adresse und ist grün |
-| 10 | Mail: Absender und SMTP auf die neue Domain | B | Test-E-Mail kommt an |
+| 7 | HTTPS erzwingen (STRATO oder `.htaccess`) | B | `http://eintrikot.de`, `https://eintrikot.de` und `http://www.eintrikot.de` landen alle auf `https://www.eintrikot.de/` (301) |
+| 8 | Alte Adresse (301) auf `https://www.eintrikot.de` | B | Alte Adresse leitet weiter |
+| 9 | GitHub: Variable `SITE_URL` auf `https://www.eintrikot.de` | B/C | Nächster Einspiel-Lauf prüft die neue Adresse und ist grün |
+| 10 | Mail: Google-Workspace-SMTP, Absender `@eintrikot.de` | B | Test-E-Mail kommt bei Gmail, Outlook und web.de im Posteingang an |
 | 11 | Prüfen: Startseite, Menü, Anmeldung, „Passwort vergessen“, Profil speichern, Linkvorschau, Browser-Konsole ohne „Mixed Content“ | B/C | Alles grün |
+| 12 | Anonym durchtesten (privates Fenster, nicht angemeldet): Portal (`/community-portal/`) führt zur Anmeldung, „Passwort vergessen“, Einladungslink, Abmelden, `/wp-admin/` ohne Anmeldung nicht zugänglich | B/C | Alles verlangt Anmeldung, keine Mitgliederdaten sichtbar |
+| 13 | Quelltext der Startseite: `canonical`, `og:url` und `og:image` beginnen mit `https://www.eintrikot.de`, Sitemap (`/wp-sitemap.xml`) ebenso, keine Adressen mit `myemmel` oder `http://` | B/C | Keine Treffer für `myemmel` |
+| 14 | Der Hinweisbalken „Testumgebung“ ist weg, kein Testkonto und keine Testrückmeldung mehr vorhanden | B | Balken fehlt, Backend → Benutzer zeigt nur echte Konten |
 
-**Erst wenn Schritt 11 grün ist, geht es mit dem Import weiter.** Das Portal prüft das selbst: Einladungen sind gesperrt, bis die Seite unter HTTPS läuft.
+**Erst wenn Schritt 14 grün ist, geht es mit dem Import weiter.** Das Portal prüft das selbst: Einladungen sind gesperrt, bis die Seite unter HTTPS läuft.
 
 ---
 
-## 3. Importtag (nach Schritt 11)
+## 3. Importtag (nach Schritt 14)
 
 1. [ ] **B:** **Datenbank sichern** (STRATO), direkt vor dem Import. Das ist der Rückweg.
 2. [ ] **B:** Als Administrator anmelden.
@@ -98,7 +101,9 @@ Ablauf wie in `docs/06`. Hier die Prüfpunkte dazu.
 
 - [ ] Zahlen ansehen: wie viele aktiv („Aktiv seit …“), wie viele Links abgelaufen. Nachfassen bei Bedarf.
 - [ ] Erste **Termine** im Backend anlegen (EINTRIKOT Kalender), erste **Vereinsinfo** veröffentlichen, damit „Aktuelles“ nicht leer ist.
-- [ ] Deaktivierte Altplugins endgültig löschen (nach einer Woche, `docs/04` Schritt 8).
+- [ ] Prüfen, dass keine Altplugins mehr auf dem Server liegen (sie sollten schon vor dem Umzug gelöscht sein).
+- [ ] DMARC beobachten und bei sauberen Berichten von `quarantine`/`pct=50` auf 100 % anheben (im DNS der Domain).
+- [ ] HSTS von 300 Sekunden auf ein Jahr erhöhen (`docs/06`).
 - [ ] Eine Sicherung testweise wiederherstellen (nicht auf der Live-Seite), damit der Rückweg erprobt ist.
 - [ ] Rückmeldungen sammeln (Texte, Bedienung, Profil), in einem Pull Request bündeln.
 - [ ] Mobilansicht (390 und 320 Pixel) mit echten Daten ansehen.

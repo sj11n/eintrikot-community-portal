@@ -790,6 +790,19 @@ $_POST['k'] = 'c';
 check('post_choice: unbekannter Wert = leer', post_choice('k', ['a', 'b']) === '');
 check('client_ip', client_ip() === '203.0.113.7');
 
+/* ---------- Härtung ---------- */
+
+check('Härtung: kein Generator-Hinweis', apply_filters('the_generator', '<meta name="generator" content="WordPress">', 'html') === '' && !has_action('wp_head', 'wp_generator'));
+$hd_headers = apply_filters('wp_headers', []);
+check('Härtung: nosniff-Header', ($hd_headers['X-Content-Type-Options'] ?? '') === 'nosniff');
+check('Härtung: Permissions-Policy', str_contains($hd_headers['Permissions-Policy'] ?? '', 'camera=()'));
+wp_set_current_user(0);
+$_GET['author'] = '1';
+$GLOBALS['wp_query'] = new \WP_Query();
+do_action('template_redirect');
+check('Härtung: Autorenseite ohne Rechte = 404', $GLOBALS['wp_query']->is_404());
+unset($_GET['author']);
+
 foreach ($created as $id) {
     require_once ABSPATH . 'wp-admin/includes/user.php';
     wp_delete_user($id);

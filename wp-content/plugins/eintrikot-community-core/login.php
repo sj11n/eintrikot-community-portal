@@ -336,9 +336,27 @@ add_filter('rest_endpoints', function ($endpoints) {
     return $endpoints;
 });
 add_filter('wp_sitemaps_add_provider', fn($provider, $name) => $name === 'users' ? false : $provider, 10, 2);
-add_action('template_redirect', function () {
-    if ((is_author() || isset($_GET['author'])) && !current_user_can('list_users')) {
-        wp_safe_redirect(home_url('/'), 301);
-        exit();
-    }
+// Author pages answer 404 for everyone else, whether the user exists or not: a redirect for "admin"
+// and a 404 for a stranger would show which user names exist. Priority 0 runs before WordPress turns
+// ?author=1 into /author/<name>/ (redirect_canonical), which would leak the name.
+add_action(
+    'template_redirect',
+    function () {
+        if ((is_author() || isset($_GET['author'])) && !current_user_can('list_users')) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only checks that the parameter exists
+            global $wp_query;
+            $wp_query->set_404();
+            status_header(404);
+            nocache_headers();
+        }
+    },
+    0
+);
+// No WordPress version in the page source or the feeds.
+remove_action('wp_head', 'wp_generator');
+add_filter('the_generator', '__return_empty_string');
+add_filter('wp_headers', function ($headers) {
+    $headers['X-Content-Type-Options'] = 'nosniff';
+    $headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=(), payment=()';
+    return $headers;
 });
