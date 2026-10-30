@@ -67,6 +67,12 @@ function content_updates() {
                 'Ersetzt auf der Seite „Stories“ die Liste durch Karten mit Bild, Rubrik, Datum und Vorschau, dazu eine Rubriken-Leiste (ein Klick pro Rubrik). Kopfbereich und der Hinweis unten bleiben unverändert. Beiträge ohne Bild bekommen eine Markenfläche.',
             'run' => __NAMESPACE__ . '\\update_stories_layout'
         ],
+        '0.34-foerderprojekte' => [
+            'title' => 'Engagement: Förderprojekte und kompakte Bereiche',
+            'text' =>
+                'Fügt auf der Seite „Engagement“ vor „Aus der Community. Für die Zukunft.“ den Abschnitt „Förderprojekte“ ein (Defibrillatoren 2026, Air Lounger, Lymphomaten sowie die acht Projekte der DHB-Alumni-Familie). Entfernt die Fotos aus den drei Bereichen „Nachwuchs fördern“, „Erfahrung weitergeben“ und „Begegnungen schaffen“; Icons und Texte bleiben. Ersetzt den Satz „Mitgliedsbeiträge, Spenden und gezielte Kampagnen …“ durch den neuen Text ohne projektbezogene Spendenaufrufe. Kopfbild und übrige Inhalte bleiben unverändert.',
+            'run' => __NAMESPACE__ . '\\update_engagement_projects'
+        ],
         '0.7-vision' => [
             'title' => 'Schreibweise „EINTRIKOT" in der Vision 2030',
             'text' =>
@@ -241,6 +247,62 @@ function update_stories_layout() {
     $new = substr($content, 0, $start) . stories_archive_markup() . substr($content, $end + strlen($close));
     $result = wp_update_post(wp_slash(['ID' => $page->ID, 'post_content' => $new]), true);
     return is_wp_error($result) ? $result : 'Stories-Seite hat jetzt Karten mit Rubriken-Filter.';
+}
+
+const ENGAGEMENT_FUNDING_OLD = 'Mitgliedsbeiträge, Spenden und gezielte Kampagnen sollen die Förderung tragen. Unser Anspruch: Mittel gezielt einsetzen und ihre Verwendung transparent machen.';
+const ENGAGEMENT_FUNDING_NEW = 'Mitgliedsbeiträge und Spenden tragen unsere Förderung. So können wir dort helfen, wo es gebraucht wird – und machen transparent, wofür die Mittel eingesetzt werden.';
+
+/** Adds the funded projects to the engagement page; only the three named spots change. */
+function update_engagement_projects() {
+    $page = get_page_by_path('community-engagement');
+    if (!$page) {
+        return new \WP_Error(
+            'missing',
+            'Die Seite „Engagement“ (community-engagement) wurde nicht gefunden.'
+        );
+    }
+    $content = $page->post_content;
+    if (str_contains($content, 'et-foerderprojekte')) {
+        return 'Nichts zu ändern – die Förderprojekte stehen schon auf der Seite.';
+    }
+    $section = pattern_markup('mvp-foerderprojekte');
+    if (is_wp_error($section)) {
+        return $section;
+    }
+    // Insert before the group that holds the closing "Aus der Community." block.
+    $closing = strpos($content, 'Aus der Community.');
+    $start = $closing === false ? false : strrpos(substr($content, 0, $closing), '<!-- wp:group');
+    if ($start === false) {
+        return new \WP_Error(
+            'shape',
+            'Der Abschnitt „Aus der Community.“ wurde im Editor umgebaut. Die Förderprojekte stehen im Editor als Vorlage „EINTRIKOT MVP – förderprojekte“ bereit.'
+        );
+    }
+    $log = ['Abschnitt „Förderprojekte“ eingefügt.'];
+    $head = substr($content, 0, $start);
+    $removed = 0;
+    $head = preg_replace(
+        '/<!-- wp:image \{[^}]*"et-optional-image"[^}]*\} -->.*?<!-- \/wp:image -->\s*/s',
+        '',
+        $head,
+        -1,
+        $removed
+    );
+    $log[] = $removed
+        ? "Fotos aus den drei Bereichen entfernt ($removed)."
+        : 'Keine Fotos in den drei Bereichen gefunden.';
+    $tail = substr($content, $start);
+    if (str_contains($tail, ENGAGEMENT_FUNDING_OLD)) {
+        $tail = str_replace(ENGAGEMENT_FUNDING_OLD, ENGAGEMENT_FUNDING_NEW, $tail);
+        $log[] = 'Text unter „Aus der Community.“ angepasst.';
+    } else {
+        $log[] = 'Text unter „Aus der Community.“ wurde im Editor geändert und bleibt so.';
+    }
+    $result = wp_update_post(
+        wp_slash(['ID' => $page->ID, 'post_content' => $head . $section . "\n\n" . $tail]),
+        true
+    );
+    return is_wp_error($result) ? $result : implode("\n", $log);
 }
 
 function update_vision_spelling() {

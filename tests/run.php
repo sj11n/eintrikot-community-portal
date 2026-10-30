@@ -664,6 +664,33 @@ if ($sl_page) {
     check('Stories-Layout: zweiter Lauf ändert nichts', str_contains(update_stories_layout(), 'Nichts zu ändern'));
     wp_delete_post($sl_page, true);
 }
+/* ---------- Engagement: Förderprojekte ---------- */
+
+$fp_section = pattern_markup('mvp-foerderprojekte');
+ob_start();
+include WP_PLUGIN_DIR . '/../themes/eintrikot-community/patterns/mvp-engagement.php';
+$fp_engagement = ob_get_clean();
+check('Förderprojekte: Engagement-Muster enthält den Abschnitt, ohne Fotos in den Bereichen, neuer Text', !is_wp_error($fp_section) && str_contains($fp_engagement, $fp_section) && !str_contains($fp_engagement, 'et-optional-image') && str_contains($fp_engagement, ENGAGEMENT_FUNDING_NEW));
+check('Förderprojekte: keine projektbezogenen Spendenaufrufe', !str_contains($fp_section, 'spenden ↗') && !str_contains($fp_section, 'In Förderung'));
+preg_match_all('#src="/wp-content/themes/eintrikot-community/(assets/foerderprojekte/[a-z-]+\.jpg)"#', $fp_section, $fp_imgs);
+check('Förderprojekte: zehn Bilder, alle im Theme vorhanden', count($fp_imgs[1]) === 10 && count(array_filter($fp_imgs[1], fn($f) => is_readable(get_theme_file_path($f)))) === 10);
+check('Förderprojekte: Blöcke sauber geschachtelt', substr_count($fp_section, '<!-- wp:group') === substr_count($fp_section, '<!-- /wp:group -->') && substr_count($fp_section, '<!-- wp:image') === substr_count($fp_section, '<!-- /wp:image -->'));
+$fp_old = '<!-- wp:cover {"className":"section page-intro et-mvp-page-hero"} --><div>Kopfbild</div><!-- /wp:cover -->'
+    . '<!-- wp:group {"tagName":"section","className":"section info-grid engagement-topics"} --><section><!-- wp:group {"tagName":"article"} --><article><!-- wp:image {"sizeSlug":"full","className":"et-icon"} --><figure class="et-icon"><img src="icon-1.svg"/></figure><!-- /wp:image -->'
+    . "\n\n" . '<!-- wp:image {"id":169,"sizeSlug":"large","className":"et-optional-image"} --><figure class="et-optional-image"><img src="foto.jpg"/></figure><!-- /wp:image -->' . "\n\n"
+    . '<!-- wp:paragraph --><p>Eigener Text</p><!-- /wp:paragraph --></article><!-- /wp:group --></section><!-- /wp:group -->'
+    . '<!-- wp:group {"className":"section","tagName":"section"} --><section><!-- wp:heading --><h2>Aus der Community.<br>Für die Zukunft.</h2><!-- /wp:heading --><!-- wp:paragraph --><p>' . ENGAGEMENT_FUNDING_OLD . '</p><!-- /wp:paragraph --></section><!-- /wp:group -->';
+$fp_page = get_page_by_path('community-engagement') ? 0 : wp_insert_post(['post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Engagement', 'post_name' => 'community-engagement', 'post_content' => $fp_old]);
+if ($fp_page) {
+    $fp_msg = update_engagement_projects();
+    $fp_new = get_post($fp_page)->post_content;
+    check('Förderprojekte: eingefügt vor „Aus der Community“', is_string($fp_msg) && strpos($fp_new, 'et-foerderprojekte') < strpos($fp_new, 'Aus der Community.') && strpos($fp_new, 'engagement-topics') < strpos($fp_new, 'et-foerderprojekte'));
+    check('Förderprojekte: Fotos raus, Icons, Kopfbild und eigener Text bleiben', !str_contains($fp_new, 'foto.jpg') && str_contains($fp_new, 'icon-1.svg') && str_contains($fp_new, 'Kopfbild') && str_contains($fp_new, 'Eigener Text'));
+    check('Förderprojekte: Abschlusstext ersetzt', str_contains($fp_new, ENGAGEMENT_FUNDING_NEW) && !str_contains($fp_new, ENGAGEMENT_FUNDING_OLD));
+    check('Förderprojekte: zweiter Lauf ändert nichts', str_contains(update_engagement_projects(), 'Nichts zu ändern') && substr_count(get_post($fp_page)->post_content, 'et-foerderprojekte') === substr_count($fp_section, 'et-foerderprojekte'));
+    wp_delete_post($fp_page, true);
+}
+
 foreach (['single', 'index', 'search'] as $tpl) {
     $tpl_html = file_get_contents(get_theme_file_path('templates/' . $tpl . '.html'));
     check("Vorlage $tpl: Karten mit Rubrik und Datum", str_contains($tpl_html, 'story-meta') && str_contains($tpl_html, 'post-terms'));
