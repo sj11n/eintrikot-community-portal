@@ -1019,3 +1019,357 @@ body.seite-community-news .entry-content .page-intro h1 {
         white-space: nowrap;
     }
 }
+
+/* Engagement: die drei Bereiche kompakt nebeneinander (ohne Fotos). */
+.section.engagement-topics {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 55px;
+}
+.section.engagement-topics h2 {
+    font-size: 28px;
+    margin: 20px 0 14px;
+}
+.section.engagement-topics p {
+    font-size: 16px;
+    margin: 0;
+}
+@media (max-width: 900px) {
+    .section.engagement-topics {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}
+
+/* Engagement: Förderprojekte. Selektoren mit .section, damit sie die Abstände aus wordpress.css/editor.css schlagen. */
+.section.et-foerderprojekte {
+    border-top: 1px solid #eee;
+}
+.section.et-foerderprojekte p {
+    margin: 0;
+}
+.section.et-foerderprojekte .fp-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 50px;
+    margin-bottom: 56px;
+}
+.section.et-foerderprojekte .micro {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    margin-bottom: 18px;
+    font-weight: 700;
+}
+.section.et-foerderprojekte .fp-head h2 {
+    font-size: clamp(36px, 4.6vw, 66px);
+    margin: 0;
+    max-width: 720px;
+}
+.section.et-foerderprojekte .fp-intro {
+    max-width: 400px;
+    font-size: 15px;
+    color: #555;
+}
+.section.et-foerderprojekte .fp-group-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 20px;
+    border-top: 1px solid #000;
+    padding-top: 22px;
+    margin-bottom: 32px;
+}
+.section.et-foerderprojekte .fp-group-head h3 {
+    font-size: 25px;
+    font-weight: 650;
+    margin: 0;
+}
+.section.et-foerderprojekte .fp-group-head p {
+    font-size: 14px;
+    color: #555;
+}
+.section.et-foerderprojekte h4 {
+    letter-spacing: -0.045em;
+    line-height: 1.1;
+    font-weight: 700;
+}
+.section.et-foerderprojekte .fp-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+.section.et-foerderprojekte .fp-tag::before {
+    content: '';
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: currentColor;
+}
+.section.et-foerderprojekte .fp-meta {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    border-top: 1px solid #ddd;
+    padding-top: 14px;
+    font-size: 13px;
+}
+.section.et-foerderprojekte .fp-meta strong {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+.section.et-foerderprojekte .fp-photo {
+    margin: 0;
+    position: relative;
+}
+.section.et-foerderprojekte .fp-photo img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3/2;
+    object-fit: cover;
+}
+.section.et-foerderprojekte .fp-photo figcaption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    padding: 34px 18px 12px;
+    font-size: 11px;
+    color: #fff;
+    background: linear-gradient(transparent, #0009);
+}
+
+/* Leitprojekt: rote Markenfläche mit Band, solange kein Bild im Cover-Block steckt. */
+.section.et-foerderprojekte .fp-lead {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    background: #f1d1dd;
+    margin-bottom: 34px;
+}
+.section.et-foerderprojekte .fp-visual {
+    min-height: 420px;
+    margin: 0;
+    padding: clamp(28px, 4vw, 48px);
+    align-items: flex-start;
+    justify-content: flex-start;
+    color: #fff;
+    overflow: hidden;
+}
+.section.et-foerderprojekte .fp-visual .wp-block-cover__inner-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    margin: 0;
+    color: #fff;
+}
+.section.et-foerderprojekte .fp-visual:not(:has(.wp-block-cover__image-background))::after {
+    content: '';
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    bottom: -6%;
+    height: 62%;
+    z-index: 1;
+    background: #fff;
+    opacity: 0.92;
+    -webkit-mask: url(band.svg) center/cover no-repeat;
+    mask: url(band.svg) center/cover no-repeat;
+}
+.section.et-foerderprojekte .fp-visual:has(.wp-block-cover__image-background) .wp-block-cover__inner-container {
+    display: none;
+}
+.section.et-foerderprojekte .fp-visual:has(.wp-block-cover__image-background) > .wp-block-cover__background {
+    opacity: 0;
+}
+.section.et-foerderprojekte .fp-num {
+    font-size: clamp(150px, 17vw, 240px);
+    font-weight: 800;
+    letter-spacing: -0.08em;
+    line-height: 0.8;
+}
+.section.et-foerderprojekte .fp-unit {
+    font-size: 20px;
+    font-weight: 650;
+    margin-top: 14px;
+}
+.section.et-foerderprojekte .fp-lead .fp-body {
+    padding: clamp(32px, 5vw, 70px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.section.et-foerderprojekte .fp-lead .fp-tag {
+    color: #da525d;
+}
+.section.et-foerderprojekte .fp-lead .fp-tag strong {
+    color: #000;
+}
+.section.et-foerderprojekte .fp-lead h4 {
+    font-size: clamp(32px, 3.6vw, 52px);
+    margin: 0 0 20px;
+}
+.section.et-foerderprojekte .fp-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 40px;
+    border-top: 1px solid #0003;
+    margin-top: 28px;
+    padding-top: 22px;
+}
+.section.et-foerderprojekte .fp-facts p {
+    font-size: 12px;
+    color: #333;
+}
+.section.et-foerderprojekte .fp-facts strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 24px;
+    color: #000;
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Zwei weitere EINTRIKOT-Projekte */
+.section.et-foerderprojekte .fp-duo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 34px;
+    margin-bottom: 90px;
+}
+.section.et-foerderprojekte .fp-card {
+    display: flex;
+    flex-direction: column;
+    background: #f6f6f4;
+}
+.section.et-foerderprojekte .fp-card .fp-body {
+    padding: 28px 30px 30px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.section.et-foerderprojekte .fp-card h4 {
+    font-size: 30px;
+    margin: 0 0 14px;
+}
+.section.et-foerderprojekte .fp-card p:not(.fp-tag, .fp-meta) {
+    font-size: 15.5px;
+    margin-bottom: 14px;
+}
+.section.et-foerderprojekte .fp-card .fp-thanks {
+    font-size: 13px;
+    border-left: 3px solid #cedfbd;
+    padding-left: 12px;
+    color: #333;
+}
+
+/* In der DHB-Alumni-Familie gefördert: kompakt */
+.section.et-foerderprojekte .fp-family {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px 26px;
+}
+.section.et-foerderprojekte .fp-item {
+    display: flex;
+    flex-direction: column;
+}
+.section.et-foerderprojekte .fp-item .fp-photo {
+    margin-bottom: 16px;
+}
+.section.et-foerderprojekte .fp-item h4 {
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    margin: 0 0 8px;
+}
+.section.et-foerderprojekte .fp-item p:not(.fp-meta) {
+    font-size: 14px;
+    line-height: 1.55;
+    color: #333;
+    margin-bottom: 14px;
+}
+.section.et-foerderprojekte .fp-item .fp-meta {
+    font-size: 12px;
+    padding-top: 10px;
+}
+@media (max-width: 1100px) {
+    .section.et-foerderprojekte .fp-family {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (max-width: 900px) {
+    .section.et-foerderprojekte .fp-duo {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        margin-bottom: 64px;
+    }
+}
+@media (max-width: 800px) {
+    .section.et-foerderprojekte .fp-head,
+    .section.et-foerderprojekte .fp-group-head {
+        display: block;
+    }
+    .section.et-foerderprojekte .fp-intro,
+    .section.et-foerderprojekte .fp-group-head p {
+        margin-top: 14px;
+    }
+    .section.et-foerderprojekte .fp-lead {
+        grid-template-columns: 1fr;
+    }
+    .section.et-foerderprojekte .fp-visual {
+        min-height: 330px;
+    }
+    .section.et-foerderprojekte .fp-visual:not(:has(.wp-block-cover__image-background))::after {
+        height: 42%;
+        bottom: -10%;
+    }
+    .section.et-foerderprojekte .fp-card .fp-body {
+        padding: 22px 20px 24px;
+    }
+    .section.et-foerderprojekte .fp-card h4 {
+        font-size: 25px;
+    }
+    .section.et-foerderprojekte .fp-family {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    .section.et-foerderprojekte .fp-item {
+        display: grid;
+        grid-template-columns: 104px 1fr;
+        column-gap: 16px;
+        align-content: start;
+        border-top: 1px solid #ddd;
+        padding: 18px 0;
+    }
+    .section.et-foerderprojekte .fp-item:first-child {
+        border-top: 0;
+        padding-top: 0;
+    }
+    .section.et-foerderprojekte .fp-item .fp-photo {
+        grid-row: 1 / 4;
+        margin: 0;
+    }
+    .section.et-foerderprojekte .fp-item .fp-photo img {
+        aspect-ratio: 1;
+    }
+    .section.et-foerderprojekte .fp-item h4 {
+        font-size: 17px;
+        margin: 0 0 4px;
+    }
+    .section.et-foerderprojekte .fp-item p:not(.fp-meta) {
+        margin: 0;
+    }
+    .section.et-foerderprojekte .fp-item .fp-meta {
+        border: 0;
+        padding: 6px 0 0;
+        justify-content: flex-start;
+        gap: 14px;
+    }
+}
