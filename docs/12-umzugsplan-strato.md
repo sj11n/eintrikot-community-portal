@@ -29,7 +29,7 @@ Vor dem Umzug im DNS-Editor des alten Anbieters prüfen, ob weitere Einträge vo
 
 1. **Vertragsinhaber:** Der Vertrag und die Domain sollten auf den Verein laufen, nicht auf das private Konto von B. Sonst hängen Website und Mitgliederdaten an einer Person. Zugangsdaten gehören in den Passwortmanager, mindestens zwei Personen haben Zugriff.
 2. **Paket:** Gleiche Produktlinie wie die Entwicklungsseite (STRATO Webhosting). Dort ist der Ablauf (SFTP-Einspielen, PHP 8.3, ZipArchive) bereits erprobt. Anforderungen: PHP 8.3 oder neuer, eine MySQL-Datenbank, SFTP-Zugang, SSL für `eintrikot.de` und `www`, tägliche Sicherung, Cronjob oder ausreichend Besucher für WP-Cron. Nach Recherchen vom 30.10.2026 (Angaben schwanken zwischen den Quellen, vor der Buchung bei STRATO prüfen): Einsteigerpakete ab etwa 5 Euro im Monat Regelpreis, Aktionspreise im ersten Jahr (1 Euro oder 0 Euro im ersten Monat) nur bei 12 Monaten Laufzeit; bei monatlicher Laufzeit 10 bis 15 Euro Einrichtungsgebühr. **Mit dem Regelpreis rechnen.** Das „WordPress-Hosting“ von STRATO ist verwaltet; SFTP-Zugang und eigenes Einspielen von Theme und Plugin vor der Buchung klären, sonst das normale Webhosting nehmen.
-3. **Domain:** Transfer erst nach der Umstellung der Website (siehe Phase 5), sonst hängen Website und Mail gleichzeitig am Transfer.
+3. **Domain:** Der Transfer mit dem Auth-Code ist zugleich der Umzugstag (Phase 5). Die Zone bei STRATO muss vorher vollständig vorbereitet sein, damit die Mail nicht ausfällt.
 
 ## Phase 1: Webspace buchen (B oder V)
 
@@ -53,32 +53,31 @@ Voraussetzung: Beiratstest beendet (31.10.2026), Testphase beendet, Testdaten un
 2. Prüfen: keine Adressen mit `myemmel` im Quelltext (`curl` oder „Quelltext anzeigen“), Bilder laden, keine Fehlermeldungen.
 3. Plugin-Version, Theme-Version und PHP-Version notieren und mit der Entwicklungsseite vergleichen.
 
-## Phase 4: DNS vorbereiten (B)
+## Phase 4: Vorbereitung des Transfers (B)
 
-1. **Zone sichern:** Screenshot der gesamten Zone beim alten Anbieter, Tabelle oben abgleichen.
-2. **TTL senken:** 48 Stunden vor dem Umzug die TTL aller Einträge auf 300 Sekunden stellen.
+Der alte Provider (der Dienstleister, der das DNS bei Hetzner verwaltet) muss am Umzugstag **nichts umstellen**. Mit dem Domain-Transfer übernimmt STRATO die Domain und die DNS-Zone.
+
+1. **Zwei Fragen an den Dienstleister** (Text unten): Zonenexport und Inhalt des alten Servers.
+2. **Zone bei STRATO vollständig vorbereiten**, bevor sie wirksam wird (Tabelle oben, einschließlich Google-DKIM und DMARC). `@` und `www` zeigen auf den neuen Webspace. Beim Auftrag für den Domain-Umzug fragt STRATO, ob DNS-Einstellungen mitgenommen oder vorher bearbeitet werden können. Vor dem Absenden einen Screenshot dieser Maske prüfen lassen (C).
 3. **Mail-Test vorher:** Google-Workspace-SMTP einrichten und Test-Mails an Gmail, Outlook und web.de senden (`docs/09`).
-4. Den Umzugstermin auf einen ruhigen Tag legen, nicht vor einem Wochenende.
+4. Ruhigen Tag wählen, nicht vor einem Wochenende. Eine kurze Nichterreichbarkeit der Website beim Umschalten ist in Ordnung; die Mail muss durchgehend laufen.
 
-## Phase 5: Umstellung (Umzugstag)
+## Phase 5: Transfer und Umstellung (Umzugstag)
 
-Empfohlene Reihenfolge: **erst die Website, dann der Domain-Transfer.**
+1. **Sicherung** der neuen Seite, Screenshot der alten Zone.
+2. **Auth-Code prüfen** (Gültigkeit), Transfer bei STRATO beauftragen, Zone wie in Phase 4 vorbereitet lassen.
+3. Der alte Provider gibt den Transfer frei und **kündigt die Domain nicht vor dem Abschluss**.
+4. Nach dem Abschluss verwaltet STRATO die Zone. Warten, bis `eintrikot.de` und `www.eintrikot.de` auf den neuen Webspace zeigen (bis zu einem Tag, je nach Zwischenspeichern). Die Hosts-Zeile auf dem eigenen Rechner entfernen.
+5. SSL-Zertifikat für `eintrikot.de` und `www.eintrikot.de` aktivieren, auf „ohne Warnung“ warten.
+6. Weiter nach `docs/06` ab Schritt 4 (WordPress-Adresse `https://www.eintrikot.de`, Suchen/Ersetzen, Permalinks, 301-Weiterleitungen, `SITE_URL`) und `docs/09` Abschnitt 2 bis Schritt 14.
+7. **Mail prüfen:** Eine Mail an `info@eintrikot.de` senden und empfangen, danach die Test-E-Mail des Portals.
+8. Alte Adresse `eintrikot.myemmel.com`: leitet per 301 auf `https://www.eintrikot.de` (oder bleibt als Staging mit `noindex`, siehe Phase 7).
 
-1. **Sicherung** der neuen Seite und der alten Zone.
-2. **DNS umstellen** beim bisherigen Anbieter: `@` und `www` auf die von STRATO angezeigten Adressen (IPv4 und, wenn vorhanden, IPv6). Den Platzhalter `*` entfernen oder ebenfalls umstellen. MX, SPF, DKIM, DMARC, Google-Bestätigung **nicht anfassen**.
-3. **Domain an STRATO anschließen** (im Kundenbereich dem neuen Webspace zuordnen). SSL-Zertifikat für `eintrikot.de` und `www.eintrikot.de` aktivieren, auf „ohne Warnung“ warten.
-4. Weiter nach `docs/06` ab Schritt 4 (WordPress-Adresse `https://www.eintrikot.de`, Suchen/Ersetzen, Permalinks, 301-Weiterleitungen, `SITE_URL`) und `docs/09` Abschnitt 2 bis Schritt 14.
-5. Mail prüfen: Eine Mail an `info@eintrikot.de` senden und empfangen. Danach Mail über das Portal (Test-E-Mail).
-6. Alte Adresse `eintrikot.myemmel.com`: leitet per 301 auf `https://www.eintrikot.de` (oder bleibt als Staging mit `noindex`, siehe Phase 7).
+**Rückweg:** Solange der Transfer nicht abgeschlossen ist, bleibt alles beim Alten. Danach lassen sich die A-Einträge der Zone bei STRATO jederzeit selbst ändern.
 
-**Rückweg:** Die A-Einträge zurück auf 188.40.29.79 (alter Stand) setzen. Wegen TTL 300 Sekunden ist das in Minuten wirksam. Der alte Server bleibt bis zum Ende der Beobachtungszeit unverändert.
+### Nachricht an den Dienstleister (zwei Fragen)
 
-## Phase 5b: Domain-Transfer (frühestens eine Woche später)
-
-1. Prüfen, ob der Auth-Code noch gültig ist; bei Ablauf neu anfordern.
-2. **Zone bei STRATO vorher vollständig anlegen** (Tabelle oben, einschließlich Google-DKIM und DMARC). Wird die Zone nicht mitgenommen, fällt die Mail nach dem Transfer aus.
-3. Transfer beim neuen Anbieter beauftragen (Auth-Code eingeben), Bestätigungsmail des alten Anbieters beachten. Der Transfer dauert in der Regel einige Tage.
-4. Nach dem Transfer: Mail-Test, Website-Test, DNS-Einträge mit der Tabelle vergleichen. Danach die alte Zone beim bisherigen Anbieter beenden.
+> Hallo ___, wir ziehen die Domain eintrikot.de zu STRATO um. Zwei Bitten dazu: 1. Schicken Sie uns bitte alle aktuellen DNS-Einträge der Domain (Zonenexport oder Liste), damit wir nichts vergessen. 2. Läuft auf dem bisherigen Server (188.40.29.79) noch etwas für uns? Bitte sichern Sie uns Dateien und Datenbank, bevor er abgeschaltet wird. Bitte kündigen Sie die Domain erst, wenn wir den Abschluss des Transfers bestätigt haben. Vielen Dank! ___
 
 ## Phase 6: Einspielen und Betrieb nach dem Umzug (C)
 
@@ -96,4 +95,5 @@ Empfohlene Reihenfolge: **erst die Website, dann der Domain-Transfer.**
 
 - Wer ist Vertragsinhaber, und welche Zahlungsart wird hinterlegt? (V)
 - Welcher Auth-Code gilt bis wann? (B)
-- Läuft auf dem alten Server (188.40.29.79) noch etwas, das erhalten bleiben muss? Er antwortet derzeit mit 403. Vor dem Abschalten Dateien sichern. (B)
+- Läuft auf dem alten Server (188.40.29.79) noch etwas, das erhalten bleiben muss? Er antwortet derzeit mit 403. Vor dem Abschalten Dateien sichern (Frage an den Dienstleister). (B)
+- Lässt STRATO die DNS-Zone vor dem Abschluss des Transfers bearbeiten? Screenshot der Maske vor dem Auftrag. (B)
