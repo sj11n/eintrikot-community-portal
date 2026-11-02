@@ -43,11 +43,11 @@ Den Pfad findest du mit einem SFTP-Programm (z. B. Cyberduck): anmelden, in den 
 
 ## Produktion (Live-Seite)
 
-Für die Live-Seite gibt es einen **eigenen Workflow** (`.github/workflows/einspielen-produktion.yml`) und ein **eigenes Environment „produktion"**. Er läuft **nur von Hand** (Actions → Einspielen Produktion → Run workflow) und nie automatisch beim Merge. Zugangsdaten der Entwicklung und der Produktion sind getrennt.
+Für die Live-Seite gibt es einen **eigenen Workflow** (`.github/workflows/einspielen-produktion.yml`) und ein **eigenes Environment „Production"**. Er läuft **nur von Hand** (Actions → Einspielen Produktion → Run workflow) und nie automatisch beim Merge. Zugangsdaten der Entwicklung und der Produktion sind getrennt.
 
-### Environment „produktion" anlegen
+### Environment „Production" anlegen
 
-Auf github.com im Repository **Settings → Environments → New environment** „produktion" anlegen. Danach:
+Auf github.com im Repository **Settings → Environments → New environment** „Production" anlegen. Danach:
 
 - **Required reviewers:** Björn eintragen. Jeder Lauf wartet dann auf eine Freigabe in GitHub.
 - **Deployment branches:** „Selected branches" → nur `main`.
@@ -63,7 +63,7 @@ Auf github.com im Repository **Settings → Environments → New environment** �
 | Variable | `SITE_URL` | zuerst `https://eintrikot.com`, nach dem Umzug `https://www.eintrikot.de` |
 | Variable | `DEPLOY_PROTOCOL` | optional, `sftp` (Standard) |
 
-Die Werte nie im Chat oder im Code ablegen, nur in GitHub eintragen. `gh secret set <NAME> --env produktion` fragt den Wert im Terminal ab.
+Die Werte nie im Chat oder im Code ablegen, nur in GitHub eintragen. `gh secret set <NAME> --env Production` fragt den Wert im Terminal ab.
 
 ### Reihenfolge
 
