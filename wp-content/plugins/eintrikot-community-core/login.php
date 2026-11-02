@@ -371,6 +371,6 @@ function member_backend_blocked(string $page): bool {
 add_action('admin_init', function () {
     if (member_backend_blocked($GLOBALS['pagenow'] ?? '')) {
         wp_safe_redirect((int) get_option('eintrikot_portal_page') ? portal_url() : home_url('/'));
-        exit;
+        exit();
     }
 });
