@@ -41,6 +41,37 @@ Den Pfad findest du mit einem SFTP-Programm (z. B. Cyberduck): anmelden, in den 
 2. Sieht das plausibel aus, denselben Lauf ohne Haken starten.
 3. Ab dann spielt jeder Merge nach `main`, der Plugin oder Theme ändert, automatisch ein. (Die frühere Variable `AUTO_DEPLOY` wird nicht mehr gebraucht; sie stand im Environment und war dort für die Bedingung unsichtbar.)
 
+## Produktion (Live-Seite)
+
+Für die Live-Seite gibt es einen **eigenen Workflow** (`.github/workflows/einspielen-produktion.yml`) und ein **eigenes Environment „produktion"**. Er läuft **nur von Hand** (Actions → Einspielen Produktion → Run workflow) und nie automatisch beim Merge. Zugangsdaten der Entwicklung und der Produktion sind getrennt.
+
+### Environment „produktion" anlegen
+
+Auf github.com im Repository **Settings → Environments → New environment** „produktion" anlegen. Danach:
+
+- **Required reviewers:** Björn eintragen. Jeder Lauf wartet dann auf eine Freigabe in GitHub.
+- **Deployment branches:** „Selected branches" → nur `main`.
+
+| Art | Name | Inhalt |
+|---|---|---|
+| Secret | `SFTP_HOST` | SFTP-Server des **neuen** STRATO-Webspace (Fehlermeldung bzw. Kundenbereich, zum Beispiel `5021786113.ssh.w2.strato.hosting`) |
+| Secret | `SFTP_USER` | SFTP-Benutzer des neuen Webspace |
+| Secret | `SFTP_PASSWORD` | zugehöriges Passwort |
+| Secret | `SFTP_KNOWN_HOSTS` | Ausgabe von `ssh-keyscan -t ed25519 <Host>` (Port mit `-p` angeben, wenn nicht 22) |
+| Secret | `BACKUP_PASSPHRASE` | Passwort für die verschlüsselte Sicherung (ein eigenes, nicht das der Entwicklung) |
+| Variable | `WP_CONTENT_PATH` | Pfad zu `wp-content` auf dem neuen Webspace, wie er nach der SFTP-Anmeldung aussieht |
+| Variable | `SITE_URL` | zuerst `https://eintrikot.com`, nach dem Umzug `https://www.eintrikot.de` |
+| Variable | `DEPLOY_PROTOCOL` | optional, `sftp` (Standard) |
+
+Die Werte nie im Chat oder im Code ablegen, nur in GitHub eintragen. `gh secret set <NAME> --env produktion` fragt den Wert im Terminal ab.
+
+### Reihenfolge
+
+1. WordPress muss auf dem neuen Webspace laufen (Umzugs-Plugin oder Neuinstallation, `docs/12`), damit `plugins/` und `themes/` unter `WP_CONTENT_PATH` existieren.
+2. **Probelauf** (Haken „Nur Probelauf" gesetzt) und das Protokoll lesen.
+3. Echter Lauf ohne Haken, nach Freigabe. Der Lauf prüft zum Schluss Startseite, „Mitglied werden" und Portal unter `SITE_URL` und tauscht bei einem Fehler selbst zurück.
+4. Beim Umzug auf `www.eintrikot.de` die Variable `SITE_URL` umstellen (`docs/06`, Schritt 9).
+
 ## Zurücknehmen
 
 - Automatisch: schlägt die Prüfung nach dem Tausch fehl, ist der alte Stand sofort wieder aktiv.

@@ -1,0 +1,78 @@
+name: Einspielen Produktion
+
+# Spielt Theme und Plugin auf die Live-Installation (zunächst eintrikot.com, nach dem Umzug www.eintrikot.de).
+# Nur von Hand unter Actions → Einspielen Produktion → Run workflow, zuerst als Probelauf.
+# Eigenes Environment "produktion" mit eigenen Zugangsdaten und Freigabe durch Björn.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Nur Probelauf (zeigt Änderungen, verändert nichts)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: einspielen-produktion
+  cancel-in-progress: false
+
+jobs:
+  pruefen:
+    uses: ./.github/workflows/pruefen.yml
+
+  einspielen:
+    needs: pruefen
+    runs-on: ubuntu-latest
+    environment: produktion
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: lftp installieren
+        run: sudo apt-get update -q && sudo apt-get install -y -q lftp
+
+      - name: Einspielen
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_KNOWN_HOSTS: ${{ secrets.SFTP_KNOWN_HOSTS }}
+          WP_CONTENT_PATH: ${{ vars.WP_CONTENT_PATH }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          DEPLOY_PROTOCOL: ${{ vars.DEPLOY_PROTOCOL || 'sftp' }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          BACKUP_DIR: backup
+        run: tools/deploy.sh
+
+      # Das Repository ist öffentlich, und Artefakte öffentlicher Repositories kann jeder mit GitHub-Konto laden.
+      # Die Sicherung des Servers wird deshalb nur verschlüsselt aufbewahrt (Secret BACKUP_PASSPHRASE).
+      - name: Sicherung verschlüsseln
+        id: sicherung
+        if: always()
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [[ ! -d backup ]] || [[ -z "$(ls -A backup)" ]]; then
+            echo "Keine Sicherung in diesem Lauf."
+            exit 0
+          fi
+          if [[ -z "$BACKUP_PASSPHRASE" ]]; then
+            echo "::warning::Secret BACKUP_PASSPHRASE fehlt – die Sicherung wird nicht als Artefakt abgelegt (Rücktausch während des Laufs und Git-Verlauf bleiben). Anlegen mit: gh secret set BACKUP_PASSPHRASE"
+            exit 0
+          fi
+          umask 077
+          printf '%s' "$BACKUP_PASSPHRASE" >"$RUNNER_TEMP/backup-passphrase"
+          tar -czf - backup | gpg --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/backup-passphrase" --symmetric --cipher-algo AES256 -o "sicherung-produktion-${GITHUB_RUN_NUMBER}.tar.gz.gpg"
+          rm -f "$RUNNER_TEMP/backup-passphrase"
+          echo "datei=sicherung-produktion-${GITHUB_RUN_NUMBER}.tar.gz.gpg" >>"$GITHUB_OUTPUT"
+
+      - name: Sicherung aufbewahren
+        if: always() && steps.sicherung.outputs.datei != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sicherung-produktion-${{ github.run_number }}
+          path: ${{ steps.sicherung.outputs.datei }}
+          retention-days: 30
