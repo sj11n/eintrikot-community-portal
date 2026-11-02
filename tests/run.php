@@ -830,6 +830,15 @@ do_action('template_redirect');
 check('Härtung: Autorenseite ohne Rechte = 404', $GLOBALS['wp_query']->is_404());
 unset($_GET['author']);
 
+$bk_member = make_user('eintrikot_member');
+wp_set_current_user($bk_member);
+check('Backend: Mitglied wird umgeleitet', member_backend_blocked('index.php') && member_backend_blocked('profile.php'));
+check('Backend: admin-post und admin-ajax bleiben offen', !member_backend_blocked('admin-post.php') && !member_backend_blocked('admin-ajax.php'));
+wp_set_current_user(1);
+check('Backend: Administrator bleibt drin', !member_backend_blocked('index.php'));
+wp_set_current_user(0);
+check('Backend: nicht angemeldet wird nicht umgeleitet', !member_backend_blocked('index.php'));
+
 foreach ($created as $id) {
     require_once ABSPATH . 'wp-admin/includes/user.php';
     wp_delete_user($id);

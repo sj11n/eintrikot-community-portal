@@ -360,3 +360,17 @@ add_filter('wp_headers', function ($headers) {
     $headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=(), payment=()';
     return $headers;
 });
+// Members have no use for the WordPress back end: send them to the portal. admin-post.php and
+// admin-ajax.php stay open because the portal forms post there.
+function member_backend_blocked(string $page): bool {
+    return is_user_logged_in() &&
+        current_user_can('eintrikot_portal') &&
+        !current_user_can('edit_posts') &&
+        !in_array($page, ['admin-post.php', 'admin-ajax.php'], true);
+}
+add_action('admin_init', function () {
+    if (member_backend_blocked($GLOBALS['pagenow'] ?? '')) {
+        wp_safe_redirect((int) get_option('eintrikot_portal_page') ? portal_url() : home_url('/'));
+        exit;
+    }
+});
