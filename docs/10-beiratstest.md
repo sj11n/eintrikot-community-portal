@@ -1,10 +1,10 @@
 # Beiratstest auf der Entwicklungsseite
 
-Stand: 14.10.2026. Der Beirat und der Vorstand testen das Portal auf `http://eintrikot.myemmel.com` bis **31.10.2026**. Es gibt nur erfundene Mitglieder und fünf persönliche Testzugänge. Echte Mitgliederdaten kommen erst nach dem Umzug auf `https://eintrikot.de`.
+Stand: 14.10.2026. Der Beirat und der Vorstand testen das Portal auf `http://eintrikot.myemmel.com` bis **31.10.2026**. Es gibt nur erfundene Mitglieder und fünf persönliche Testzugänge. Echte Mitgliederdaten kommen erst auf den STRATO-Webspace (zuerst `https://eintrikot.com`, dann `https://www.eintrikot.de`, `docs/09`, Abschnitt 1a).
 
 ## Was die Testphase im Portal ändert (seit 0.23.0)
 
-- **Erkennung:** Die Testphase gilt automatisch für Adressen mit `.myemmel.com`. Beim Umzug auf `eintrikot.de` endet sie von selbst, ohne dass etwas umgestellt werden muss.
+- **Erkennung:** Die Testphase gilt automatisch für Adressen mit `.myemmel.com`. Auf `eintrikot.com` und `eintrikot.de` fehlt der Banner von selbst. Die **Testkonten und Testdaten bleiben aber in der Kopie** und werden dort über „Testphase beenden und Testdaten löschen“ entfernt, **bevor** echte Mitglieder importiert werden.
 - **Keine E-Mails:** Das Portal verschickt auf der Entwicklungsseite nichts. Auch „Passwort vergessen“ schickt keine Mail. Das steht auf der Anmeldeseite.
 - **Banner** „Testumgebung – keine echten Daten“ oben auf jeder Portalseite mit dem Knopf **Rückmeldung geben** (Art: Unklar, Fehler, Wunsch; Text). Seite und Gerät (Handy oder Computer) werden automatisch eingetragen. Höchstens 30 Rückmeldungen pro Person und Tag.
 - **Rückmeldungen** liegen im Backend unter Community-Aufbau → Test-Rückmeldungen. Jede hat einen Status: Neu → Besprechen → Umsetzen / Verwerfen → Erledigt. **Umgesetzt wird nur, was auf „Umsetzen“ steht.**

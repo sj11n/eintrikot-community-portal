@@ -1,11 +1,11 @@
 # Checkliste: Umzug auf eintrikot.de und Import der Mitglieder
 
-Stand: 07.10.2026. Diese Liste gilt für den Weg von `http://eintrikot.myemmel.com` auf `https://www.eintrikot.de` und für den ersten Import der rund 200 Mitglieder. Sie baut auf `docs/06` (Umzug), `docs/07` (Aufnahme, Einladungen) und `docs/05` (Einspielen) auf und ersetzt sie nicht.
+Stand: 03.11.2026. Diese Liste gilt für den Weg auf `https://www.eintrikot.de` und für den ersten Import der rund 200 Mitglieder. Die Seite läuft seit dem 02.11.2026 auf der Testdomain `https://eintrikot.com` (STRATO, `docs/12`); **der erste Import findet dort statt** (Abschnitt 1a), der Umzug auf `www.eintrikot.de` folgt danach. Sie baut auf `docs/06` (Umzug), `docs/07` (Aufnahme, Einladungen) und `docs/05` (Einspielen) auf und ersetzt sie nicht.
 
 **Wer macht was:** B = Björn, C = Claude, V = Vorstand oder Beirat, D = Datenschutzbeauftragte(r).
 
 **Grundregeln**
-- Echte Mitgliederdaten gibt es erst auf `https://www.eintrikot.de`. Auf der Entwicklungsseite wird nichts importiert.
+- Echte Mitgliederdaten gibt es nur auf dem STRATO-Webspace, zuerst unter `https://eintrikot.com` (HTTPS, `noindex`, Anmeldung Pflicht), dann unter `https://www.eintrikot.de`. Auf der Entwicklungsseite `eintrikot.myemmel.com` wird **nie** importiert.
 - Der Import legt nur **Konten** an. Es geht keine Mail raus. Einladungen sind eine eigene, spätere Stufe.
 - Vor jedem Schritt, der Daten verändert, gibt es eine Sicherung.
 - Wird ein Prüfpunkt rot, wird angehalten. Nichts „durchziehen“.
@@ -38,6 +38,16 @@ Stand: 07.10.2026. Diese Liste gilt für den Weg von `http://eintrikot.myemmel.c
 
 ---
 
+## 1a. Import auf eintrikot.com (vor dem Umzug auf .de)
+
+Die Datenbank wandert beim Umzug auf `.de` mit. Es ändert sich nur die Adresse (Schritt 5 unten).
+
+- [ ] **B:** Nacharbeiten nach der Kopie erledigt: `readme.html` und `license.txt` gelöscht, Duplicator-Plugin entfernt **und** der Ordner `wp-content/duplicator-backups` gelöscht (enthält die Testdatenbank), PHP 8.3 gesetzt, `noindex` aktiv.
+- [ ] **B:** Rückmeldungen als Text gesichert (Community-Aufbau → Testphase), danach **Testphase beenden und Testdaten löschen**. Kontrolle: Backend → Benutzer zeigt nur dein Konto und das technische Administratorkonto. Alte Test-Rückmeldungen löschen.
+- [ ] **B:** Importdatei und Prüfbericht aktuell (Abschnitt 1, „Daten“).
+- [ ] **B:** Dann Abschnitt 3 (Importtag) ausführen. Auf `.com` gilt: **keine Einladungen** (das Portal sperrt sie, nur `eintrikot.de` mit HTTPS ist freigegeben), keine Zugangsdaten an Mitglieder weitergeben, solange Mailversand und Umzug nicht abgeschlossen sind. Ohne eingerichteten Mailversand würde „Passwort vergessen“ nicht zuverlässig ankommen.
+- [ ] **B:** Importdatei und Master-Downloads löschen (Abschnitt 3, Schritt 9).
+
 ## 2. Umzugstag
 
 Ablauf wie in `docs/06`. Hier die Prüfpunkte dazu.
@@ -48,7 +58,7 @@ Ablauf wie in `docs/06`. Hier die Prüfpunkte dazu.
 | 2 | Domain `eintrikot.de` und `www` in STRATO dem Verzeichnis zuordnen, beim DNS-Anbieter A/AAAA für `@` und `www` auf STRATO setzen (MX, SPF, DKIM, DMARC unverändert, `docs/06` Schritt 2) | B | Seite lädt unter der neuen Adresse (noch ohne HTTPS), Mail funktioniert weiter |
 | 3 | SSL-Zertifikat für `eintrikot.de` und `www` aktivieren | B | `https://www.eintrikot.de` lädt **ohne Warnung** |
 | 4 | WordPress- und Website-Adresse auf `https://www.eintrikot.de`, neu anmelden | B | Anmeldung klappt |
-| 5 | Suchen und Ersetzen (Probelauf, dann echt): `http://eintrikot.myemmel.com` → `https://www.eintrikot.de` | B/C | Probelauf zeigt nur erwartete Treffer |
+| 5 | Suchen und Ersetzen (Probelauf, dann echt): `https://eintrikot.com` → `https://www.eintrikot.de` (immer die volle Adresse mit `https://`, wegen serialisierter Daten) | B/C | Probelauf zeigt nur erwartete Treffer |
 | 6 | Permalinks neu speichern | B | Alle Menüpunkte öffnen |
 | 7 | HTTPS erzwingen (STRATO oder `.htaccess`) | B | `http://eintrikot.de`, `https://eintrikot.de` und `http://www.eintrikot.de` landen alle auf `https://www.eintrikot.de/` (301) |
 | 8 | Alte Adresse (301) auf `https://www.eintrikot.de` | B | Alte Adresse leitet weiter |
@@ -56,14 +66,14 @@ Ablauf wie in `docs/06`. Hier die Prüfpunkte dazu.
 | 10 | Mail: Google-Workspace-SMTP, Absender `@eintrikot.de` | B | Test-E-Mail kommt bei Gmail, Outlook und web.de im Posteingang an |
 | 11 | Prüfen: Startseite, Menü, Anmeldung, „Passwort vergessen“, Profil speichern, Linkvorschau, Browser-Konsole ohne „Mixed Content“ | B/C | Alles grün |
 | 12 | Anonym durchtesten (privates Fenster, nicht angemeldet): Portal (`/community-portal/`) führt zur Anmeldung, „Passwort vergessen“, Einladungslink, Abmelden, `/wp-admin/` ohne Anmeldung nicht zugänglich | B/C | Alles verlangt Anmeldung, keine Mitgliederdaten sichtbar |
-| 13 | Quelltext der Startseite: `canonical`, `og:url` und `og:image` beginnen mit `https://www.eintrikot.de`, Sitemap (`/wp-sitemap.xml`) ebenso, keine Adressen mit `myemmel` oder `http://` | B/C | Keine Treffer für `myemmel` |
+| 13 | Quelltext der Startseite: `canonical`, `og:url` und `og:image` beginnen mit `https://www.eintrikot.de`, Sitemap (`/wp-sitemap.xml`) ebenso, keine Adressen mit `myemmel`, `eintrikot.com` oder `http://` | B/C | Keine Treffer für `myemmel` und `eintrikot.com` |
 | 14 | Der Hinweisbalken „Testumgebung“ ist weg, kein Testkonto und keine Testrückmeldung mehr vorhanden | B | Balken fehlt, Backend → Benutzer zeigt nur echte Konten |
 
-**Erst wenn Schritt 14 grün ist, geht es mit dem Import weiter.** Das Portal prüft das selbst: Einladungen sind gesperrt, bis die Seite unter HTTPS läuft.
+**Einladungen** gibt es erst, wenn Schritt 14 grün ist. Das Portal prüft das selbst: Einladungen sind gesperrt, bis die Seite unter `eintrikot.de` mit HTTPS läuft. Der Import der Konten selbst ist schon auf `eintrikot.com` erfolgt (Abschnitt 1a).
 
 ---
 
-## 3. Importtag (nach Schritt 14)
+## 3. Importtag (erstmals auf eintrikot.com, siehe Abschnitt 1a)
 
 1. [ ] **B:** **Datenbank sichern** (STRATO), direkt vor dem Import. Das ist der Rückweg.
 2. [ ] **B:** Als Administrator anmelden.
