@@ -26,7 +26,10 @@ Heute ist „EINTRIKOT-Newsletter erhalten“ ein Häkchen im Profil (`newslette
 
 - Drei Zustände: **nicht beantwortet**, **Ja**, **Nein**.
 - Gespeichert werden Zustand, Zeitpunkt und die Fassung des Einwilligungstextes (Versionsnummer).
-- Beim ersten Login nach der Einführung erscheint **einmal** eine kurze Frage im Portal („Möchtest du den EINTRIKOT-Newsletter per E-Mail bekommen?“ mit Ja und Nein). Die Frage lässt sich schließen, ohne zu antworten. Sie bleibt dann „nicht beantwortet“ und erscheint nach 90 Tagen noch einmal, danach nicht mehr.
+- **Nicht beantwortet:** Das Portal zeigt die Frage („Möchtest du den EINTRIKOT-Newsletter per E-Mail bekommen?“) beim ersten Login und danach bei jedem Login, bis es eine Antwort gibt. Es ist ein ruhiger Hinweis oben im Portal, kein Fenster, das den Zugang blockiert. Neben „Ja“ und „Nein“ gibt es „Später“: Das blendet die Frage 14 Tage aus, danach kommt sie wieder.
+- **Nein:** Nach 12 Monaten wird einmal erneut gefragt, nur im Portal, nie per Mail, und danach wieder frühestens nach 12 Monaten. Ein „Nein“ lässt sich im Profil jederzeit auf „Ja“ stellen. Die Wiedervorlage nach einem „Nein“ ist ein **Prüfpunkt für V** (Datenschutz, zusammen mit dem Einwilligungstext).
+- **Ja:** Es wird nicht mehr gefragt.
+- Die Zeiträume (14 Tage, 12 Monate) sind Einstellungen und lassen sich ohne Umbau ändern.
 - Nur **Ja** zählt als Einwilligung. „Nicht beantwortet“ und „Nein“ bekommen nichts.
 - Im Profil lässt sich die Entscheidung jederzeit ändern. Jede Änderung geht mit Zeitpunkt in den Audit-Log (`log_change`).
 - Der Einwilligungstext ist ein **offener Prüfpunkt für V** (rechtlicher Text, wird nicht von Claude erfunden). Vorschlag zum Prüfen: „Ich möchte den EINTRIKOT-Newsletter ungefähr viermal im Jahr per E-Mail erhalten. Ich kann das jederzeit im Profil oder über den Abmeldelink in jeder Mail widerrufen.“
