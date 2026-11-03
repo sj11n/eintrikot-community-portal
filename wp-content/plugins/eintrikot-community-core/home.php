@@ -150,10 +150,12 @@ function render_home() {
         $ts = strtotime($events[0]['date'] . ' 12:00:00');
         echo '<div class="home-date"><time datetime="' .
             esc_attr($events[0]['date']) .
+            '" aria-label="' .
+            esc_attr(wp_date('j. F', $ts)) .
             '"><strong>' .
-            esc_html(wp_date('j.', $ts)) .
+            esc_html(wp_date('j', $ts)) .
             '</strong><span>' .
-            esc_html(wp_date('F', $ts)) .
+            esc_html(wp_date('M', $ts)) .
             '</span></time><h3>' .
             esc_html($events[0]['title']) .
             '</h3></div>';
