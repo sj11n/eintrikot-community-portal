@@ -134,5 +134,5 @@ Schritt 2 kann schon vor dem Domainumzug laufen, damit Einwilligungen vorliegen,
 1. Einverstanden mit eigenem Plugin statt MailPoet (Abweichung vom Briefing)?
 2. Absenderadresse: `newsletter@eintrikot.de` als Alias, Antworten an `info@eintrikot.de`?
 3. Wortlaut der Einwilligung und der Fußzeile: prüft V, ggf. mit Datenschutzbeauftragtem.
-4. Wird **Inxmail** noch für Newsletter genutzt (CNAME-Einträge in der DNS-Zone, `docs/12`)? Wenn ja, wer, mit welchen Empfängern, und soll das ersetzt werden?
-5. Aufbewahrung der Versandprotokolle (Vorschlag 12 Monate).
+4. Erledigt: **Inxmail** wird nicht mehr genutzt (B, 04.11.2026). Die vier Inxmail-CNAME-Einträge kommen nicht in die neue Zone. Ursprüngliche Frage: Wird Inxmail noch für Newsletter genutzt (CNAME-Einträge in der DNS-Zone, `docs/12`)? Wenn ja, wer, mit welchen Empfängern, und soll das ersetzt werden?
+5. Erledigt: Versandprotokolle werden 12 Monate aufbewahrt (B, 04.11.2026).
