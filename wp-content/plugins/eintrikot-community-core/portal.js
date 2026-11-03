@@ -1,4 +1,22 @@
 (() => {
+    // E-Mail-Verteiler: copies the list in the text field.
+    document.querySelectorAll('[data-copy-target]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const field = document.getElementById(button.dataset.copyTarget);
+            const state = button.parentElement.querySelector('[data-copy-state]');
+            if (!field) return;
+            field.select();
+            let done = false;
+            try {
+                await navigator.clipboard.writeText(field.value);
+                done = true;
+            } catch (e) {
+                done = document.execCommand('copy');
+            }
+            if (state) state.textContent = done ? 'Kopiert.' : 'Bitte mit Strg+C oder Cmd+C kopieren.';
+        });
+    });
+
     let next = Date.now();
     const list = document.getElementById('stations'),
         add = document.getElementById('add-station'),
