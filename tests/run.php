@@ -830,6 +830,27 @@ do_action('template_redirect');
 check('Härtung: Autorenseite ohne Rechte = 404', $GLOBALS['wp_query']->is_404());
 unset($_GET['author']);
 
+$ml_member = make_user('eintrikot_member');
+$ml_sample = strtolower(get_userdata($ml_member)->user_email);
+$ml_mail = 'verteiler-' . $ml_member . '@mail-test.invalid';
+check('E-Mail-Verteiler: Beispieladressen der Testphase fehlen', !in_array($ml_sample, mail_list_addresses(), true));
+wp_update_user(['ID' => $ml_member, 'user_email' => $ml_mail]);
+$ml_list = mail_list_addresses();
+check('E-Mail-Verteiler: Mitglied steht drin, ohne Doppelte, sortiert', in_array($ml_mail, $ml_list, true) && $ml_list === array_values(array_unique($ml_list)) && $ml_list === (function ($l) { sort($l); return $l; })($ml_list));
+wp_set_current_user($ml_member);
+$_GET['view'] = 'maillist';
+ob_start();
+render_mail_list();
+$ml_page = ob_get_clean();
+check('E-Mail-Verteiler: Mitglied sieht ihn nicht', str_contains($ml_page, 'Kein Zugriff') && !str_contains($ml_page, $ml_mail));
+wp_set_current_user(1);
+ob_start();
+render_mail_list();
+$ml_page = ob_get_clean();
+check('E-Mail-Verteiler: Administrator sieht Liste und Kopierknopf', str_contains($ml_page, $ml_mail) && str_contains($ml_page, 'data-copy-target="mail-list"'));
+unset($_GET['view']);
+wp_set_current_user(0);
+
 $bk_member = make_user('eintrikot_member');
 wp_set_current_user($bk_member);
 check('Backend: Mitglied wird umgeleitet', member_backend_blocked('index.php') && member_backend_blocked('profile.php'));

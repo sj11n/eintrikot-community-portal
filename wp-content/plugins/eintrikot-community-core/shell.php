@@ -44,6 +44,7 @@ function portal_nav_section($view) {
         'preview' => 'admin',
         'audit' => 'admin',
         'onboarding' => 'admin',
+        'maillist' => 'admin',
         'profile' => 'account'
     ];
     return $map[$view] ?? $view;
@@ -269,6 +270,9 @@ add_shortcode('eintrikot_portal', function () {
         case 'onboarding':
             render_onboarding();
             break;
+        case 'maillist':
+            render_mail_list();
+            break;
         case 'audit':
             echo view_manager() ? '' : wp_kses_post($denied);
             if (view_manager()) {
@@ -292,6 +296,11 @@ add_shortcode('eintrikot_portal', function () {
                     'Aus MeinVerein übernehmen, Begrüßung und Urkunde senden'
                 ) .
                 service_link(portal_url('members'), 'Mitgliederprofile pflegen') .
+                service_link(
+                    portal_url('maillist'),
+                    'E-Mail-Verteiler',
+                    'Alle Mitgliederadressen für das BCC-Feld kopieren'
+                ) .
                 service_link(audit_url(), 'Änderungsprotokoll öffnen') .
                 '</section>';
             if (view_admin()) {
