@@ -860,6 +860,45 @@ check('Backend: Administrator bleibt drin', !member_backend_blocked('index.php')
 wp_set_current_user(0);
 check('Backend: nicht angemeldet wird nicht umgeleitet', !member_backend_blocked('index.php'));
 
+$nl_member = make_user('eintrikot_member');
+$nl_mail = 'newsletter-' . $nl_member . '@mail-test.invalid';
+wp_update_user(['ID' => $nl_member, 'user_email' => $nl_mail]);
+wp_set_current_user($nl_member);
+check('Newsletter: neues Konto ist nicht beantwortet', newsletter_consent($nl_member)['state'] === '');
+check('Newsletter: nicht beantwortet bekommt nichts', !in_array($nl_mail, newsletter_recipients(), true));
+check('Newsletter: Frage ist fällig', newsletter_prompt_due($nl_member));
+check('Newsletter: Hinweis zeigt Ja, Nein und Später', str_contains(newsletter_prompt_bar(), 'value="yes"') && str_contains(newsletter_prompt_bar(), 'value="no"') && str_contains(newsletter_prompt_bar(), 'value="later"'));
+check('Newsletter: ungültige Antwort wird abgelehnt', !newsletter_set_consent($nl_member, 'vielleicht') && newsletter_consent($nl_member)['state'] === '');
+check('Newsletter: Später blendet die Frage aus', newsletter_postpone($nl_member) && !newsletter_prompt_due($nl_member) && newsletter_prompt_bar() === '');
+$nl_c = newsletter_consent($nl_member);
+$nl_c['snooze_until'] = time() - 5;
+update_user_meta($nl_member, 'eintrikot_newsletter', $nl_c);
+check('Newsletter: nach der Pause kommt die Frage wieder', newsletter_prompt_due($nl_member));
+check('Newsletter: Ja wird gespeichert', newsletter_set_consent($nl_member, 'yes') && newsletter_consent($nl_member)['state'] === 'yes' && newsletter_consent($nl_member)['version'] === NEWSLETTER_TEXT_VERSION);
+check('Newsletter: Ja steht in der Empfängerliste', in_array($nl_mail, newsletter_recipients(), true));
+check('Newsletter: nach Ja wird nicht mehr gefragt', !newsletter_prompt_due($nl_member) && !newsletter_postpone($nl_member));
+global $wpdb;
+check('Newsletter: Änderung steht im Verlauf', (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'newsletter'", $nl_member)) === 1);
+check('Newsletter: gleiche Antwort schreibt nichts mehr', newsletter_set_consent($nl_member, 'yes') && (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'newsletter'", $nl_member)) === 1);
+check('Newsletter: Nein nimmt die Adresse aus der Liste', newsletter_set_consent($nl_member, 'no') && !in_array($nl_mail, newsletter_recipients(), true));
+check('Newsletter: nach Nein wird nicht sofort wieder gefragt', !newsletter_prompt_due($nl_member));
+$nl_c = newsletter_consent($nl_member);
+$nl_c['at'] = time() - 366 * DAY_IN_SECONDS;
+update_user_meta($nl_member, 'eintrikot_newsletter', $nl_c);
+check('Newsletter: nach 12 Monaten wird nach einem Nein neu gefragt', newsletter_prompt_due($nl_member) && str_contains(newsletter_prompt_bar(), 'doch bekommen'));
+check('Newsletter: Später nach Nein pausiert lange', newsletter_postpone($nl_member) && !newsletter_prompt_due($nl_member) && newsletter_consent($nl_member)['snooze_until'] > time() + 300 * DAY_IN_SECONDS);
+$nl_kid = make_user('eintrikot_member', ['birthday' => day('-12 years')]);
+check('Newsletter: unter 18 keine Frage, keine Einwilligung', !newsletter_prompt_due($nl_kid) && !newsletter_set_consent($nl_kid, 'yes') && newsletter_consent($nl_kid)['state'] === '');
+$nl_own = newsletter_profile_section($nl_member);
+check('Newsletter: eigenes Profil bietet die Auswahl an', str_contains($nl_own, 'name="newsletter_consent"'));
+$nl_other = make_user('eintrikot_member');
+wp_set_current_user(1);
+check('Newsletter: die Verwaltung sieht nur den Zustand', !str_contains(newsletter_profile_section($nl_member), 'name="newsletter_consent"') && str_contains(newsletter_profile_section($nl_member), 'Nein'));
+wp_set_current_user($nl_other);
+check('Newsletter: kein Zugriff auf die Auswahl eines anderen', !str_contains(newsletter_profile_section($nl_member), 'name="newsletter_consent"'));
+wp_set_current_user(0);
+check('Newsletter: ohne Anmeldung kein Hinweis', newsletter_prompt_bar() === '');
+
 foreach ($created as $id) {
     require_once ABSPATH . 'wp-admin/includes/user.php';
     wp_delete_user($id);

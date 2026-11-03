@@ -2517,3 +2517,30 @@
 .et-app .member-letter:first-child {
     margin-top: 0;
 }
+.et-app .newsletter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin: 0 0 20px;
+    padding: 16px 20px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background: #fff;
+}
+.et-app .newsletter-bar h2 {
+    margin: 0 0 4px;
+    font-size: 18px;
+}
+.et-app .newsletter-bar p {
+    margin: 0;
+    max-width: 60ch;
+}
+.et-app .newsletter-bar form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0;
+}
