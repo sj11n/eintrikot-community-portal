@@ -653,9 +653,8 @@ function render_profile($id) {
         selected($data['funding_interest'] ?? '', 'no', false) .
         '>Derzeit nicht</option></select></label><p>Deine Auswahl ist unverbindlich. Betrag und Beginn bestätigst du in einer separaten Anfrage.</p><a class="text-link" href="' .
         esc_url(portal_url('service', ['service' => 'funding'])) .
-        '">Förderanfrage vorbereiten →</a></section><section class="form-section"><h2>In Verbindung bleiben</h2><label class="check"><input type="checkbox" name="newsletter" value="1" ' .
-        checked(!empty($data['newsletter']), true, false) .
-        '><span>EINTRIKOT-Newsletter erhalten<br><small>Du kannst diese Einstellung jederzeit ändern.</small></span></label></section>';
+        '">Förderanfrage vorbereiten →</a></section>' .
+        newsletter_profile_section($id); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the section escapes its own output
     if (view_manager()) {
         $listing = $data['directory_listing'] ?? '';
         $auto = directory_listed_by_role($user)
@@ -1004,7 +1003,7 @@ add_action('admin_post_et_profile', function () {
         $data['birthday'] = $previous['birthday'];
         unset($errors['birthday']);
     }
-    foreach (['show_age', 'newsletter', 'public_photo'] as $key) {
+    foreach (['show_age', 'public_photo'] as $key) {
         $data[$key] = isset($_POST[$key]);
     }
     // Who sees the birthday: only the member decides (never the administration), and nobody under 18 shares it.
@@ -1014,6 +1013,7 @@ add_action('admin_post_et_profile', function () {
             ? post_choice('birthday_visibility', ['day', 'full'])
             : birthday_choice($previous));
     unset($data['birthday_notice']); // replaced by birthday_visibility
+    unset($data['newsletter']); // replaced by the consent in newsletter.php
     // Membership number and entry date come from MeinVerein; only the administration corrects them.
     $membership = null;
     if (manager_access() && isset($_POST['member_number'], $_POST['joined'])) {
@@ -1146,6 +1146,11 @@ add_action('admin_post_et_profile', function () {
     }
     if (is_wp_error($result)) {
         profile_error($id, $data, $result->get_error_message(), $result->get_error_code() === 'conflict');
+    }
+    // The newsletter answer belongs to the member alone; the administration never sets it.
+    $newsletter = post_choice('newsletter_consent', ['yes', 'no']);
+    if ($id === get_current_user_id() && $newsletter !== '') {
+        newsletter_set_consent($id, $newsletter, 'Eigene Profilpflege');
     }
     // Saving the own profile once completes the review of the values taken over from NDAlumni.
     if ($id === get_current_user_id() && get_user_meta($id, 'eintrikot_review', true) === 'pending') {

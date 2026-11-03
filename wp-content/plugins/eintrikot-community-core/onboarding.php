@@ -633,7 +633,7 @@ function send_welcome_mail($to, $first_name, $login, $number, $link, $pdf, $user
                         'Deine Angaben aus NDAlumni haben wir übernommen: Beruf, Hockey-Stationen, Interessen und Links. Alles ist zunächst nur für dich und die Mitgliederverwaltung sichtbar. Schau bitte einmal drüber, ergänze, was fehlt, und entscheide pro Abschnitt, was andere Mitglieder sehen. Erst dann erscheinst du mit mehr als deinem Namen im Mitgliederverzeichnis.'
                     ) .
                     $p(
-                        'Den Newsletter bekommst du im neuen Portal nur, wenn du ihn in deinem Profil einschaltest.'
+                        'Den Newsletter bekommst du im neuen Portal nur, wenn du zustimmst. Das Portal fragt dich dazu beim Anmelden.'
                     )
                 : $p(
                     'willkommen bei EINTRIKOT – schön, dass du dabei bist. Im Anhang findest du deine persönliche Mitgliedsurkunde' .

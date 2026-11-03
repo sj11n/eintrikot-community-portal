@@ -146,6 +146,8 @@ require_once __DIR__ . '/onboarding.php';
 
 require_once __DIR__ . '/maillist.php';
 
+require_once __DIR__ . '/newsletter.php';
+
 require_once __DIR__ . '/ndalumni.php';
 
 require_once __DIR__ . '/social.php';
