@@ -60,6 +60,7 @@ add_filter('pre_wp_mail', function (\$short, \$args) {
 PHP
     ln -sfn "$ROOT/wp-content/plugins/eintrikot-community-core" "$WP/wp-content/plugins/eintrikot-community-core"
     ln -sfn "$ROOT/wp-content/themes/eintrikot-community" "$WP/wp-content/themes/eintrikot-community"
+    ln -sfn "$ROOT/wp-content/plugins/eintrikot-newsletter" "$WP/wp-content/plugins/eintrikot-newsletter"
     cat >"$LOKAL/einrichten.php" <<PHP
 <?php
 define('WP_INSTALLING', true);
@@ -73,6 +74,7 @@ PHP
 require '$WP/wp-load.php';
 switch_theme('eintrikot-community');
 activate_plugin('eintrikot-community-core/eintrikot-community-core.php');
+activate_plugin('eintrikot-newsletter/eintrikot-newsletter.php');
 update_option('permalink_structure', '/%postname%/');
 \$page = \Eintrikot\Community\prepare_portal_page();
 wp_update_post(['ID' => \$page, 'post_status' => 'publish']);
@@ -91,6 +93,11 @@ PHP
 
 need_setup() {
     [[ -f "$WP/wp-config.php" ]] || setup
+    # Ältere Einrichtungen kennen das Newsletter-Plugin noch nicht: verlinken und aktivieren.
+    if [[ ! -e "$WP/wp-content/plugins/eintrikot-newsletter" ]]; then
+        ln -sfn "$ROOT/wp-content/plugins/eintrikot-newsletter" "$WP/wp-content/plugins/eintrikot-newsletter"
+        WP="$WP" php -r 'require getenv("WP") . "/wp-load.php"; require_once ABSPATH . "wp-admin/includes/plugin.php"; activate_plugin("eintrikot-newsletter/eintrikot-newsletter.php");' >/dev/null
+    fi
 }
 
 case "${1:-}" in
@@ -99,6 +106,7 @@ case "${1:-}" in
         need_setup
         rm -f "$LOKAL/debug.log"
         WP_ROOT="$WP" php "$ROOT/tests/run.php"
+        WP_ROOT="$WP" php "$ROOT/tests/newsletter.php"
         # PHP-Hinweise und -Warnungen aus dem Lauf gelten als Fehler.
         if [[ -s "$LOKAL/debug.log" ]]; then
             echo "PHP-Meldungen im Lauf (.lokal/debug.log):"

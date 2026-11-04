@@ -47,7 +47,8 @@ function portal_nav_section($view) {
         'maillist' => 'admin',
         'profile' => 'account'
     ];
-    return $map[$view] ?? $view;
+    // Add-ons such as the newsletter plugin place their own views in a section.
+    return (string) apply_filters('eintrikot_portal_nav_section', $map[$view] ?? $view, $view);
 }
 
 /** CI colour of an area: orientation through colour, while forms and lists stay calm and white. */
@@ -337,7 +338,13 @@ add_shortcode('eintrikot_portal', function () {
                     'Termine pflegen',
                     'Termine im Portal'
                 ) .
-                '</section><section class="portal-section"><h2>Newsletter</h2><p>Der Ablauf zum Einlesen und Bearbeiten von KI-Entwürfen folgt in einem späteren Ausbauschritt.</p></section>';
+                '</section>' .
+                wp_kses_post(
+                    apply_filters(
+                        'eintrikot_editorial_newsletter',
+                        '<section class="portal-section"><h2>Newsletter</h2><p>Der Newsletter kommt mit dem Plugin „EINTRIKOT Newsletter“. Es ist auf dieser Seite noch nicht aktiviert.</p></section>'
+                    )
+                );
             break;
         case 'documents':
             echo '<a class="text-link service-back" href="' .
@@ -347,6 +354,12 @@ add_shortcode('eintrikot_portal', function () {
                 '<p class="portal-empty">Noch keine Dokumente hinterlegt. Sobald der Vorstand Unterlagen bereitstellt, findest du sie hier.</p>';
             break;
         default:
+            // Views of add-ons (e.g. the newsletter plugin); they check access and escape their own output.
+            $addon = apply_filters('eintrikot_portal_view', null, $view);
+            if (is_string($addon)) {
+                echo $addon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- add-on views escape their own output
+                break;
+            }
             render_home();
     }
     return portal_shell(ob_get_clean(), $view);

@@ -59,6 +59,7 @@ exists() { # $1: entfernter Ordner
 
 PACKAGES=(
     "wp-content/plugins/eintrikot-community-core:plugins/eintrikot-community-core"
+    "wp-content/plugins/eintrikot-newsletter:plugins/eintrikot-newsletter"
     "wp-content/themes/eintrikot-community:themes/eintrikot-community"
 )
 

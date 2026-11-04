@@ -11,6 +11,7 @@ on:
     paths:
       - 'wp-content/themes/eintrikot-community/**'
       - 'wp-content/plugins/eintrikot-community-core/**'
+      - 'wp-content/plugins/eintrikot-newsletter/**'
       - 'tools/deploy.sh'
       - '.github/workflows/einspielen.yml'
   workflow_dispatch:

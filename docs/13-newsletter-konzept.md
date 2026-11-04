@@ -1,6 +1,6 @@
 # Konzept: Newsletter als eigenes Plugin
 
-Stand: 04.11.2026. Status: **Entwurf zur Abstimmung, noch nichts gebaut.** Das Briefing (`docs/01`) nennt MailPoet. Das kostenlose MailPoet ist auf wenige hundert Empfänger und Monatsmengen begrenzt und setzt sein Logo in die Mail. Deshalb wird stattdessen ein kleines eigenes Plugin vorgeschlagen. Die Abweichung vom Briefing braucht die Freigabe von B und V.
+Stand: 04.11.2026. Status: **gebaut** (Einwilligung im Core ab 0.37.0, Plugin `eintrikot-newsletter` 0.1.0, Bedienung in `docs/14`). B hat das eigene Plugin, die Absenderadresse und das Design am 04.11.2026 freigegeben. Offen bleiben die Prüfpunkte für V (Einwilligungstext, Fußzeile, Wiedervorlage nach Nein, Datenschutzerklärung) und der Versandweg (Schritt 5). Das Briefing (`docs/01`) nennt MailPoet. Das kostenlose MailPoet ist auf wenige hundert Empfänger und Monatsmengen begrenzt und setzt sein Logo in die Mail. Deshalb wird stattdessen ein kleines eigenes Plugin vorgeschlagen. Die Abweichung vom Briefing braucht die Freigabe von B und V.
 
 **Wer macht was:** B = Björn, V = Vorstand, R = Redaktion, C = Claude.
 
@@ -134,8 +134,8 @@ Schritt 2 kann schon vor dem Domainumzug laufen, damit Einwilligungen vorliegen,
 
 ## Offene Fragen
 
-1. Einverstanden mit eigenem Plugin statt MailPoet (Abweichung vom Briefing)?
-2. Absenderadresse: `newsletter@eintrikot.de` als Alias, Antworten an `info@eintrikot.de`?
+1. Eigenes Plugin statt MailPoet: B einverstanden (04.11.2026). Die Zustimmung von V steht noch aus.
+2. Erledigt: Absender `newsletter@eintrikot.de` als Alias, Antworten an `info@eintrikot.de` (B, 04.11.2026). In der Portal-Übersicht für Administratoren änderbar.
 3. Wortlaut der Einwilligung und der Fußzeile: prüft V, ggf. mit Datenschutzbeauftragtem.
 4. Erledigt: **Inxmail** wird nicht mehr genutzt (B, 04.11.2026). Die vier Inxmail-CNAME-Einträge kommen nicht in die neue Zone. Ursprüngliche Frage: Wird Inxmail noch für Newsletter genutzt (CNAME-Einträge in der DNS-Zone, `docs/12`)? Wenn ja, wer, mit welchen Empfängern, und soll das ersetzt werden?
 5. Erledigt: Versandprotokolle werden 12 Monate aufbewahrt (B, 04.11.2026).

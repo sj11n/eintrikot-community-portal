@@ -3,8 +3,8 @@
   "private": true,
   "description": "Nur Entwicklungswerkzeuge (Formatierung). Wird nicht auf den Server eingespielt.",
   "scripts": {
-    "format": "prettier --write \"wp-content/plugins/eintrikot-community-core/**/*.{php,js}\" wp-content/themes/eintrikot-community/functions.php",
-    "check": "prettier --check \"wp-content/plugins/eintrikot-community-core/**/*.{php,js}\" wp-content/themes/eintrikot-community/functions.php"
+    "format": "prettier --write \"wp-content/plugins/eintrikot-community-core/**/*.{php,js}\" \"wp-content/plugins/eintrikot-newsletter/**/*.{php,js}\" wp-content/themes/eintrikot-community/functions.php",
+    "check": "prettier --check \"wp-content/plugins/eintrikot-community-core/**/*.{php,js}\" \"wp-content/plugins/eintrikot-newsletter/**/*.{php,js}\" wp-content/themes/eintrikot-community/functions.php"
   },
   "devDependencies": {
     "@prettier/plugin-php": "0.25.0",

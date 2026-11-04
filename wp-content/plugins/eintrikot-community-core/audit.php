@@ -116,7 +116,8 @@ function render_audit() {
                     'role' => 'Rolle',
                     'birthday_visibility' => 'Geburtstag für Mitglieder sichtbar',
                     'mail_list' => 'E-Mail-Verteiler',
-                    'newsletter' => 'Newsletter-Einwilligung'
+                    'newsletter' => 'Newsletter-Einwilligung',
+                    'newsletter_issue' => 'Newsletter-Ausgabe'
                 ])[$row->field] ?? $row->field
             ) .
             '</h2><p>Geändert von ' .

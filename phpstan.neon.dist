@@ -6,4 +6,5 @@ parameters:
     phpVersion: 80100
     paths:
         - wp-content/plugins/eintrikot-community-core
+        - wp-content/plugins/eintrikot-newsletter
         - wp-content/themes/eintrikot-community

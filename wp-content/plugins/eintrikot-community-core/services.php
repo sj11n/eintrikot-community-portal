@@ -74,6 +74,7 @@ function render_service_overview($types) {
             )
             : '') .
         service_link(portal_url('documents'), 'Dokumente', 'Satzung, Protokolle und Unterlagen') .
+        apply_filters('eintrikot_service_documents', '') . // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- add-ons escape their own links
         '</section>';
     if (view_can_edit_infos() || view_manager()) {
         echo '<section class="portal-section"><h2>Vereinsarbeit</h2>';
