@@ -18,7 +18,8 @@
 | [10 Beiratstest](docs/10-beiratstest.md) | Testphase auf der Entwicklungsseite: Testdaten, Rückmeldungen, Leitfaden, Mail, Rückweg |
 | [11 Stories importieren](docs/11-stories-import.md) | Alte NDAlumni-Beiträge als Stories übernehmen: vorbereiten, importieren, veröffentlichen, zurücknehmen |
 | [13 Newsletter-Konzept](docs/13-newsletter-konzept.md) | Einwilligung, eigenes Plugin, Ablauf, Datenschutz, offene Prüfpunkte |
-| [14 Newsletter-Bedienung](docs/14-newsletter-bedienung.md) | Plugin aktivieren, Versandweg, eine Ausgabe vom Entwurf bis zum Archiv, Fehler |
+| [14 Newsletter-Bedienung](docs/14-newsletter-bedienung.md) | Plugin aktivieren, Checkliste Versandweg, eine Ausgabe vom Entwurf bis zum Archiv, Redaktionshilfen, Fehler |
+| [15 Newsletter: Vorlage Vorstand](docs/15-newsletter-vorstand.md) | Entscheidungen zum Abhaken: Plugin, Einwilligungstext, Fußzeile, Datenschutzerklärung |
 
 ## Ablauf einer Änderung
 
