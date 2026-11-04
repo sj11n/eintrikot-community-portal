@@ -2,7 +2,7 @@
 /**
  * Plugin Name: EINTRIKOT Newsletter
  * Description: Newsletter-Ausgaben schreiben, prüfen, freigeben und einzeln an Mitglieder mit Einwilligung versenden. Braucht EINTRIKOT Community Core.
- * Version: 0.1.1
+ * Version: 0.1.2
  * Requires PHP: 8.1
  * Requires Plugins: eintrikot-community-core
  */
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-const VERSION = '0.1.1';
+const VERSION = '0.1.2';
 const SCHEMA = '1';
 
 /** The plugin needs the consent functions of the core plugin. */

@@ -1,5 +1,7 @@
 /* EINTRIKOT Newsletter: screens in the portal and the unsubscribe page (design approved by B, 04.11.2026). */
 .et-app .nl-head-actions{margin:20px 0 0}
+/* The core rule for visited links (.et-app a:visited) would otherwise turn the white text black. */
+.et-app a.button.solid,.et-app a.button.solid:visited{color:#fff}
 .et-app .nl-actions{margin:0 0 8px}
 
 /* Reach: who gets it */
