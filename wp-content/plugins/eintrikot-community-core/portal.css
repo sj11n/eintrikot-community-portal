@@ -2544,3 +2544,13 @@
     gap: 8px 12px;
     margin: 0;
 }
+.et-app .newsletter-bar button.text-link {
+    padding: 12px 0;
+    border: 0;
+    border-bottom: 1px solid;
+    background: none;
+    color: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
