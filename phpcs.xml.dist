@@ -3,6 +3,7 @@
     <description>Sicherheitsprüfung für Plugin und Theme. Der Stil (Einrückung, Zeilenlänge) gehört Prettier und wird hier bewusst nicht geprüft.</description>
 
     <file>wp-content/plugins/eintrikot-community-core</file>
+    <file>wp-content/plugins/eintrikot-newsletter</file>
     <file>wp-content/themes/eintrikot-community</file>
 
     <arg name="extensions" value="php"/>

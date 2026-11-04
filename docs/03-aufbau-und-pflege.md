@@ -105,6 +105,7 @@ Administratoren können das Portal so ansehen, wie es andere Rollen sehen (seit 
 **Was beim Löschen mit den Daten passiert**
 - Profil, Profilbild, Geburtsdatum, Einwilligungsnachweis und alle weiteren Profildaten werden mit dem Konto gelöscht.
 - **Termin-Anmeldungen** werden sofort mit gelöscht (seit 0.21.2).
+- **Newsletter:** Die Einwilligung liegt im Profil und geht mit dem Konto. Das Versandprotokoll der Person (Plugin „EINTRIKOT Newsletter“) wird beim Löschen sofort mit gelöscht.
 - **Service-Anfragen** der Person: WordPress fragt beim Löschen, ob sie gelöscht oder einem anderen Konto zugeordnet werden. Bei Löschwünschen „löschen“ wählen.
 - Im **Änderungsprotokoll** bleibt stehen, wer wann welches Feld geändert hat (mit „Benutzer #Nummer“, bis 24 Monate). Die **Werte und Gründe** der gelöschten Person werden beim Löschen durch „[gelöscht]“ ersetzt, und die Löschung selbst wird mit Datum und ausführender Person eingetragen.
 - Beiträge, Spendenbescheinigungen und Buchführung liegen in MeinVerein und unterliegen den gesetzlichen Aufbewahrungsfristen; das Portal ist davon getrennt.

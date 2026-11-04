@@ -108,8 +108,23 @@ function newsletter_prompt_due($user_id) {
     return $c['state'] === '' || $c['at'] + newsletter_retry_days() * DAY_IN_SECONDS <= $now;
 }
 
-/** Addresses of all members who said "Yes" and are adults. Same address rules as the mail list. */
-function newsletter_recipients() {
+/** Whether this account gets the newsletter now: "Yes", adult, portal access and a usable address. */
+function newsletter_receives($user_id) {
+    $user = get_userdata((int) $user_id);
+    return $user instanceof \WP_User &&
+        user_can($user, 'eintrikot_portal') &&
+        newsletter_consent($user->ID)['state'] === 'yes' &&
+        newsletter_allowed($user->ID) &&
+        mail_list_usable($user->user_email) !== '';
+}
+
+/**
+ * Members who said "Yes" and are adults, as [user ID => address], sorted by address. Same address rules as
+ * the mail list; an address used by two accounts appears once.
+ *
+ * @return array<int, string>
+ */
+function newsletter_recipient_ids() {
     $mails = [];
     foreach (
         get_users(['capability' => 'eintrikot_portal', 'number' => -1, 'fields' => ['ID', 'user_email']])
@@ -118,15 +133,20 @@ function newsletter_recipients() {
         $mail = mail_list_usable($user->user_email);
         if (
             $mail !== '' &&
+            !in_array($mail, $mails, true) &&
             newsletter_consent((int) $user->ID)['state'] === 'yes' &&
             newsletter_allowed((int) $user->ID)
         ) {
-            $mails[$mail] = true;
+            $mails[(int) $user->ID] = $mail;
         }
     }
-    $mails = array_keys($mails);
-    sort($mails);
+    asort($mails);
     return $mails;
+}
+
+/** Addresses of all members who said "Yes" and are adults. Same address rules as the mail list. */
+function newsletter_recipients() {
+    return array_values(newsletter_recipient_ids());
 }
 
 /** The notice at the top of the portal while the question is open. */
