@@ -202,9 +202,11 @@ function preview($data) {
         esc_html($data['preheader'] !== '' ? $data['preheader'] : '(noch kein Vorschautext)') .
         '</small></p><div class="nl-frame"><iframe class="nl-mail" title="Vorschau der E-Mail" loading="lazy" srcdoc="' .
         esc_attr(render_mail($data, $base + ['scheme' => 'light'])) .
-        '"></iframe></div><template class="nl-dark">' .
-        esc_html(render_mail($data, $base + ['scheme' => 'dark'])) .
-        '</template></div></section>';
+        // Dark version as an attribute too: the portal page runs through wptexturize, which leaves attributes alone
+        // but would turn "1024x538" in image file names into "1024×538" inside text.
+        '" data-nl-dark="' .
+        esc_attr(render_mail($data, $base + ['scheme' => 'dark'])) .
+        '"></iframe></div></div></section>';
 }
 
 /* ---------- Redaktion → Newsletter ---------- */

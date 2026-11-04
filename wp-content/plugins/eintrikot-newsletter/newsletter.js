@@ -4,9 +4,9 @@
         const group = section.querySelector('.nl-device');
         const box = section.querySelector('.nl-preview');
         const frame = section.querySelector('iframe.nl-mail');
-        const dark = section.querySelector('template.nl-dark');
-        if (!group || !box || !frame || !dark) return;
+        if (!group || !box || !frame || !frame.dataset.nlDark) return;
         const light = frame.getAttribute('srcdoc');
+        const dark = frame.dataset.nlDark;
         group.hidden = false;
         group.addEventListener('click', (e) => {
             const button = e.target.closest('[data-nl-device]');
@@ -17,7 +17,7 @@
                 b.setAttribute('aria-pressed', String(b === button));
             });
             box.classList.toggle('is-phone', device === 'phone');
-            const html = device === 'dark' ? dark.content.textContent || dark.textContent : light;
+            const html = device === 'dark' ? dark : light;
             if (frame.getAttribute('srcdoc') !== html) frame.setAttribute('srcdoc', html);
         });
     });
