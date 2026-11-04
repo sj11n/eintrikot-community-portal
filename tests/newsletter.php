@@ -102,7 +102,9 @@ $content =
     '<!-- wp:paragraph --><p>Einleitung mit <a href="https://example.org/seite">Link</a> und <strong>fett</strong>.</p><!-- /wp:paragraph -->' .
     '<!-- wp:separator --><hr class="wp-block-separator"/><!-- /wp:separator -->' .
     '<!-- wp:heading --><h2 class="wp-block-heading">Erste Meldung</h2><!-- /wp:heading -->' .
-    '<!-- wp:image --><figure class="wp-block-image"><img src="https://example.org/bild.jpg" alt="Spielerinnen beim Training"/></figure><!-- /wp:image -->' .
+    '<!-- wp:image --><figure class="wp-block-image"><img src="' .
+    get_theme_file_uri('assets/og-image.jpg') .
+    '" alt="Spielerinnen beim Training"/></figure><!-- /wp:image -->' .
     '<!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link" href="https://example.org/anmelden">Jetzt anmelden</a></div><!-- /wp:button --></div><!-- /wp:buttons -->';
 
 /* ---------- Aufbau ---------- */
@@ -212,6 +214,27 @@ check(
     )
 );
 check('Erlaubter Inhalt hat keine Probleme', block_problems(content_blocks($content)) === []);
+check(
+    'Fremde Bilder werden erkannt (nichts wird nachgeladen)',
+    (bool) block_problems(
+        content_blocks(
+            '<!-- wp:image --><figure class="wp-block-image"><img src="https://example.org/b.jpg" alt="x"/></figure><!-- /wp:image -->'
+        )
+    )
+);
+check(
+    'Dateien außerhalb von wp-content gelten nicht als eigene Bilder',
+    local_image_path(content_url('../wp-config.php')) === '' &&
+        local_image_path(content_url('themes/eintrikot-community/style.css')) === ''
+);
+[$embedded, $files] = embed_images(render_body($content));
+check(
+    'Eigene Bilder werden in die Mail eingebettet',
+    str_contains($embedded, 'src="cid:et-bild-') &&
+        !preg_match('/<img[^>]+src="http/i', $embedded) &&
+        count($files) === 1 &&
+        is_readable(reset($files))
+);
 
 /* ---------- Testversand ---------- */
 
@@ -319,6 +342,10 @@ check(
 $m = $mails[0];
 $headers = implode("\n", (array) $m['headers']);
 check('Jede Mail einzeln an eine Person', !str_contains($m['to_plain'], ','));
+check(
+    'Versendete Mail lädt keine Bilder nach',
+    !preg_match('/<img[^>]+src="http/i', $m['message']) && str_contains($m['message'], 'cid:et-bild-')
+);
 check(
     'Mail hat persönlichen Abmeldelink',
     str_contains($m['message'], 'et_abmelden=') && str_contains($m['message'], 'Mit einem Klick abmelden')

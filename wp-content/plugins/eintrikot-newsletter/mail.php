@@ -58,6 +58,9 @@ function block_problems(array $blocks) {
         }
         if ($name === 'core/image' && image_parts($b)['src'] === '') {
             $problems['src'] = 'Mindestens ein Bild-Baustein ist leer.';
+        } elseif ($name === 'core/image' && local_image_path(image_parts($b)['src']) === '') {
+            $problems['local'] =
+                'Bilder müssen aus der Mediathek dieser Seite kommen, damit sie in die Mail eingebettet werden (nichts wird nachgeladen).';
         }
         if ($name === 'core/buttons') {
             foreach ($b['innerBlocks'] ?? [] as $button) {
@@ -376,13 +379,68 @@ add_action('wp_mail_failed', function ($error) {
     last_mail_error($error instanceof \WP_Error ? $error->get_error_message() : 'Unbekannter Fehler');
 });
 
-/** Sends one mail to one address: HTML, text version and both logos embedded. */
+/**
+ * File on this server for an image URL of this site (media library, theme, plugins), or '' for anything else.
+ * Only such images can travel inside the mail.
+ */
+function local_image_path($url) {
+    $url = strtok((string) $url, '?#');
+    $uploads = wp_get_upload_dir();
+    foreach ([[$uploads['baseurl'], $uploads['basedir']], [content_url(), WP_CONTENT_DIR]] as [$base, $dir]) {
+        foreach ([set_url_scheme($base, 'http'), set_url_scheme($base, 'https')] as $prefix) {
+            if ($url !== false && str_starts_with($url, trailingslashit($prefix))) {
+                $relative = rawurldecode(substr($url, strlen(trailingslashit($prefix))));
+                // No way out of the folder: no "..", no NUL, only image files.
+                if (
+                    str_contains($relative, '..') ||
+                    str_contains($relative, "\0") ||
+                    !preg_match('/\.(jpe?g|png|gif|webp)$/i', $relative)
+                ) {
+                    return '';
+                }
+                $path = wp_normalize_path(trailingslashit($dir) . $relative);
+                return is_file($path) && is_readable($path) ? $path : '';
+            }
+        }
+    }
+    return '';
+}
+
+/**
+ * Replaces the images of this site with embedded copies (cid:), as the privacy policy promises: a newsletter loads
+ * nothing from outside when it is opened.
+ *
+ * @return array{0: string, 1: array<string, string>} [HTML, cid => file]
+ */
+function embed_images($html) {
+    $files = [];
+    $html = (string) preg_replace_callback(
+        '/<img([^>]*?)src="([^"]+)"/i',
+        static function ($m) use (&$files) {
+            $path = local_image_path(html_entity_decode($m[2]));
+            if ($path === '') {
+                return $m[0];
+            }
+            $cid = 'et-bild-' . substr(md5($path), 0, 12);
+            $files[$cid] = $path;
+            return '<img' . $m[1] . 'src="cid:' . $cid . '"';
+        },
+        (string) $html
+    );
+    return [$html, $files];
+}
+
+/** Sends one mail to one address: HTML, text version, logos and images embedded. */
 function send_one($to, $subject, $html, $text, $unsubscribe) {
     last_mail_error('');
-    $init = static function ($mailer) use ($text) {
+    [$html, $images] = embed_images($html);
+    $init = static function ($mailer) use ($text, $images) {
         $mailer->AltBody = $text;
         if (function_exists('Eintrikot\Community\mail_embed_logos')) {
             \Eintrikot\Community\mail_embed_logos($mailer);
+        }
+        foreach ($images as $cid => $path) {
+            $mailer->addEmbeddedImage($path, $cid, basename($path));
         }
     };
     add_action('phpmailer_init', $init);

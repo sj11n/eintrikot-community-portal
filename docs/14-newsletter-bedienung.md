@@ -1,6 +1,6 @@
 # Newsletter: Einrichtung und Bedienung
 
-Stand: 04.11.2026, Plugin `eintrikot-newsletter` 0.1.0 (braucht Core ab 0.38.0). Konzept und Entscheidungen: `docs/13`.
+Stand: 04.11.2026, Plugin `eintrikot-newsletter` 0.1.1 (braucht Core ab 0.38.0). Konzept und Entscheidungen: `docs/13`.
 
 **Wer macht was:** B = Björn, V = Vorstand, R = Redaktion, A = Administrator im WordPress-Backend.
 
@@ -18,9 +18,52 @@ Absender, Absendername, Antwortadresse und Mails pro Minute stehen für Administ
 
 Echte Mails an Mitglieder erst nach dem Umzug auf `www.eintrikot.de` mit HTTPS (Abmeldelinks müssen auf die richtige Domain zeigen).
 
+## Checkliste Versandweg (B)
+
+Zum Abhaken, in dieser Reihenfolge. Werte und Kennwörter nie in Chat, Issue oder Repository eintragen.
+
+**A. Absender-Alias in Google Workspace**
+
+- [ ] admin.google.com → Verzeichnis → Nutzer → das Postfach, das versendet (z. B. `info@eintrikot.de`) → Nutzerinformationen → Alternative E-Mail-Adressen: `newsletter@eintrikot.de` hinzufügen.
+- [ ] Im Gmail dieses Postfachs: Einstellungen → Konten → „Senden als“: `newsletter@eintrikot.de` hinzufügen, Name „EINTRIKOT e. V.“. Ohne diesen Schritt ersetzt Google den Absender durch die Anmeldeadresse.
+- [ ] Rückläufer und Antworten an `newsletter@` landen in diesem Postfach. Optional einen Gmail-Filter „an: newsletter@eintrikot.de“ → Label `Newsletter/Rückläufer`.
+
+**B. SMTP-Plugin auf der Seite**
+
+- [ ] Für das versendende Postfach die Bestätigung in zwei Schritten einschalten und ein **App-Passwort** erzeugen (myaccount.google.com → Sicherheit → App-Passwörter, Name „WordPress eintrikot.de“). Kein persönliches Passwort verwenden.
+- [ ] Backend → Plugins → Installieren: „WP Mail SMTP“. Mailer „Andere SMTP“: Host `smtp.gmail.com`, Verschlüsselung TLS, Port `587`, Authentifizierung an, Benutzer = versendendes Postfach, Passwort = App-Passwort.
+- [ ] Absender-Adresse dort `info@eintrikot.de`, **„Absender-E-Mail erzwingen“ aus** lassen, sonst überschreibt das Plugin `newsletter@`.
+- [ ] Testmail aus WP Mail SMTP an ein eigenes Gmail-Postfach: kommt an, nicht im Spam.
+- [ ] Grenze im Blick: Google erlaubt pro Postfach etwa 2.000 Mails am Tag. Bei vier Ausgaben an 200 bis 300 Empfänger reicht das deutlich.
+
+**C. Cronjob bei STRATO**
+
+- [ ] STRATO-Kundenbereich → Paket → Cronjobs (je nach Paket unter „Hosting“). Neuer Cronjob, jede Minute: `https://www.eintrikot.de/wp-cron.php?doing_wp_cron`.
+- [ ] Wenn das Paket keine Cronjobs kennt: Ohne Cronjob läuft der Versand nur bei Seitenaufrufen. Jeder Seitenaufruf stößt WP-Cron an, und die Fortschrittsseite lädt sich alle 20 Sekunden neu; dann während des Versands diese Seite offen lassen.
+- [ ] Prüfen: Nach der Freigabe einer Probeausgabe steigt „… von … gesendet“ jede Minute, ohne dass jemand die Seite neu lädt.
+
+**D. DNS (Werte in `docs/12`)**
+
+- [ ] SPF enthält `include:_spf.google.com`.
+- [ ] DKIM `google._domainkey` ist gesetzt und in admin.google.com → Apps → Gmail → „E-Mail authentifizieren“ als aktiv angezeigt.
+- [ ] DMARC `_dmarc` ist gesetzt (heute `p=quarantine; pct=50`, nach zwei Wochen ohne Probleme auf 100 %).
+
+**E. Testmails**
+
+- [ ] Im Portal eine Testausgabe anlegen und per **Testversand** an Postfächer bei Gmail, Outlook.com, web.de und GMX schicken.
+- [ ] In jedem Postfach: im Posteingang (nicht Spam), Logo und Bild sichtbar, ohne „Bilder laden“ zu klicken, hell und dunkel lesbar, Abmeldelink zeigt „Der Abmeldelink funktioniert“.
+- [ ] In Gmail „Original anzeigen“: SPF, DKIM und DMARC jeweils **PASS**.
+- [ ] In Gmail erscheint neben dem Absender „Abmelden“ (Kopfzeile `List-Unsubscribe`). Das kann bei kleinen Absendern einige Ausgaben dauern.
+
+**F. Probelauf**
+
+- [ ] Nur Vorstand und Redaktion haben im Portal „Ja“ gesagt (Übersicht zeigt die Zahl).
+- [ ] Eine echte Ausgabe durch den ganzen Ablauf: Prüfliste, Freigabe durch eine zweite Person, Versand, Archiv, Rückläufer prüfen.
+- [ ] Eine Person meldet sich über den Link in der Mail ab und prüft im Profil „Nein“ und im Änderungsprotokoll den Eintrag.
+
 ## Eine Ausgabe vom Entwurf bis zum Archiv
 
-1. **Anlegen (R):** Portal → Redaktion → Newsletter → „Neue Ausgabe anlegen“. Im Editor: Titel = Betreff, rechts „Ausgabe“ (z. B. „Dezember 2026“) und „Vorschautext“. Erlaubt sind nur Überschrift, Absatz, Bild (mit Alternativtext), Button und Trennlinie. Anrede, Logo und Fußzeile setzt das System.
+1. **Anlegen (R):** Portal → Redaktion → Newsletter → „Neue Ausgabe anlegen“. Im Editor: Titel = Betreff, rechts „Ausgabe“ (z. B. „Dezember 2026“) und „Vorschautext“. Erlaubt sind nur Überschrift, Absatz, Bild (aus der Mediathek, mit Alternativtext), Button und Trennlinie. Bilder werden in die Mail eingebettet, beim Öffnen wird nichts nachgeladen. Anrede, Logo und Fußzeile setzt das System.
 2. **Vorschau und Testversand (R):** Über „Vorschau, Test und Prüfung im Portal“ zurück ins Portal. Vorschau als Computer, Handy und dunkel. Testmail an Vorstand, Redaktion oder Testpostfächer, nie an Mitglieder (wird abgelehnt). Betreff mit „[TEST]“.
 3. **Prüfliste (R):** fünf Haken setzen. Das System prüft selbst Betreff, Ausgabe, Vorschautext, Bausteine, Alternativtexte und ob die aktuelle Fassung als Testmail verschickt wurde. Dann „Als bereit melden“.
 4. **Freigabe (V):** Der Bildschirm zeigt die Empfängerzahl. Haken setzen, „Freigeben und Versand starten“. Wer den Inhalt zuletzt geändert hat, kann nicht freigeben (Vier-Augen-Prinzip). Ändert sich die Empfängerzahl zwischen Ansehen und Klick, muss neu bestätigt werden.
@@ -48,6 +91,45 @@ Jede Mail enthält einen persönlichen, signierten Abmeldelink und die Kopfzeile
 | Fehler „Versand unterbrochen, Zustellung unklar“  | Der Server hat mitten in einer Mail gestoppt. Diese Person wird nicht erneut angeschrieben, damit niemand doppelt Post bekommt.                              |
 | „Freigeben muss eine andere Person …“             | Vier-Augen-Prinzip: Eine andere Person aus dem Vorstand gibt frei.                                                                                          |
 | Redaktion → Newsletter zeigt nur einen Hinweis    | Plugin ist nicht aktiviert (Einrichten, Schritt 1).                                                                                                         |
+
+## Redaktionshilfen in Google Workspace (ohne Code)
+
+Laut Briefing bleiben Themensammlung und Redaktionsübersicht in Google Workspace. Vorlage zum Einrichten (B):
+
+**Google Formular „Thema für EINTRIKOT vorschlagen“** (Drive-Ordner `Newsletter`, Antworten in das Sheet unten)
+
+| Frage                                | Typ                                     | Pflicht |
+| ------------------------------------ | --------------------------------------- | ------- |
+| Worum geht es?                       | Kurzantwort                             | ja      |
+| Kurz beschrieben                     | Absatz                                  | ja      |
+| Link zur Quelle                      | Kurzantwort (URL)                       | nein    |
+| Gibt es ein Bild? Wer hat die Rechte? | Absatz                                  | nein    |
+| Bis wann ist es aktuell?             | Datum                                   | nein    |
+| Dein Name und deine E-Mail           | Kurzantwort                             | ja      |
+| Darf die Redaktion dich nachfragen?  | Ja/Nein                                 | ja      |
+
+**Google Sheet „Redaktionsübersicht“**, eine Zeile je Thema:
+
+| Spalte       | Inhalt                                                                 |
+| ------------ | ---------------------------------------------------------------------- |
+| Eingang      | Datum (aus dem Formular)                                               |
+| Thema        | Kurztitel                                                              |
+| Quelle       | Formular, Mail (Label `Newsletter/Eingang`), Redaktion                 |
+| Link         | Quelle oder Drive-Ordner                                               |
+| Bildstatus   | kein Bild · Bild da, Rechte offen · Bild da, Rechte geklärt            |
+| Relevanz     | hoch · mittel · niedrig                                                |
+| Ausgabe      | z. B. „Dezember 2026“                                                  |
+| Status       | neu · in Arbeit · im Entwurf · verworfen · versendet                   |
+| Freigabe     | Name und Datum der Freigabe im Portal                                  |
+| Notiz        | frei                                                                   |
+
+Status und Bildstatus als Dropdown (Daten → Datenvalidierung). Bedingte Formatierung: „Rechte offen“ rot.
+
+**Gmail-Label** `Newsletter/Eingang` für Hinweise per Mail, `Newsletter/Rückläufer` für unzustellbare Mails nach einem Versand.
+
+**Drive-Ordner** `Newsletter/` mit `Bilder` (nur Bilder mit geklärten Rechten), `Texte` (Entwürfe), `Ausgaben` (optional PDF der versendeten Ausgabe; das Archiv steht ohnehin im Portal).
+
+Bilder für eine Ausgabe immer in die **Mediathek der Website** hochladen: Nur von dort bettet das Plugin sie in die Mail ein.
 
 ## Lokal testen
 
