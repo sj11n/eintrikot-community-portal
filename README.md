@@ -20,6 +20,7 @@
 | [13 Newsletter-Konzept](docs/13-newsletter-konzept.md) | Einwilligung, eigenes Plugin, Ablauf, Datenschutz, offene Prüfpunkte |
 | [14 Newsletter-Bedienung](docs/14-newsletter-bedienung.md) | Plugin aktivieren, Checkliste Versandweg, eine Ausgabe vom Entwurf bis zum Archiv, Redaktionshilfen, Fehler |
 | [15 Newsletter: Vorlage Vorstand](docs/15-newsletter-vorstand.md) | Entscheidungen zum Abhaken: Plugin, Einwilligungstext, Fußzeile, Datenschutzerklärung |
+| [Entwurf „Das Viertel“](docs/entwuerfe/newsletter-heft.html) | Freigegebenes Heftkonzept des Newsletters; Skill unter `.claude/skills/das-viertel/` |
 
 ## Ablauf einer Änderung
 

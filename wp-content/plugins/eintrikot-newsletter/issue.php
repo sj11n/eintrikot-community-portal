@@ -1,6 +1,6 @@
 <?php
 /**
- * Eine Ausgabe (Beitragstyp et_newsletter): Betreff = Titel, Ausgabe (z. B. „Dezember 2026“), Vorschautext, Inhalt.
+ * Eine Ausgabe (Beitragstyp et_newsletter): Betreff = Titel, Ausgabe (z. B. „Nr. 1 · Dezember 2026“), Farbe des Viertels, Vorschautext, Inhalt.
  * Stand, Prüfliste, Freigabe und eingefrorener Inhalt liegen in Metadaten mit Unterstrich (nicht über REST sichtbar).
  */
 
@@ -21,7 +21,11 @@ const BLOCKS = [
     'core/image',
     'core/buttons',
     'core/button',
-    'core/separator'
+    'core/separator',
+    'core/quote',
+    'core/list',
+    'core/list-item',
+    'core/group'
 ];
 
 /** Checklist the editorial team ticks before an issue is ready. */
@@ -172,18 +176,28 @@ function last_editor($id) {
 function content_hash($id) {
     $post = get_post((int) $id);
     return $post
-        ? md5($post->post_title . "\n" . $post->post_content . "\n" . preheader($id) . "\n" . label($id))
+        ? md5(
+            $post->post_title .
+                "\n" .
+                $post->post_content .
+                "\n" .
+                preheader($id) .
+                "\n" .
+                label($id) .
+                "\n" .
+                color($id)
+        )
         : '';
 }
 function issue($id) {
     $post = get_post((int) $id);
     return $post && $post->post_type === POST_TYPE && $post->post_status !== 'trash' ? $post : null;
 }
-/** @return array{subject: string, preheader: string, label: string, body: string, text: string}|null */
+/** @return array{subject: string, preheader: string, label: string, body: string, text: string, color: string}|null */
 function frozen($id) {
     $v = get_post_meta((int) $id, '_et_nl_frozen', true);
     return is_array($v) && isset($v['subject'], $v['body'])
-        ? $v + ['preheader' => '', 'label' => '', 'text' => '']
+        ? $v + ['preheader' => '', 'label' => '', 'text' => '', 'color' => 'rose']
         : null;
 }
 function user_name($user_id) {
@@ -232,18 +246,37 @@ add_action(
     20
 );
 
-/* ---------- Angaben im Editor: Ausgabe und Vorschautext ---------- */
+/* ---------- Angaben im Editor: Ausgabe, Vorschautext, Farbe des Viertels ---------- */
 
 add_action('add_meta_boxes_' . POST_TYPE, function () {
     add_meta_box('et-newsletter', 'Newsletter', __NAMESPACE__ . '\meta_box', POST_TYPE, 'side', 'high');
 });
 function meta_box($post) {
     wp_nonce_field('et_newsletter_meta', 'et_newsletter_meta_nonce');
-    echo '<p><label for="et-nl-label"><strong>Ausgabe</strong></label><br><input type="text" id="et-nl-label" name="et_nl_label" class="widefat" maxlength="60" placeholder="z. B. Dezember 2026" value="' .
+    echo '<p><label for="et-nl-label"><strong>Ausgabe</strong></label><br><input type="text" id="et-nl-label" name="et_nl_label" class="widefat" maxlength="60" placeholder="z. B. Nr. 1 · Dezember 2026" value="' .
         esc_attr(label($post->ID)) .
         '"></p><p><label for="et-nl-preheader"><strong>Vorschautext</strong></label><br><textarea id="et-nl-preheader" name="et_nl_preheader" class="widefat" rows="3" maxlength="150">' .
         esc_textarea(preheader($post->ID)) .
         '</textarea><small>Erscheint im Postfach neben dem Betreff. Höchstens 150 Zeichen.</small></p>' .
+        '<p><label for="et-nl-color"><strong>Farbe des Viertels</strong></label><br><select id="et-nl-color" name="et_nl_color" class="widefat">' .
+        wp_kses(
+            implode(
+                '',
+                array_map(
+                    static fn($key, $c) => '<option value="' .
+                        esc_attr($key) .
+                        '"' .
+                        selected(color($post->ID), $key, false) .
+                        '>' .
+                        esc_html($c['label']) .
+                        '</option>',
+                    array_keys(colors()),
+                    colors()
+                )
+            ),
+            ['option' => ['value' => true, 'selected' => true]]
+        ) .
+        '</select><small>Färbt Titelkasten, Rubrikpunkte, Datumskacheln und den Abpfiff.</small></p>' .
         '<p><small>Der Titel ist der Betreff. Die Anrede („Hallo Vorname,“), das Logo und die Fußzeile mit Abmeldelink setzt das System selbst.</small></p>' .
         '<p><a class="button" href="' .
         esc_url(issue_url($post->ID)) .
@@ -265,6 +298,8 @@ add_action('save_post_' . POST_TYPE, function ($id) {
         '_et_nl_label',
         mb_substr(sanitize_text_field(wp_unslash((string) ($_POST['et_nl_label'] ?? ''))), 0, 60)
     );
+    $color = sanitize_key(wp_unslash((string) ($_POST['et_nl_color'] ?? '')));
+    update_post_meta($id, '_et_nl_color', isset(colors()[$color]) ? $color : 'rose');
     update_post_meta(
         $id,
         '_et_nl_preheader',
@@ -284,17 +319,26 @@ function system_checks($id) {
     $blocks = $post ? content_blocks($post->post_content) : [];
     $problems = $blocks ? block_problems($blocks) : [];
     $tested = (string) get_post_meta((int) $id, '_et_nl_test_hash', true) === content_hash($id);
+    $open = $post ? open_placeholders($post->post_content) : [];
     return [
         'subject' => [$post && trim($post->post_title) !== '', 'Betreff ist ausgefüllt'],
-        'label' => [label($id) !== '', 'Ausgabe ist benannt (z. B. „Dezember 2026“)'],
+        'label' => [label($id) !== '', 'Ausgabe ist benannt (z. B. „Nr. 1 · Dezember 2026“)'],
         'preheader' => [preheader($id) !== '', 'Vorschautext ist ausgefüllt'],
         'content' => [
             $blocks && !$problems,
             $problems
                 ? implode(' ', $problems)
                 : ($blocks
-                    ? 'Inhalt nutzt nur erlaubte Bausteine, jedes Bild hat einen Alternativtext'
+                    ? 'Inhalt nutzt nur erlaubte Bausteine, jedes Bild hat einen Alternativtext, Termine und Zahlen sind vollständig'
                     : 'Inhalt fehlt')
+        ],
+        'placeholders' => [
+            !$open,
+            $open
+                ? 'Noch offene Platzhalter: ' .
+                    implode(', ', array_slice($open, 0, 3)) .
+                    (count($open) > 3 ? ' und ' . (count($open) - 3) . ' weitere' : '')
+                : 'Keine offenen Platzhalter […] im Text'
         ],
         'tested' => [$tested, 'Testmail der aktuellen Fassung verschickt'],
         'unsubscribe' => [true, 'Abmeldelink und List-Unsubscribe stehen in jeder Mail (setzt das System)']

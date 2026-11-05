@@ -32,3 +32,6 @@ vendor/
 
 # Lokales Testsystem (tools/lokal-test.sh)
 .lokal/
+
+# Newsletter-Entwürfe des Skills „das-viertel“ (Porträts, Vereinsinterna)
+.newsletter/

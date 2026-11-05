@@ -1,6 +1,6 @@
 # Konzept: Newsletter als eigenes Plugin
 
-Stand: 04.11.2026. Status: **gebaut** (Einwilligung im Core ab 0.37.0, Plugin `eintrikot-newsletter` 0.1.0, Bedienung in `docs/14`). B hat das eigene Plugin, die Absenderadresse und das Design am 04.11.2026 freigegeben. Offen bleiben die Prüfpunkte für V (Vorlage zum Abhaken: `docs/15`) und der Versandweg (Schritt 5, Checkliste in `docs/14`). Das Briefing (`docs/01`) nennt MailPoet. Das kostenlose MailPoet ist auf wenige hundert Empfänger und Monatsmengen begrenzt und setzt sein Logo in die Mail. Deshalb wird stattdessen ein kleines eigenes Plugin vorgeschlagen. Die Abweichung vom Briefing braucht die Freigabe von B und V.
+Stand: 05.11.2026. Status: **gebaut**, Heftgestaltung „Das Viertel“ ab Plugin 0.2.0 (Designfreigabe B 05.11.2026, `docs/entwuerfe/newsletter-heft.html`, Bedienung und Skill in `docs/14`). Ursprünglicher Stand 04.11.2026: (Einwilligung im Core ab 0.37.0, Plugin `eintrikot-newsletter` 0.1.0, Bedienung in `docs/14`). B hat das eigene Plugin, die Absenderadresse und das Design am 04.11.2026 freigegeben. Offen bleiben die Prüfpunkte für V (Vorlage zum Abhaken: `docs/15`) und der Versandweg (Schritt 5, Checkliste in `docs/14`). Das Briefing (`docs/01`) nennt MailPoet. Das kostenlose MailPoet ist auf wenige hundert Empfänger und Monatsmengen begrenzt und setzt sein Logo in die Mail. Deshalb wird stattdessen ein kleines eigenes Plugin vorgeschlagen. Die Abweichung vom Briefing braucht die Freigabe von B und V.
 
 **Wer macht was:** B = Björn, V = Vorstand, R = Redaktion, C = Claude.
 
@@ -97,7 +97,7 @@ Der Versand startet nur, wenn der Freigebende nicht der Letzte ist, der den Inha
 ### 3. Redaktionshilfen (Google Workspace, ohne Code)
 
 - Google Form, Sheet, Label und Drive-Ordner nach dem Muster aus dem Briefing. C legt auf Wunsch die Vorlagen und die Spalten an, B richtet sie in Google ein.
-- Optional später: Ein KI-gestützter Entwurf aus freigegebenen Themen (Betreff, Vorschautext, Teasertexte). Er erscheint als **Entwurf** im Plugin und durchläuft denselben Ablauf. Es wird nichts automatisch veröffentlicht oder versendet.
+- KI-gestützter Entwurf aus freigegebenen Themen: umgesetzt als Skill `das-viertel` (`.claude/skills/das-viertel/`). Er schreibt Bausteine zum Einfügen; die Ausgabe durchläuft denselben Ablauf. Es wird nichts automatisch veröffentlicht oder versendet.
 
 ## Datenschutz
 

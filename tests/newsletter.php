@@ -236,6 +236,101 @@ check(
         is_readable(reset($files))
 );
 
+/* ---------- Heftgestaltung „Das Viertel“ ---------- */
+
+$vorlage = (string) file_get_contents(dirname(__DIR__) . '/.claude/skills/das-viertel/vorlage-nr1.html');
+check(
+    'Vorlage Nr. 1 des Skills hat keine Probleme',
+    $vorlage !== '' && block_problems(content_blocks($vorlage)) === []
+);
+$heft = make_issue($editor, $vorlage);
+$heft_body = render_body($vorlage, 'rose');
+check(
+    'Heft: Rubrik, Inhaltszeile, Unterschrift, Titelkasten, Zitat, Liste, Zahl, Rahmen, Termin, Abpfiff',
+    str_contains($heft_body, 'class="et-rubrik"') &&
+        str_contains($heft_body, 'IN DIESEM VIERTEL') &&
+        str_contains($heft_body, 'class="et-sign"') &&
+        str_contains($heft_body, 'WAS MACHT EIGENTLICH …?') &&
+        str_contains($heft_body, 'class="et-bar"') &&
+        str_contains($heft_body, '>01</td>') &&
+        str_contains($heft_body, '>70</td>') &&
+        str_contains($heft_body, 'class="et-frame"') &&
+        str_contains($heft_body, '>12.</span><br><span') &&
+        str_contains($heft_body, 'class="et-btn"')
+);
+check(
+    'Heft: Rosé färbt Kacheln und Punkte',
+    str_contains($heft_body, '#f1d1dd') && str_contains($heft_body, '#da525d')
+);
+$gruen = render_body($vorlage, 'gruen');
+check('Heft: Grün färbt um', str_contains($gruen, '#cedfbd') && !str_contains($gruen, '#f1d1dd'));
+check('Heft: Unbekannte Farbe fällt auf Rosé zurück', palette('lila') === palette('rose'));
+$hash = content_hash($heft);
+update_post_meta($heft, '_et_nl_color', 'gruen');
+check('Heft: Farbwechsel ist eine Änderung (neue Testmail nötig)', content_hash($heft) !== $hash);
+check('Heft: Farbe wird eingefroren', freeze($heft)['color'] === 'gruen');
+$heft_html = render_mail(freeze($heft), ['name' => 'Mia']);
+check(
+    'Heft: Kopfzeile „Das Viertel“, Farbband und dunkle Farbe des Viertels',
+    str_contains($heft_html, 'Das Viertel · Testausgabe') &&
+        str_contains($heft_html, 'linear-gradient(90deg,#cedfbd') &&
+        str_contains($heft_html, '.et-text .et-num{color:#cedfbd!important}')
+);
+check(
+    'Heft: Im Dunkelmodus bleiben Links lesbar, nur Buttons schwarz',
+    !str_contains($heft_html, '.et-text td a{') && str_contains($heft_html, '.et-text a.et-btn{color:#000000')
+);
+$heft_text = render_text(freeze($heft)['body']);
+check(
+    'Heft: Textfassung mit Rubriken, Listenüberschriften und Terminen',
+    str_contains($heft_text, '● KURZPASS') &&
+        str_contains($heft_text, "01 Neuer Bundestrainer der Damen\nMarkus Lonnes") &&
+        str_contains($heft_text, '12. JUNI – FIH Pro League in Berlin') &&
+        !str_contains($heft_text, '<')
+);
+check(
+    'Heft: Gruppen in Gruppen werden erkannt',
+    (bool) block_problems(
+        content_blocks(
+            '<!-- wp:group {"className":"is-style-kasten"} --><div class="wp-block-group is-style-kasten"><!-- wp:group --><div class="wp-block-group"><!-- wp:paragraph --><p>x</p><!-- /wp:paragraph --></div><!-- /wp:group --></div><!-- /wp:group -->'
+        )
+    )
+);
+check(
+    'Heft: Termin ohne fettes Datum wird erkannt',
+    (bool) block_problems(
+        content_blocks(
+            '<!-- wp:paragraph {"className":"is-style-termin"} --><p class="is-style-termin">Pro League in Berlin</p><!-- /wp:paragraph -->'
+        )
+    )
+);
+check(
+    'Heft: Große Zahl ohne Zahl wird erkannt',
+    (bool) block_problems(
+        content_blocks(
+            '<!-- wp:group {"className":"is-style-zahl"} --><div class="wp-block-group is-style-zahl"><!-- wp:paragraph --><p>x</p><!-- /wp:paragraph --></div><!-- /wp:group -->'
+        )
+    )
+);
+check(
+    'Heft: Bild im Zitat wird erkannt',
+    (bool) block_problems(
+        content_blocks(
+            '<!-- wp:quote --><blockquote class="wp-block-quote"><!-- wp:image --><figure class="wp-block-image"><img src="x.jpg" alt="x"/></figure><!-- /wp:image --></blockquote><!-- /wp:quote -->'
+        )
+    )
+);
+check(
+    'Heft: Offene Platzhalter halten die Ausgabe auf',
+    system_checks($heft)['placeholders'][0] === false &&
+        str_contains(system_checks($heft)['placeholders'][1], '[Vorname Name]') &&
+        system_checks($issue)['placeholders'][0] === true
+);
+check(
+    'Heft: Fremde Stilnamen werden ignoriert',
+    block_style(['blockName' => 'core/paragraph', 'attrs' => ['className' => 'is-style-fett']]) === ''
+);
+
 /* ---------- Testversand ---------- */
 
 as_user($editor);
