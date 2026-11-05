@@ -63,14 +63,38 @@ Zum Abhaken, in dieser Reihenfolge. Werte und Kennwörter nie in Chat, Issue ode
 
 ## Eine Ausgabe vom Entwurf bis zum Archiv
 
-1. **Anlegen (R):** Portal → Redaktion → Newsletter → „Neue Ausgabe anlegen“. Im Editor: Titel = Betreff, rechts „Ausgabe“ (z. B. „Dezember 2026“) und „Vorschautext“. Erlaubt sind nur Überschrift, Absatz, Bild (aus der Mediathek, mit Alternativtext), Button und Trennlinie. Bilder werden in die Mail eingebettet, beim Öffnen wird nichts nachgeladen. Anrede, Logo und Fußzeile setzt das System.
+1. **Anlegen (R):** Portal → Redaktion → Newsletter → „Neue Ausgabe anlegen“. Im Editor: Titel = Betreff, rechts „Ausgabe“ (z. B. „Nr. 1 · Dezember 2026“), „Vorschautext“ und „Farbe des Viertels“. Erlaubt sind Überschrift, Absatz, Liste, Zitat, Gruppe, Bild (aus der Mediathek, mit Alternativtext), Button und Trennlinie. Die Gestaltung des Heftes läuft über Stile (siehe „Das Viertel“ unten). Bilder werden in die Mail eingebettet, beim Öffnen wird nichts nachgeladen. Anrede, Logo und Fußzeile setzt das System. Wer mit dem Skill arbeitet, fügt dessen Datei im Code-Editor ein.
 2. **Vorschau und Testversand (R):** Über „Vorschau, Test und Prüfung im Portal“ zurück ins Portal. Vorschau als Computer, Handy und dunkel. Testmail an Vorstand, Redaktion oder Testpostfächer, nie an Mitglieder (wird abgelehnt). Betreff mit „[TEST]“.
-3. **Prüfliste (R):** fünf Haken setzen. Das System prüft selbst Betreff, Ausgabe, Vorschautext, Bausteine, Alternativtexte und ob die aktuelle Fassung als Testmail verschickt wurde. Dann „Als bereit melden“.
+3. **Prüfliste (R):** fünf Haken setzen. Das System prüft selbst Betreff, Ausgabe, Vorschautext, Bausteine, Alternativtexte, Termine und Zahlen, offene Platzhalter „[…]“ und ob die aktuelle Fassung als Testmail verschickt wurde. Dann „Als bereit melden“.
 4. **Freigabe (V):** Der Bildschirm zeigt die Empfängerzahl. Haken setzen, „Freigeben und Versand starten“. Wer den Inhalt zuletzt geändert hat, kann nicht freigeben (Vier-Augen-Prinzip). Ändert sich die Empfängerzahl zwischen Ansehen und Klick, muss neu bestätigt werden.
 5. **Versand:** in Paketen, jede Mail einzeln. Vor jeder Mail wird die Einwilligung erneut geprüft. Fehlgeschlagene Mails werden bis zu dreimal versucht. Die Seite zeigt den Fortschritt und aktualisiert sich selbst. V kann abbrechen und fortsetzen; niemand bekommt die Ausgabe doppelt.
 6. **Danach (R):** Rückläufer im Postfach des Absenders prüfen, kaputte Adressen im Profil korrigieren und auf der Ausgabe „Als geprüft vermerken“. Die Ausgabe steht für alle Mitglieder unter Service → Newsletter.
 
 Wird der Inhalt nach der Freigabe, aber vor der ersten Mail geändert, ist die Ausgabe wieder „Bereit“ und braucht eine neue Freigabe. Sobald der Versand begonnen hat, ist die Ausgabe gesperrt (nicht mehr bearbeitbar oder löschbar); Versand und Archiv zeigen den eingefrorenen Stand der Freigabe.
+
+## Das Viertel: Heftgestaltung und Skill
+
+Design freigegeben von B am 05.11.2026 (Entwurf: `docs/entwuerfe/newsletter-heft.html`). Der Newsletter heißt **Das Viertel** und hat einen festen Rahmen aus Rubriken: Bully, Aufmacher, Kurzpass, Rückpass, Netzfund, Auswärtsspiel, Aus der Kabine, Spielplan und Abpfiff. Jede Ausgabe hat eine **Farbe des Viertels** (Rosé, Blau, Grün) und ein wechselndes Aufmacher-Format.
+
+Stile im Editor (Baustein auswählen → rechts „Stile“):
+
+| Baustein | Stil         | Wirkung in der Mail                                                     |
+| -------- | ------------ | ----------------------------------------------------------------------- |
+| Absatz   | Rubrik       | kleine Versalien mit Punkt in der Farbe des Viertels                    |
+| Absatz   | Inhaltszeile | „In diesem Viertel“ mit Linien darüber und darunter                     |
+| Absatz   | Unterschrift | kursiv, unter dem Bully                                                 |
+| Absatz   | Termin       | Datumskachel; das Datum muss **fett am Anfang** stehen („12. Juni“)     |
+| Gruppe   | Titelkasten  | Farbfläche, große Überschrift; eine Rubrik darin wird zur Formatzeile   |
+| Gruppe   | Farbkasten   | Farbfläche für den Abpfiff, Button weiß                                 |
+| Gruppe   | Infokasten   | grauer Kasten, z. B. Steckbrief                                         |
+| Gruppe   | Rahmen       | schwarzer Rahmen, z. B. Netzfund                                        |
+| Gruppe   | Große Zahl   | schwarzer Kasten; die erste Überschrift ist die Zahl (nur echte Zahlen) |
+| Zitat    | –            | großer Satz mit Farbbalken, Name aus dem Feld „Zitat-Quelle“            |
+| Liste    | –            | nummeriert: 01, 02 … mit fetter erster Zeile als Überschrift            |
+
+Gruppen dürfen nicht ineinander stecken. Die Prüfung im Portal meldet das, ebenso Termine ohne fettes Datum und Große Zahlen ohne Zahl.
+
+Der **Skill `das-viertel`** (`.claude/skills/das-viertel/`) liest das Scout-Sheet, schlägt Themen vor (Reiter „Newsletter-Plan“), wählt Rückpass, Format und Farbe (Reiter „Ausgaben“) und schreibt die Ausgabe als Bausteine in `.newsletter/` (nicht im Repo). Themenregeln: `.claude/skills/das-viertel/themenregeln.md`. Er hält nach dem Sichten und nach dem Schreiben an, damit die Redaktion entscheidet. Versand und Freigabe laufen immer über das Plugin.
 
 ## Abmeldung
 
@@ -118,7 +142,7 @@ Laut Briefing bleiben Themensammlung und Redaktionsübersicht in Google Workspac
 | Link         | Quelle oder Drive-Ordner                                               |
 | Bildstatus   | kein Bild · Bild da, Rechte offen · Bild da, Rechte geklärt            |
 | Relevanz     | hoch · mittel · niedrig                                                |
-| Ausgabe      | z. B. „Dezember 2026“                                                  |
+| Ausgabe      | z. B. „Nr. 1 · Dezember 2026“                                          |
 | Status       | neu · in Arbeit · im Entwurf · verworfen · versendet                   |
 | Freigabe     | Name und Datum der Freigabe im Portal                                  |
 | Notiz        | frei                                                                   |

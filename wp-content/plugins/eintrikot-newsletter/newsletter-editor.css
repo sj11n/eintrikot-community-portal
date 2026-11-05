@@ -1,0 +1,19 @@
+/* Editor view of the styles of "Das Viertel" – close to the mail, not pixel-identical (layout.php). */
+.editor-styles-wrapper .is-style-rubrik{font-size:11px!important;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-top:26px}
+.editor-styles-wrapper .is-style-rubrik::before{content:"● ";color:var(--et-strong,#da525d)}
+.editor-styles-wrapper .is-style-inhalt{font-size:13px!important;color:#595959;border-top:2px solid #000;border-bottom:1px solid #e4e4e4;padding:10px 0}
+.editor-styles-wrapper .is-style-inhalt::before{content:"IN DIESEM VIERTEL  ";font-size:11px;font-weight:700;letter-spacing:.08em;color:#000}
+.editor-styles-wrapper .is-style-unterschrift{font-style:italic;font-size:15px!important;color:#333}
+.editor-styles-wrapper .is-style-termin{border-top:1px solid #e4e4e4;padding:12px 0 12px 78px!important;position:relative;min-height:62px}
+.editor-styles-wrapper .is-style-termin strong:first-child{position:absolute;left:0;top:12px;width:62px;height:62px;border-radius:12px;background:var(--et-accent,#f1d1dd);display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;line-height:1.1}
+.editor-styles-wrapper .wp-block-group.is-style-titel,.editor-styles-wrapper .wp-block-group.is-style-farbe{background:var(--et-accent,#f1d1dd);border-radius:14px;padding:26px 24px 10px}
+.editor-styles-wrapper .wp-block-group.is-style-titel h2,.editor-styles-wrapper .wp-block-group.is-style-titel h3{font-size:32px;letter-spacing:-.05em;line-height:1.04}
+.editor-styles-wrapper .wp-block-group.is-style-titel .is-style-rubrik::before{content:none}
+.editor-styles-wrapper .wp-block-group.is-style-kasten{background:#f6f6f6;border-radius:14px;padding:16px 18px 2px}
+.editor-styles-wrapper .wp-block-group.is-style-rahmen{border:2px solid #000;border-radius:14px;padding:18px 20px 2px}
+.editor-styles-wrapper .wp-block-group.is-style-zahl{background:#000;color:#fff;border-radius:14px;padding:22px}
+.editor-styles-wrapper .wp-block-group.is-style-zahl :is(h1,h2,h3,h4){color:var(--et-accent,#f1d1dd);font-size:64px;line-height:.9;letter-spacing:-.06em;margin:0 0 10px}
+.editor-styles-wrapper .wp-block-group.is-style-zahl p{color:#fff}
+.editor-styles-wrapper .wp-block-quote{border-left:6px solid var(--et-strong,#da525d);padding-left:18px}
+.editor-styles-wrapper .wp-block-quote p{font-size:23px;font-weight:700;line-height:1.3;letter-spacing:-.025em}
+.editor-styles-wrapper ol.wp-block-list li::marker{color:var(--et-strong,#da525d);font-weight:800}

@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Das Viertel – Heftkonzept</title>
+<style>
+@font-face{font-family:Montserrat;src:url(../../wp-content/themes/eintrikot-community/assets/montserrat.woff2) format('woff2');font-weight:100 900;font-display:swap}
+:root{--rose:#f1d1dd;--blau:#c8e2ee;--gruen:#cedfbd;--rot:#da525d;--ink:#000;--grau:#595959;--linie:#e4e4e4;--seite:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--seite);color:var(--ink);font:400 16px/1.6 Montserrat,Arial,sans-serif}
+a{color:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+
+/* ---------- Konzeptseite ---------- */
+.intro{background:linear-gradient(105deg,var(--rose),var(--blau));padding:64px 0 56px}
+.intro .tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:1.5px solid #000;border-radius:99px;padding:5px 12px;margin-bottom:22px}
+.intro h1{font-size:clamp(44px,7vw,92px);line-height:.98;letter-spacing:-.055em;font-weight:800;margin:0 0 20px}
+.intro p{font-size:clamp(17px,1.6vw,21px);max-width:720px;margin:0}
+section.k{padding:64px 0;border-bottom:1px solid #eee}
+section.k>.wrap>h2{font-size:clamp(28px,3.4vw,44px);letter-spacing:-.045em;line-height:1.05;margin:0 0 10px}
+section.k>.wrap>p.lead{max-width:760px;color:#333;margin:0 0 32px}
+.grid{display:grid;gap:16px}
+.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1fr 1fr}
+.card{border:1px solid #e6e6e6;border-radius:16px;padding:22px}
+.card h3{margin:0 0 6px;font-size:21px;letter-spacing:-.03em}
+.card .was{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--grau);margin:0 0 10px}
+.card p{margin:0;font-size:15px}
+.card .quelle{margin-top:12px;font-size:13px;color:var(--grau)}
+.card.fest{background:#fafafa}
+.pill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:99px;background:#000;color:#fff;margin-left:6px;vertical-align:3px}
+.pill.w{background:var(--rot)}
+.swatches{display:flex;gap:10px;margin-top:14px}
+.swatches span{width:44px;height:44px;border-radius:50%;border:1px solid #0001}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:0;counter-reset:s}
+.flow div{padding:20px 18px 20px 0;border-top:3px solid #000;counter-increment:s}
+.flow div::before{content:counter(s);display:block;font-size:40px;font-weight:800;letter-spacing:-.05em;line-height:1;margin:14px 0 10px}
+.flow strong{display:block;font-size:17px;margin-bottom:4px}
+.flow p{margin:0;font-size:14px;color:#333}
+.note{background:#fff8d6;border-radius:12px;padding:14px 18px;font-size:14px;margin:0 0 28px;max-width:860px}
+
+/* ---------- Bühne für die Mails ---------- */
+.buehne{background:#edf5f8;padding:48px 0 64px}
+.buehne.dunkel{background:#121416}
+.buehne-kopf{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:28px}
+.buehne-kopf h2{font-size:clamp(28px,3.4vw,44px);letter-spacing:-.045em;line-height:1.05;margin:0}
+.buehne.dunkel .buehne-kopf{color:#f2f2f2}
+.schalter{display:inline-flex;background:#fff;border-radius:99px;padding:4px;border:1px solid #0001}
+.schalter button{border:0;background:none;font:600 14px Montserrat,sans-serif;padding:8px 16px;border-radius:99px;cursor:pointer}
+.schalter button[aria-pressed=true]{background:#000;color:#fff}
+.mails{display:grid;grid-template-columns:repeat(2,minmax(0,560px));gap:40px;justify-content:center}
+.mailkopf{font-size:13px;color:var(--grau);margin:0 0 10px;padding:0 4px}
+.mailkopf b{display:block;color:#000;font-size:15px}
+.buehne.dunkel .mailkopf b{color:#f2f2f2}.buehne.dunkel .mailkopf{color:#b9c0c4}
+
+/* ---------- Die Mail (so wie das Plugin sie rendert, plus neue Elemente) ---------- */
+.mail{--akzent:var(--rose);--akzent-stark:var(--rot);background:#fff;border-radius:16px;overflow:hidden;color:#000;font-family:Montserrat,Arial,sans-serif}
+.mail.gruen{--akzent:var(--gruen);--akzent-stark:#5d7f3a}
+.mail .band{height:10px;background:linear-gradient(90deg,var(--rose),var(--blau))}
+.mail.gruen .band{background:linear-gradient(90deg,var(--gruen),var(--blau))}
+.mail .innen{padding:28px 28px 8px}
+.mail .logo{display:block;width:165px;height:42px;margin:0 0 28px}
+.mail .logo.weiss{display:none}
+.mail .label{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--grau)}
+.mail h1{margin:0 0 18px;font-size:36px;line-height:1.05;font-weight:800;letter-spacing:-.045em}
+.mail p{margin:0 0 16px;font-size:16px;line-height:1.6}
+.mail h2{margin:8px 0 10px;font-size:22px;line-height:1.2;font-weight:800;letter-spacing:-.02em}
+.mail .regel{border-top:1px solid var(--linie);margin:30px 0}
+.mail .fuss{background:#f6f6f6;padding:22px 28px;font-size:13px;line-height:1.6;color:var(--grau)}
+.mail .fuss p{font-size:13px;margin:0 0 10px}
+.mail .fuss a{text-decoration:underline}
+.mail .knopf{display:inline-block;background:var(--blau);border:2px solid #000;border-radius:999px;padding:13px 26px;font-weight:700;text-decoration:none;margin:4px 0 24px}
+
+/* neue Elemente */
+.neu{position:relative}
+.neu::after{content:attr(data-neu);position:absolute;right:-8px;top:-10px;background:var(--rot);color:#fff;font:700 10px/1 Montserrat,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:4px 7px;border-radius:99px;opacity:0;transition:opacity .15s;pointer-events:none;z-index:2}
+.zeige-neu .neu::after{opacity:1}
+.zeige-neu .neu{outline:2px dashed var(--rot);outline-offset:4px;border-radius:6px}
+
+.mail .toc{font-size:13px;line-height:1.7;color:var(--grau);border-top:2px solid #000;border-bottom:1px solid var(--linie);padding:10px 0;margin:0 0 26px}
+.mail .toc b{color:#000;letter-spacing:.08em;text-transform:uppercase;font-size:11px;margin-right:6px}
+.mail .rubrik{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px}
+.mail .rubrik::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--akzent-stark);margin-right:8px;vertical-align:0}
+.mail .unterschrift{font-size:15px;font-style:italic;color:#333}
+.mail .cover{background:var(--akzent);border-radius:14px;padding:26px 24px 22px;margin:6px 0 22px}
+.mail .cover .format{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin:0 0 14px}
+.mail .cover h2{font-size:34px;line-height:1.02;letter-spacing:-.05em;margin:0 0 12px}
+.mail .cover p{margin:0;font-size:17px}
+.mail .foto{background:repeating-linear-gradient(135deg,#0000000d 0 12px,#0000 12px 24px),#e9ecee;border-radius:12px;aspect-ratio:16/10;display:grid;place-items:center;font-size:13px;color:var(--grau);margin:0 0 8px;text-align:center;padding:12px}
+.mail .bildzeile{font-size:13px;color:var(--grau);margin:0 0 20px}
+.mail .zitat{border-left:6px solid var(--akzent-stark);padding:2px 0 2px 18px;margin:22px 0}
+.mail .zitat p{font-size:23px;line-height:1.3;font-weight:700;letter-spacing:-.025em;margin:0 0 6px}
+.mail .zitat small{font-size:13px;color:var(--grau)}
+.mail .steck{background:#f6f6f6;border-radius:12px;padding:16px 18px;margin:0 0 20px;font-size:14px;line-height:1.7}
+.mail .steck b{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.mail ol.kurz{list-style:none;margin:6px 0 18px;padding:0;counter-reset:k}
+.mail ol.kurz li{counter-increment:k;display:grid;grid-template-columns:38px 1fr;gap:4px;padding:14px 0;border-top:1px solid var(--linie);font-size:15px;line-height:1.55}
+.mail ol.kurz li::before{content:counter(k,decimal-leading-zero);font-weight:800;font-size:15px;color:var(--akzent-stark)}
+.mail ol.kurz li b{display:block;font-size:16px;margin-bottom:2px}
+.mail ol.kurz li a{font-size:13px;color:var(--grau)}
+.mail .zahl{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;background:#000;color:#fff;border-radius:14px;padding:22px 22px;margin:4px 0 16px}
+.mail .zahl strong{font-size:76px;line-height:.85;font-weight:800;letter-spacing:-.07em;color:var(--akzent)}
+.mail .zahl span{font-size:15px;line-height:1.5}
+.mail .zahl span b{display:block;font-size:18px;margin-bottom:2px}
+.mail .frage{font-weight:800;margin:18px 0 6px}
+.mail .netz{border:2px solid #000;border-radius:14px;padding:18px 20px;margin:4px 0 20px}
+.mail .netz p{margin:0 0 8px}
+.mail .netz a{font-weight:700}
+.mail .termine{margin:4px 0 20px}
+.mail .termin{display:grid;grid-template-columns:62px 1fr;gap:16px;align-items:center;padding:12px 0;border-top:1px solid var(--linie)}
+.mail .kachel{width:62px;height:62px;border-radius:12px;background:var(--akzent);display:grid;place-content:center;text-align:center;line-height:1}
+.mail .kachel b{font-size:22px;letter-spacing:-.04em}
+.mail .kachel small{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
+.mail .termin p{margin:0;font-size:15px;line-height:1.45}
+.mail .termin p b{display:block}
+.mail .ab{background:var(--akzent);border-radius:14px;padding:22px 22px 4px;margin:10px 0 24px}
+.mail .ab .knopf{background:#fff}
+.platz{background:#eef6fb;outline:1px dashed #7aa7bf;border-radius:4px;padding:0 3px;color:#2f5d75;font-style:normal}
+
+/* Dunkelmodus der Mails */
+.buehne.dunkel .mail{background:#1f2427;color:#f2f2f2}
+.buehne.dunkel .mail .logo{display:none}.buehne.dunkel .mail .logo.weiss{display:block}
+.buehne.dunkel .mail .label,.buehne.dunkel .mail .bildzeile,.buehne.dunkel .mail .zitat small,.buehne.dunkel .mail ol.kurz li a,.buehne.dunkel .mail .toc{color:#b9c0c4}
+.buehne.dunkel .mail .toc{border-top-color:#f2f2f2}.buehne.dunkel .mail .toc b{color:#f2f2f2}
+.buehne.dunkel .mail .regel,.buehne.dunkel .mail ol.kurz li,.buehne.dunkel .mail .termin,.buehne.dunkel .mail .toc{border-color:#3b4247}
+.buehne.dunkel .mail .fuss{background:#181b1d;color:#b9c0c4}
+.buehne.dunkel .mail .steck{background:#2a3034}
+.buehne.dunkel .mail .unterschrift{color:#d6d6d6}
+.buehne.dunkel .mail .cover,.buehne.dunkel .mail .ab,.buehne.dunkel .mail .kachel{color:#000}
+.buehne.dunkel .mail .zahl{background:#0d0f10}
+.buehne.dunkel .mail .netz{border-color:#f2f2f2}
+.buehne.dunkel .mail .foto{background:repeating-linear-gradient(135deg,#ffffff0d 0 12px,#0000 12px 24px),#2a3034;color:#b9c0c4}
+.buehne.dunkel .mail .knopf{color:#000}
+.buehne.dunkel .platz{background:#22394a;color:#cfe6f3;outline-color:#5b8aa3}
+
+@media (max-width:1100px){.mails{grid-template-columns:minmax(0,560px)}.g4{grid-template-columns:1fr 1fr}}
+@media (max-width:760px){.g3,.g2,.g4{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.flow div{padding-right:0}
+  .mail .innen{padding:24px 20px 4px}.mail .fuss{padding:20px}.mail h1{font-size:30px}.mail .cover h2{font-size:28px}.mail .zahl strong{font-size:60px}}
+</style>
+</head>
+<body>
+
+<header class="intro">
+  <div class="wrap">
+    <span class="tag">Design freigegeben von B · 05.11.2026</span>
+    <h1>Das Viertel.</h1>
+    <p>Vorschlag für den EINTRIKOT-Newsletter: ein Heft, das einmal im Quartal kommt. Der Name passt doppelt: Ein Hockeyspiel hat vier Viertel, und das Heft erscheint jedes Vierteljahr. Fester Rahmen, damit man es wiedererkennt. Wechselnder Aufmacher und eigene Farbe je Ausgabe, damit keine Ausgabe aussieht wie die vorige.</p>
+  </div>
+</header>
+
+<section class="k">
+  <div class="wrap">
+    <h2>Die Rubriken</h2>
+    <p class="lead">Die Namen kommen alle vom Platz. Schwarz markierte Rubriken stehen in jeder Ausgabe, rot markierte kommen nur, wenn es passenden Stoff gibt.</p>
+    <div class="grid g4">
+      <div class="card fest"><p class="was">Editorial</p><h3>Bully <span class="pill">fest</span></h3><p>Der Anstoß. 4 bis 6 persönliche Sätze aus dem Vorstand, mit Namen unterschrieben.</p><p class="quelle">Quelle: Vorstand</p></div>
+      <div class="card fest"><p class="was">Aufmacher</p><h3>Die große Geschichte <span class="pill">fest</span></h3><p>Eine Geschichte, groß erzählt, mit Bild und Zitat. Das Format wechselt jedes Mal (siehe unten).</p><p class="quelle">Quelle: eigene Themen, Gespräche</p></div>
+      <div class="card fest"><p class="was">Nachrichten</p><h3>Kurzpass <span class="pill">fest</span></h3><p>3 bis 5 Meldungen, je zwei Sätze und Quelle. Wichtige Ergebnisse gehören auch dazu.</p><p class="quelle">Quelle: Scout-Sheet</p></div>
+      <div class="card fest"><p class="was">Archiv</p><h3>Rückpass <span class="pill">fest</span></h3><p>„Heute vor 70 Jahren …“: ein Titel aus der Geschichte, als große Zahl. Mit Frage an alle, die dabei waren.</p><p class="quelle">Quelle: Titel- und Masters-Termine</p></div>
+      <div class="card"><p class="was">Fundstück</p><h3>Netzfund <span class="pill w">wechselnd</span></h3><p>Das eine Video, Foto oder den Artikel aus dem Netz, über das man redet. Leicht und gern mit Augenzwinkern.</p><p class="quelle">Quelle: Scout, Redaktion</p></div>
+      <div class="card"><p class="was">Europa</p><h3>Auswärtsspiel <span class="pill w">wechselnd</span></h3><p>Was andere Alumni-Vereine im Feldhockey in Europa machen, zum Beispiel in den Niederlanden oder in Belgien. Ideen zum Abgucken, Kontakte, Einladungen.</p><p class="quelle">Quelle: Scout (neue Suche), Redaktion</p></div>
+      <div class="card fest"><p class="was">Vereinsnachrichten</p><h3>Aus der Kabine <span class="pill">fest</span></h3><p>Was im Verein passiert: Versammlung, Neues im Portal, Projekte, Danke.</p><p class="quelle">Quelle: Vorstand, Portal</p></div>
+      <div class="card fest"><p class="was">Termine und Schluss</p><h3>Spielplan &amp; Abpfiff <span class="pill">fest</span></h3><p>Termine als Datumskacheln, dann ein Satz zum Schluss und ein Button ins Portal.</p><p class="quelle">Quelle: Portal-Termine, Scout</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="k">
+  <div class="wrap">
+    <h2>Fünf Formate für den Aufmacher</h2>
+    <p class="lead">Der Skill wählt jedes Mal ein Format, das in den beiden letzten Ausgaben nicht dran war. So wirkt jede Ausgabe anders, ohne dass der Rahmen wackelt.</p>
+    <div class="grid g3">
+      <div class="card"><h3>Was macht eigentlich …?</h3><p>Porträt einer oder eines Ehemaligen: früher auf dem Platz, heute im Leben. Mit Steckbrief und Foto von damals und heute.</p></div>
+      <div class="card"><h3>Eins gegen eins</h3><p>Gespräch in Frage und Antwort, kurz und pointiert. Gern zwei Generationen, zum Beispiel Weltmeister 2002 und Weltmeister 2026.</p></div>
+      <div class="card"><h3>Langer Ball</h3><p>Hintergrund: Duale Karriere, Ehrenamt, Trainerjobs. Ein Thema, mehrere Stimmen.</p></div>
+      <div class="card"><h3>Zeitlupe</h3><p>Ein großes Spiel von damals, Minute für Minute nacherzählt. Mit Stimmen derer, die dabei waren.</p></div>
+      <div class="card"><h3>Hinter der Bande</h3><p>Ein Blick in Bereiche, die man selten sieht: Physio, Schiedsrichter, Zeugwart, Nachwuchsarbeit.</p></div>
+      <div class="card"><h3>Farbe des Viertels</h3><p>Jede Ausgabe hat eine Akzentfarbe aus dem Brandbook. Sie färbt Titelkasten, Rubrikpunkte, Datumskacheln und den Abpfiff.</p><div class="swatches"><span style="background:#f1d1dd"></span><span style="background:#c8e2ee"></span><span style="background:#cedfbd"></span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="buehne" id="buehne">
+  <div class="wrap">
+    <div class="buehne-kopf">
+      <h2>Zwei Ausgaben, ein Heft</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="schalter" role="group" aria-label="Darstellung"><button type="button" aria-pressed="true" data-modus="hell">Hell</button><button type="button" aria-pressed="false" data-modus="dunkel">Dunkel</button></div>
+        <div class="schalter" role="group" aria-label="Neue Elemente"><button type="button" aria-pressed="false" data-neu>Neue Elemente zeigen</button></div>
+      </div>
+    </div>
+    <p class="note">Die Meldungen im Kurzpass, die Archivdaten und die Termine stammen aus dem Scout-Sheet und den Titel-Terminen, mit Quelle. Alles in <span class="platz">blau gestrichelt</span> ist ein Platzhalter für eigene Inhalte. Ich habe dort nichts erfunden: keine Zitate, keine Namen, keine Zahlen.</p>
+
+    <div class="mails">
+
+      <!-- ============ Ausgabe 1 ============ -->
+      <div>
+        <p class="mailkopf"><b>EINTRIKOT e. V. · Betreff: Das erste Viertel</b>Vorschautext: Neuer Bundestrainer, 70 Jahre Melbourne und ein Netzfund.</p>
+        <article class="mail">
+          <div class="band"></div>
+          <div class="innen">
+            <img class="logo" src="../../wp-content/plugins/eintrikot-community-core/assets/logo-mail.png" alt="EINTRIKOT"><img class="logo weiss" src="../../wp-content/plugins/eintrikot-community-core/assets/logo-mail-white.png" alt="EINTRIKOT">
+            <p class="label">Das Viertel · Nr. 1 · Dezember 2026</p>
+            <h1>Das erste Viertel</h1>
+            <p class="toc neu" data-neu="Inhaltszeile"><b>In diesem Viertel</b> Bully · Was macht eigentlich …? · Kurzpass · Rückpass · Netzfund · Aus der Kabine · Spielplan</p>
+
+            <p>Hallo Björn,</p>
+            <span class="rubrik neu" data-neu="Rubrikzeile">Bully</span>
+            <p>heute ist Mitgliederversammlung, und heute kommt das erste Viertel. Ab jetzt einmal im Quartal: Geschichten von Ehemaligen, das Wichtigste aus dem Hockey und ein Blick zurück auf die Titel, die uns verbinden. <span class="platz">[2–3 persönliche Sätze aus dem Vorstand]</span></p>
+            <p class="unterschrift neu" data-neu="Unterschrift">– <span class="platz">[Vorname Name]</span>, für den Vorstand</p>
+
+            <div class="regel"></div>
+
+            <div class="cover neu" data-neu="Titelkasten">
+              <p class="format">Was macht eigentlich …?</p>
+              <h2><span class="platz">[Vorname Name]</span></h2>
+              <p><span class="platz">[Ein Satz, der neugierig macht: damals auf dem Platz, heute …]</span></p>
+            </div>
+            <div class="foto">Foto von damals und heute<br>(eigene Rechte, Ordner in Drive)</div>
+            <p class="bildzeile"><span class="platz">[Bildzeile mit Jahr und Fotograf]</span></p>
+            <p><span class="platz">[Einstieg mit einer Szene: Wo erreichen wir sie oder ihn, was passiert gerade? 3–4 Absätze, ca. 2.000 Zeichen.]</span></p>
+            <div class="zitat neu" data-neu="Zitat"><p><span class="platz">„[Der eine Satz aus dem Gespräch, der hängen bleibt.]“</span></p><small><span class="platz">[Name]</span></small></div>
+            <div class="steck neu" data-neu="Infokasten"><b>Steckbrief</b>Länderspiele: <span class="platz">[aus der Quelle]</span><br>Größter Titel: <span class="platz">[aus den Titel-Terminen]</span><br>Heute: <span class="platz">[Beruf, Ort]</span></div>
+            <p><span class="platz">[Schluss: Was sie oder er dem Verein mitgibt.]</span></p>
+
+            <div class="regel"></div>
+
+            <span class="rubrik">Kurzpass</span>
+            <h2>Was im Viertel passiert ist</h2>
+            <ol class="kurz neu" data-neu="Liste">
+              <li><span><b>Neuer Bundestrainer der Damen</b>Markus Lonnes führt seit dem 15. Oktober die Damen-Nationalmannschaft. Erster Lehrgang Ende November in Mannheim, Pro-League-Start Mitte Dezember in Valencia. <a href="https://www.hockey.de/articles/markus-lonnes-wird-damen-bundestrainer">hockey.de</a></span></li>
+              <li><span><b>179 Länderspiele, jetzt an der Seitenlinie</b>Charlotte Stapenhorst wird Co-Trainerin der weiblichen U16. Paul Bonsiep übernimmt die U16 als Cheftrainer. <a href="https://www.hockey.de/articles/die-u-trainerteams-2027">hockey.de</a></span></li>
+              <li><span><b>Ausgezeichnet in Doha</b>Bei den FIH Hockey Stars Awards wurde Justus Warweg Rising Star of the Year, André Henning Coach of the Year. <a href="https://www.fih.hockey/news/fih-hockey-stars-awards-2026-winners-crowned-in-doha">fih.hockey</a></span></li>
+              <li><span><b>Die neuen Deutschen Meister der Jugend</b>mU18 Harvestehuder THC, wU18 Club an der Alster, mU16 Uhlenhorster HC, wU16 Zehlendorfer Wespen. <a href="https://www.hockey.de/articles/der-blog-zu-den-hockey-youth-finals-2026">hockey.de</a></span></li>
+            </ol>
+
+            <span class="rubrik">Rückpass</span>
+            <div class="zahl neu" data-neu="Große Zahl"><strong>70</strong><span><b>Jahre Bronze in Melbourne</b>Am 6. Dezember 1956 gewinnt die gesamtdeutsche Mannschaft das Spiel um Platz 3 gegen Großbritannien mit 3:1.</span></div>
+            <p>Und vor 25 Jahren, am 11. November 2001: Sieg bei der Champions Trophy in Rotterdam, 2:1 im Finale gegen Australien, beide Tore von Florian Kunz. <strong>Warst du dabei? Antworte auf diese Mail, wir sammeln Erinnerungen.</strong></p>
+
+            <span class="rubrik">Netzfund</span>
+            <div class="netz neu" data-neu="Rahmen"><p><span class="platz">[Ein Video, Foto oder Artikel, der im Viertel die Runde gemacht hat. Ein Satz, warum es sich lohnt.]</span></p><a href="#"><span class="platz">[Quelle]</span> →</a></div>
+
+            <span class="rubrik">Aus der Kabine</span>
+            <p><strong>Newsletter im Profil.</strong> Ob du das Viertel bekommst, stellst du jederzeit im Profil ein. Wer abbestellt, bleibt selbstverständlich Mitglied.</p>
+            <p><span class="platz">[Ergebnis der Mitgliederversammlung, neue Mitglieder, Danke an …]</span></p>
+
+            <span class="rubrik">Spielplan</span>
+            <div class="termine neu" data-neu="Terminzeilen">
+              <div class="termin"><div class="kachel"><b>12.</b><small>Juni</small></div><p><b>FIH Pro League in Berlin</b>12. bis 16. Juni 2027, Vorverkauf ab November</p></div>
+              <div class="termin"><div class="kachel"><b>26.</b><small>Juni</small></div><p><b>FIH Pro League in Hamburg</b>26. und 27. Juni 2027</p></div>
+            </div>
+
+            <div class="ab neu" data-neu="Abpfiff">
+              <span class="rubrik" style="margin-bottom:10px">Abpfiff</span>
+              <p>Hast du eine Geschichte für das nächste Viertel? Antworte einfach auf diese Mail.</p>
+              <a class="knopf" href="#">Ins Portal →</a>
+            </div>
+          </div>
+          <div class="fuss"><p>Du bekommst diese E-Mail, weil du im EINTRIKOT-Mitgliederportal dem Newsletter zugestimmt hast. <a href="#"><b>Mit einem Klick abmelden</b></a> · <a href="#">Im Profil ändern</a> · <a href="#">Datenschutz</a></p><p style="margin:0">EINTRIKOT e. V. · Bachstr. 20 · 63452 Hanau · Vertreten durch den Vorstand · Vereinsregister Amtsgericht Hanau, VR 32731</p></div>
+        </article>
+      </div>
+
+      <!-- ============ Ausgabe 2 ============ -->
+      <div>
+        <p class="mailkopf"><b>EINTRIKOT e. V. · Betreff: Zwei Weltmeister, ein Tisch</b>Vorschautext: 25 Jahre Kuala Lumpur, Auswärtsspiel in Europa, die Pro League kommt.</p>
+        <article class="mail gruen">
+          <div class="band"></div>
+          <div class="innen">
+            <img class="logo" src="../../wp-content/plugins/eintrikot-community-core/assets/logo-mail.png" alt="EINTRIKOT"><img class="logo weiss" src="../../wp-content/plugins/eintrikot-community-core/assets/logo-mail-white.png" alt="EINTRIKOT">
+            <p class="label">Das Viertel · Nr. 2 · März 2027</p>
+            <h1>Zwei Weltmeister, ein Tisch</h1>
+            <p class="toc"><b>In diesem Viertel</b> Bully · Eins gegen eins · Rückpass · Auswärtsspiel · Kurzpass · Netzfund · Spielplan</p>
+
+            <p>Hallo Björn,</p>
+            <span class="rubrik">Bully</span>
+            <p><span class="platz">[Editorial: 4–6 Sätze, diesmal mit einer Frage an die Mitglieder als Einstieg]</span></p>
+            <p class="unterschrift">– <span class="platz">[Vorname Name]</span>, für den Vorstand</p>
+
+            <div class="regel"></div>
+
+            <div class="cover">
+              <p class="format">Eins gegen eins</p>
+              <h2>Weltmeister 2002 trifft Weltmeister 2026</h2>
+              <p><span class="platz">[Zwei Namen, zwei Generationen. Ein Satz, worüber sie reden.]</span></p>
+            </div>
+            <div class="zitat"><p><span class="platz">„[Das stärkste Zitat steht hier vorn, nicht erst am Ende.]“</span></p><small><span class="platz">[Name]</span></small></div>
+            <p class="frage">Was war damals anders?</p>
+            <p><span class="platz">[Antwort A]</span></p>
+            <p><span class="platz">[Antwort B]</span></p>
+            <p class="frage">Und was ist gleich geblieben?</p>
+            <p><span class="platz">[Antworten, 6–8 Fragen insgesamt, kurz gehalten]</span></p>
+            <div class="foto">Doppelporträt am Tisch<br>(eigenes Foto)</div>
+
+            <div class="regel"></div>
+
+            <span class="rubrik">Rückpass</span>
+            <div class="zahl"><strong>25</strong><span><b>Jahre Weltmeister</b>Am 9. März 2002 gewinnen die Herren in Kuala Lumpur das WM-Finale gegen Australien mit 2:1.</span></div>
+            <p><strong>Warst du dabei? Antworte auf diese Mail, wir sammeln Erinnerungen.</strong></p>
+
+            <span class="rubrik">Auswärtsspiel</span>
+            <h2><span class="platz">[Name einer Alumni-Organisation im Feldhockey, z. B. aus den Niederlanden]</span></h2>
+            <p><span class="platz">[Was sie machen, was wir uns abschauen können, Link. Gern mit einer Einladung.]</span></p>
+
+            <span class="rubrik">Kurzpass</span>
+            <ol class="kurz">
+              <li><span><b><span class="platz">[Meldung aus dem Scout]</span></b><span class="platz">[Zwei Sätze]</span> <a href="#">Quelle</a></span></li>
+              <li><span><b><span class="platz">[Meldung aus dem Scout]</span></b><span class="platz">[Zwei Sätze]</span> <a href="#">Quelle</a></span></li>
+              <li><span><b><span class="platz">[Wichtiges Ergebnis]</span></b><span class="platz">[Zwei Sätze]</span> <a href="#">Quelle</a></span></li>
+            </ol>
+
+            <span class="rubrik">Netzfund</span>
+            <div class="netz"><p><span class="platz">[Fundstück]</span></p><a href="#"><span class="platz">[Quelle]</span> →</a></div>
+
+            <span class="rubrik">Spielplan</span>
+            <div class="termine">
+              <div class="termin"><div class="kachel"><b>12.</b><small>Juni</small></div><p><b>FIH Pro League in Berlin</b>12. bis 16. Juni 2027. <span class="platz">[Alumni-Treffen beim Heimspiel?]</span></p></div>
+              <div class="termin"><div class="kachel"><b>26.</b><small>Juni</small></div><p><b>FIH Pro League in Hamburg</b>26. und 27. Juni 2027</p></div>
+            </div>
+
+            <div class="ab">
+              <span class="rubrik" style="margin-bottom:10px">Abpfiff</span>
+              <p><span class="platz">[Ein Satz zum Schluss, jedes Mal anders]</span></p>
+              <a class="knopf" href="#">Ins Portal →</a>
+            </div>
+          </div>
+          <div class="fuss"><p>Du bekommst diese E-Mail, weil du im EINTRIKOT-Mitgliederportal dem Newsletter zugestimmt hast. <a href="#"><b>Mit einem Klick abmelden</b></a> · <a href="#">Im Profil ändern</a> · <a href="#">Datenschutz</a></p><p style="margin:0">EINTRIKOT e. V. · Bachstr. 20 · 63452 Hanau · Vertreten durch den Vorstand · Vereinsregister Amtsgericht Hanau, VR 32731</p></div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="k">
+  <div class="wrap">
+    <h2>Was das Plugin dafür braucht</h2>
+    <p class="lead">Mit den heutigen fünf Bausteinen ginge nur Überschrift und Text. Für das Heft kommen neun Gestaltungen dazu, alle als Stile bekannter Editor-Bausteine. Sie werden als Tabellen und Inline-Stile gebaut, damit sie in Gmail, Outlook und Apple Mail gleich aussehen, hell wie dunkel. Bilder bleiben eingebettet, es wird nichts nachgeladen.</p>
+    <div class="grid g3">
+      <div class="card"><h3>Inhaltszeile</h3><p>„In diesem Viertel“ mit den Rubriken der Ausgabe.</p></div>
+      <div class="card"><h3>Rubrikzeile</h3><p>Kleine Versalien mit Punkt in der Farbe des Viertels.</p></div>
+      <div class="card"><h3>Titelkasten</h3><p>Farbfläche für den Aufmacher: Format, große Überschrift, Unterzeile.</p></div>
+      <div class="card"><h3>Zitat</h3><p>Großer Satz mit Farbbalken und Namen darunter.</p></div>
+      <div class="card"><h3>Liste</h3><p>Nummerierte Kurzmeldungen mit fettem Einstieg und Quelle.</p></div>
+      <div class="card"><h3>Große Zahl</h3><p>Nur echte Zahlen aus Quellen, zum Beispiel Jahre seit einem Titel.</p></div>
+      <div class="card"><h3>Infokasten und Rahmen</h3><p>Grauer Kasten für Steckbriefe, schwarzer Rahmen für den Netzfund.</p></div>
+      <div class="card"><h3>Terminzeilen</h3><p>Datumskachel wie im Portal, daneben Titel und Ort.</p></div>
+      <div class="card"><h3>Unterschrift und Abpfiff</h3><p>Kursive Unterschrift unter dem Bully, farbiger Schlusskasten mit Button.</p></div>
+    </div>
+    <p style="margin-top:22px;max-width:820px">Dazu kommt in der Meta-Box ein Feld <b>Farbe des Viertels</b> (Rosé, Blau, Grün). Die Textfassung der Mail bekommt die Rubriken als Zwischenzeilen.</p>
+  </div>
+</section>
+
+<section class="k">
+  <div class="wrap">
+    <h2>Vom Scout zum Viertel</h2>
+    <p class="lead">Der Scout sammelt weiter wie bisher. Sein Reiter bleibt unverändert. Neu ist der Reiter „Newsletter-Plan“, in dem die Redaktion entscheidet.</p>
+    <div class="flow">
+      <div><strong>Sammeln</strong><p>Der Scout schreibt Meldungen ins Sheet. Neu sucht er auch nach Alumni-Vereinen in Europa und nach Netzfunden.</p></div>
+      <div><strong>Sichten</strong><p>Der Skill schlägt für jede Meldung vor: rein, raus oder geparkt, mit Rubrik und Begründung. Veraltete Fristen sortiert er aus.</p></div>
+      <div><strong>Entscheiden</strong><p>Die Redaktion bestätigt im Reiter „Newsletter-Plan“ und ergänzt eigene Themen.</p></div>
+      <div><strong>Schreiben</strong><p>Der Skill schreibt die Ausgabe als Bausteine. Du fügst sie im Code-Editor des Plugins ein, ergänzt Bilder und schickst Testmails.</p></div>
+      <div><strong>Freigeben</strong><p>Wie gehabt: Prüfliste, Vier-Augen-Freigabe, Versand. Danach markiert der Skill die genutzten Themen als verwendet.</p></div>
+    </div>
+  </div>
+</section>
+
+<script>
+(() => {
+  const b = document.getElementById('buehne');
+  document.querySelectorAll('[data-modus]').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-modus]').forEach(x => x.setAttribute('aria-pressed', String(x === btn)));
+    b.classList.toggle('dunkel', btn.dataset.modus === 'dunkel');
+  }));
+  const n = document.querySelector('[data-neu]:not(.neu)');
+  n.addEventListener('click', () => {
+    const on = n.getAttribute('aria-pressed') !== 'true';
+    n.setAttribute('aria-pressed', String(on));
+    b.classList.toggle('zeige-neu', on);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 <?php
 /**
  * Mail-Layout (Designfreigabe B, 04.11.2026): Rahmen wie alle EINTRIKOT-Mails (Farbband, Logo, Karte, hell und dunkel),
- * dazu Kicker „Newsletter · Ausgabe“, Betreff als Überschrift, persönliche Anrede, Inhalt aus den erlaubten Bausteinen
+ * dazu Kicker „Das Viertel · Ausgabe“ (Heftgestaltung in layout.php), Betreff als Überschrift, persönliche Anrede, Inhalt aus den erlaubten Bausteinen
  * und eine Fußzeile mit Grund des Empfangs, Abmeldelink, Profil, Datenschutz und Angaben laut Impressum.
  * Tabellen und Inline-Stile für Outlook, Systemschrift als Rückfall, Textfassung als Alternative. Keine Tracking-Pixel.
  */
@@ -43,14 +43,26 @@ function content_blocks($content) {
     );
 }
 
-/** @return string[] Problems that keep an issue from being sent. */
-function block_problems(array $blocks) {
+/**
+ * @param array<int, array<string, mixed>> $blocks
+ * @return string[] Problems that keep an issue from being sent.
+ */
+function block_problems(array $blocks, $in = '') {
     $problems = [];
+    // Inside boxes everything but another box; inside a quote only text; list items only in lists.
+    $allowed =
+        $in === ''
+            ? array_diff(BLOCKS, ['core/button', 'core/list-item'])
+            : ($in === 'core/quote'
+                ? ['core/paragraph']
+                : ($in === 'core/list'
+                    ? ['core/list-item']
+                    : array_diff(BLOCKS, ['core/button', 'core/list-item', 'core/group'])));
     foreach ($blocks as $b) {
         $name = (string) ($b['blockName'] ?? '');
-        if (!in_array($name, BLOCKS, true) || $name === 'core/button') {
+        if (!in_array($name, $allowed, true)) {
             $problems['type'] =
-                'Der Inhalt enthält einen Baustein, den die Mail nicht kennt (erlaubt: Überschrift, Absatz, Bild, Button, Trennlinie).';
+                'Der Inhalt enthält einen Baustein, den die Mail nicht kennt oder der so nicht verschachtelt werden kann (erlaubt: Überschrift, Absatz, Bild, Button, Trennlinie, Zitat, Liste, Gruppe – Gruppen nicht ineinander).';
             continue;
         }
         if ($name === 'core/image' && trim(image_parts($b)['alt']) === '') {
@@ -70,8 +82,28 @@ function block_problems(array $blocks) {
                 }
             }
         }
+        if (
+            $name === 'core/paragraph' &&
+            block_style($b) === 'termin' &&
+            !date_parts(inline_html(inner_of($b['innerHTML'] ?? '')))
+        ) {
+            $problems['date'] = 'Ein Termin beginnt nicht mit dem Datum in Fett (z. B. „12. Juni“).';
+        }
+        if (
+            $name === 'core/group' &&
+            block_style($b) === 'zahl' &&
+            !array_filter(
+                $b['innerBlocks'] ?? [],
+                static fn($i) => ($i['blockName'] ?? '') === 'core/heading'
+            )
+        ) {
+            $problems['number'] = 'Eine „Große Zahl“ braucht eine Überschrift mit der Zahl.';
+        }
+        if (in_array($name, ['core/group', 'core/quote', 'core/list'], true)) {
+            $problems += block_problems($b['innerBlocks'] ?? [], $name === 'core/group' ? 'group' : $name);
+        }
     }
-    return array_values($problems);
+    return $in === '' ? array_values($problems) : $problems;
 }
 
 /** Inline text with links, bold and italic only. Links get the mail style. */
@@ -138,25 +170,79 @@ function mail_rule() {
     return '<div class="et-rule" style="border-top:1px solid #e4e4e4;margin:28px 0;font-size:0;line-height:0">&nbsp;</div>';
 }
 /** Button as a table cell, so every client shows it (also Outlook). Same look as the portal mails. */
-function mail_button($url, $label) {
-    return '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 24px;border-collapse:separate"><tr><td bgcolor="#c8e2ee" style="background:#c8e2ee;border-radius:999px;border:2px solid #000000"><a href="' .
+function mail_button($url, $label, $on_accent = false) {
+    $bg = $on_accent ? '#ffffff' : '#c8e2ee';
+    return '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 24px;border-collapse:separate"><tr><td bgcolor="' .
+        $bg .
+        '" style="background:' .
+        $bg .
+        ';border-radius:999px;border:2px solid #000000"><a class="et-btn" href="' .
         esc_url($url) .
         '" style="display:inline-block;padding:13px 26px;font-family:Montserrat,Arial,sans-serif;font-size:16px;font-weight:700;line-height:1.2;color:#000000;text-decoration:none;border-radius:999px">' .
         esc_html($label) .
         ' →</a></td></tr></table>';
 }
 
-/** The body of an issue as mail HTML (without greeting and frame). */
-function render_body($content) {
+/** The body of an issue as mail HTML (without greeting and frame), in the colour of the quarter. */
+function render_body($content, $color = 'rose') {
+    return render_blocks(content_blocks($content), $color);
+}
+
+/**
+ * Blocks as mail HTML. $in names the surrounding box ('' at the top level): inside the title box headings are
+ * large and a rubric line becomes the format line; inside the number box the text is white.
+ *
+ * @param array<int, array<string, mixed>> $blocks
+ */
+function render_blocks(array $blocks, $color = 'rose', $in = '') {
+    $p = palette($color);
     $html = '';
-    foreach (content_blocks($content) as $b) {
+    foreach ($blocks as $b) {
+        $style = block_style($b);
         switch ($b['blockName'] ?? '') {
             case 'core/heading':
-                $html .= mail_heading(inline_html(inner_of($b['innerHTML'] ?? '')));
+                $text = inline_html(inner_of($b['innerHTML'] ?? ''));
+                $html .=
+                    $in === 'titel'
+                        ? '<h2 style="margin:0 0 12px;font-family:Montserrat,Arial,sans-serif;font-size:32px;line-height:1.04;font-weight:800;letter-spacing:-0.05em;color:#000000">' .
+                            $text .
+                            '</h2>'
+                        : ($in === 'zahl'
+                            ? '<p style="margin:0 0 4px;font-size:18px;line-height:1.3;font-weight:800;color:#ffffff">' .
+                                $text .
+                                '</p>'
+                            : mail_heading($text));
                 break;
             case 'core/paragraph':
                 $text = inline_html(inner_of($b['innerHTML'] ?? ''));
-                $html .= $text !== '' ? mail_paragraph($text) : '';
+                if ($text === '') {
+                    break;
+                }
+                if ($style === 'rubrik') {
+                    $html .=
+                        $in === 'titel'
+                            ? '<p style="margin:0 0 14px;font-size:11px;line-height:1.4;font-weight:800;letter-spacing:0.14em;color:#000000">' .
+                                plain_upper($text) .
+                                '</p>'
+                            : mail_rubric($text, $p, $in !== '');
+                } elseif ($style === 'inhalt') {
+                    $html .= mail_toc($text);
+                } elseif ($style === 'unterschrift') {
+                    $html .= mail_signature($text);
+                } elseif ($style === 'termin') {
+                    $html .= mail_date($text, $p);
+                } elseif ($in === 'titel') {
+                    $html .= '<p style="margin:0 0 16px;font-size:17px;line-height:1.5">' . $text . '</p>';
+                } elseif ($in === 'kasten') {
+                    $html .= '<p style="margin:0 0 14px;font-size:14px;line-height:1.7">' . $text . '</p>';
+                } elseif ($in === 'zahl') {
+                    $html .=
+                        '<p style="margin:0 0 8px;font-size:15px;line-height:1.5;color:#ffffff">' .
+                        $text .
+                        '</p>';
+                } else {
+                    $html .= mail_paragraph($text);
+                }
                 break;
             case 'core/image':
                 $img = image_parts($b);
@@ -180,12 +266,25 @@ function render_body($content) {
                 foreach ($b['innerBlocks'] ?? [] as $button) {
                     $parts = button_parts($button);
                     if ($parts['url'] !== '' && $parts['text'] !== '') {
-                        $html .= mail_button($parts['url'], $parts['text']);
+                        $html .= mail_button(
+                            $parts['url'],
+                            $parts['text'],
+                            in_array($in, ['titel', 'farbe'], true)
+                        );
                     }
                 }
                 break;
             case 'core/separator':
                 $html .= mail_rule();
+                break;
+            case 'core/quote':
+                $html .= mail_quote($b, $p);
+                break;
+            case 'core/list':
+                $html .= mail_list($b, $p);
+                break;
+            case 'core/group':
+                $html .= $in === '' ? mail_group($b, $p, $color) : '';
                 break;
         }
     }
@@ -195,31 +294,42 @@ function render_body($content) {
 /** Plain-text version of the body for clients without HTML. */
 function render_text($body_html) {
     $text = (string) preg_replace_callback(
-        '/<a href="([^"]*)"[^>]*>(.*?)<\/a>/is',
+        '/<a\b[^>]*\shref="([^"]*)"[^>]*>(.*?)<\/a>/is',
         static function ($m) {
             $label = trim(wp_strip_all_tags(str_replace(' →', '', $m[2])));
             return $label . ' (' . html_entity_decode($m[1]) . ')';
         },
         (string) $body_html
     );
+    // Date tiles: "12. JUNI – " in front of the title.
+    $text = (string) preg_replace_callback(
+        '/<td class="et-tile[^"]*"[^>]*>(.*?)<\/td><\/tr><\/table><\/td>/is',
+        static fn($m) => trim(wp_strip_all_tags(str_replace('<br>', ' ', $m[1]))) . ' – ',
+        $text
+    );
+    // Headline of a list item on its own line.
+    $text = (string) preg_replace('/(<strong style="display:block[^"]*">.*?<\/strong>)/is', "$1\n", $text);
     $text = (string) preg_replace('/<h2[^>]*>(.*?)<\/h2>/is', "\n\n$1\n", $text);
     $text = (string) preg_replace('/<img[^>]*alt="([^"]*)"[^>]*>/i', "[Bild: $1]\n", $text);
     $text = (string) preg_replace('/<div class="et-rule".*?<\/div>/is', "\n----------\n", $text);
     $text = (string) preg_replace('/<br\s*\/?>/i', "\n", $text);
-    $text = (string) preg_replace('/<\/(p|table)>/i', "\n\n", $text);
+    $text = (string) preg_replace('/<\/(p|table|tr)>/i', "\n\n", $text);
+    $text = (string) preg_replace('/<\/td>/i', ' ', $text);
     $text = html_entity_decode(wp_strip_all_tags($text), ENT_QUOTES, 'UTF-8');
-    $text = (string) preg_replace("/[ \t]+\n/", "\n", $text);
+    $text = (string) preg_replace('/[ \t\x{00A0}]+/u', ' ', $text);
+    $text = (string) preg_replace("/ *\n */", "\n", $text);
     return trim((string) preg_replace("/\n{3,}/", "\n\n", $text));
 }
 
 /** Snapshot of an issue at approval: archive and sending show exactly this. */
 function freeze($id) {
     $post = get_post((int) $id);
-    $body = $post ? render_body($post->post_content) : '';
+    $body = $post ? render_body($post->post_content, color($id)) : '';
     return [
         'subject' => $post ? $post->post_title : '',
         'preheader' => preheader($id),
         'label' => label($id),
+        'color' => color($id),
         'body' => $body,
         'text' => render_text($body)
     ];
@@ -234,7 +344,7 @@ function draft_data($id) {
 /**
  * The complete mail.
  *
- * @param array{subject: string, preheader: string, label: string, body: string} $data
+ * @param array{subject: string, preheader: string, label: string, body: string, color?: string} $data
  * @param array{name?: string, unsubscribe?: string, web?: bool, scheme?: string} $ctx
  *   web: logos as URL (portal preview, archive) instead of embedded; scheme: '' (follows the reader), 'light', 'dark'.
  */
@@ -247,12 +357,15 @@ function render_mail(array $data, array $ctx = []) {
         : 'cid:eintrikot-logo-dark';
     $name = trim((string) ($ctx['name'] ?? ''));
     $unsubscribe = (string) ($ctx['unsubscribe'] ?? '');
+    $color = (string) ($data['color'] ?? 'rose');
+    $p = palette($color);
     $dark =
         '.et-bg{background:#121416!important}.et-card{background:#1f2427!important}' .
         '.et-text,.et-text p,.et-text h1,.et-text h2,.et-text td,.et-text strong,.et-text em,.et-text a{color:#f2f2f2!important}' .
-        '.et-text td a{color:#000000!important}' .
+        '.et-text a.et-btn{color:#000000!important}' .
         '.et-muted,.et-muted p,.et-muted a{color:#b9c0c4!important}.et-rule{border-color:#3b4247!important}.et-foot{background:#181b1d!important}' .
-        '.et-logo-light{display:none!important}.et-logo-dark{display:block!important;max-height:none!important}';
+        '.et-logo-light{display:none!important}.et-logo-dark{display:block!important;max-height:none!important}' .
+        dark_layout_css($color);
     $style =
         ($scheme === 'light'
             ? ':root{color-scheme:light}'
@@ -263,7 +376,7 @@ function render_mail(array $data, array $ctx = []) {
                 $dark .
                 '}[data-ogsc] .et-logo-light{display:none!important}[data-ogsc] .et-logo-dark{display:block!important;max-height:none!important}'
             : '') .
-        '@media (max-width:480px){.et-text{padding:24px 20px 4px!important}.et-foot{padding:20px!important}.et-h1{font-size:30px!important}}';
+        '@media (max-width:480px){.et-text{padding:24px 20px 4px!important}.et-foot{padding:20px!important}.et-h1{font-size:30px!important}.et-num{font-size:56px!important;padding-left:18px!important}}';
     $foot_link = static function ($url, $label, $bold = false) {
         return '<a href="' .
             esc_url($url) .
@@ -292,7 +405,13 @@ function render_mail(array $data, array $ctx = []) {
                 esc_url(\Eintrikot\Community\portal_url('newsletter')) .
                 '" style="color:#595959;text-decoration:underline">Im Portal lesen</a></p>') .
         '<div class="et-card" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden">' .
-        '<div style="height:10px;background:#c8e2ee;background:linear-gradient(90deg,#f1d1dd,#c8e2ee)"></div>' .
+        '<div style="height:10px;background:' .
+        $p['accent'] .
+        ';background:linear-gradient(90deg,' .
+        $p['accent'] .
+        ',' .
+        $p['band'] .
+        ')"></div>' .
         '<div class="et-text" style="padding:28px 28px 8px;color:#000000">' .
         '<div style="margin:0 0 28px"><img class="et-logo-light" src="' .
         esc_url($logo, ['http', 'https', 'cid']) .
@@ -301,7 +420,9 @@ function render_mail(array $data, array $ctx = []) {
         esc_url($logo_dark, ['http', 'https', 'cid']) .
         '" width="165" height="42" alt="EINTRIKOT" style="display:block;border:0;width:165px;height:42px"></div></div>' .
         ($data['label'] !== ''
-            ? '<p class="et-muted" style="margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#595959">Newsletter · ' .
+            ? '<p class="et-muted" style="margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#595959">' .
+                esc_html(name()) .
+                ' · ' .
                 esc_html($data['label']) .
                 '</p>'
             : '') .
@@ -326,7 +447,7 @@ function render_mail(array $data, array $ctx = []) {
 function render_mail_text(array $data, array $ctx = []) {
     $name = trim((string) ($ctx['name'] ?? ''));
     $unsubscribe = (string) ($ctx['unsubscribe'] ?? '');
-    return ($data['label'] !== '' ? 'EINTRIKOT-Newsletter · ' . $data['label'] . "\n\n" : '') .
+    return ($data['label'] !== '' ? name() . ' · ' . $data['label'] . "\n\n" : '') .
         $data['subject'] .
         "\n\n" .
         ($name !== '' ? 'Hallo ' . $name . ',' : 'Hallo,') .
