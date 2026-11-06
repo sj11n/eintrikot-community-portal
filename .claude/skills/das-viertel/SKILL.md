@@ -98,7 +98,7 @@ Nach Schritt 2 und nach Schritt 5 anhalten und auf die Entscheidung der Redaktio
 - **Namen und Vereine** genau wie in der Quelle schreiben.
 - **Bilder** nur aus der Mediathek des Portals: eigene Fotos oder der Drive-Ordner der Redaktion. Nie Bilder von verlinkten Seiten übernehmen (Urheberrecht). Im Markup steht für ein Bild nur ein Platzhalter-Absatz `[Bild: …, Alternativtext: …]`. Das Bild setzt die Redaktion im Editor.
 - **Keine Mitgliederdaten** aus dem Portal oder aus WISO in den Text und keine Bank- oder Beitragsdaten (Projektregel).
-- Die Anrede „Hallo Vorname,“, das Logo und die Fußzeile mit Abmeldelink setzt das Plugin. Nicht ins Markup schreiben.
+- Die Anrede „Hallo Vorname,“, das Logo und die Fußzeile mit Abmeldelink setzt das Plugin. Nicht ins Markup schreiben. Die Anrede steht direkt unter der Bully-Rubrik, der Bully beginnt deshalb klein und schließt an sie an („heute ist …“).
 
 ## Einfügen ins Plugin (Anleitung für die Redaktion)
 

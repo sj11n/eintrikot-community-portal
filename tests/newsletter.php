@@ -280,6 +280,21 @@ check(
     'Heft: Im Dunkelmodus bleiben Links lesbar, nur Buttons schwarz',
     !str_contains($heft_html, '.et-text td a{') && str_contains($heft_html, '.et-text a.et-btn{color:#000000')
 );
+check(
+    'Heft: Anrede steht unter der Bully-Rubrik, nicht über der Inhaltszeile',
+    (bool) preg_match('/IN DIESEM VIERTEL.*BULLY<\/p><p[^>]*>Hallo Mia,<\/p><p[^>]*>heute ist/s', $heft_html)
+);
+$heft_mail_text = render_mail_text(freeze($heft), ['name' => 'Mia']);
+check(
+    'Heft: Textfassung mit Anrede unter der Bully-Rubrik',
+    str_contains($heft_mail_text, "● BULLY\nHallo Mia,\n\nheute ist") &&
+        strpos($heft_mail_text, 'IN DIESEM VIERTEL') < strpos($heft_mail_text, 'Hallo Mia,')
+);
+check(
+    'Ohne Rubrik steht die Anrede vor dem Inhalt',
+    greet_html('<p>Text</p>', '<p>Hallo,</p>') === '<p>Hallo,</p><p>Text</p>' &&
+        greet_text('Text', 'Hallo,') === "Hallo,\n\nText"
+);
 $heft_text = render_text(freeze($heft)['body']);
 check(
     'Heft: Textfassung mit Rubriken, Listenüberschriften und Terminen',
