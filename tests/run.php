@@ -441,6 +441,20 @@ $role_view = (function ($id) { ob_start(); render_member($id); return ob_get_cle
 check('Verwaltung sieht die Rolle im Profil', str_contains($role_view($role_user), 'Rolle: EINTRIKOT Vorstand'));
 wp_set_current_user($m1);
 check('Mitglieder sehen die Rolle nicht', !str_contains($role_view($role_user), 'Rolle:'));
+
+/* ---------- Profile außerhalb des Verzeichnisses ---------- */
+
+$pv_hidden = make_user('eintrikot_member', ['birthday' => day('-41 years'), 'directory_listing' => 'hide'], ['eintrikot_activated_at' => time()]);
+$pv_kid = make_user('eintrikot_member', ['birthday' => day('-13 years')]);
+$pv_name = fn($id) => get_userdata($id)->display_name;
+check('Profil: sichtbares Mitglied für Mitglieder abrufbar', str_contains($role_view($role_user), esc_html($pv_name($role_user))));
+check('Profil: ausgeblendetes Konto per Adresse nicht abrufbar', str_contains($role_view($pv_hidden), 'Profil nicht verfügbar') && !str_contains($role_view($pv_hidden), esc_html($pv_name($pv_hidden))));
+check('Profil: Kind ohne Zustimmung per Adresse nicht abrufbar', str_contains($role_view($pv_kid), 'Profil nicht verfügbar'));
+check('Profil: Admin-Konto per Adresse nicht abrufbar', str_contains($role_view($role_admin), 'Profil nicht verfügbar'));
+wp_set_current_user($pv_hidden);
+check('Profil: das eigene ausgeblendete Profil bleibt sichtbar', !str_contains($role_view($pv_hidden), 'Profil nicht verfügbar'));
+wp_set_current_user($role_admin);
+check('Profil: Verwaltung sieht ausgeblendete Konten', !str_contains($role_view($pv_hidden), 'Profil nicht verfügbar') && !str_contains($role_view($pv_kid), 'Profil nicht verfügbar'));
 wp_set_current_user(0);
 
 /* ---------- Konto löschen: Anmeldungen verschwinden sofort ---------- */
@@ -823,6 +837,10 @@ check('Härtung: kein Generator-Hinweis', apply_filters('the_generator', '<meta 
 $hd_headers = apply_filters('wp_headers', []);
 check('Härtung: nosniff-Header', ($hd_headers['X-Content-Type-Options'] ?? '') === 'nosniff');
 check('Härtung: Permissions-Policy', str_contains($hd_headers['Permissions-Policy'] ?? '', 'camera=()'));
+check('Härtung: kein Einbetten in fremde Seiten', ($hd_headers['X-Frame-Options'] ?? '') === 'SAMEORIGIN' && ($hd_headers['Content-Security-Policy'] ?? '') === "frame-ancestors 'self'");
+check('Härtung: HSTS nur über https', isset($hd_headers['Strict-Transport-Security']) === is_ssl());
+$hd_embed = apply_filters('oembed_response_data', ['author_name' => 'X', 'author_url' => 'https://x.test/author/x/', 'title' => 'T'], get_post(get_option('eintrikot_portal_page')), 600, 338);
+check('Härtung: oEmbed ohne Autor', !isset($hd_embed['author_name']) && !isset($hd_embed['author_url']) && $hd_embed['title'] === 'T');
 wp_set_current_user(0);
 $_GET['author'] = '1';
 $GLOBALS['wp_query'] = new \WP_Query();

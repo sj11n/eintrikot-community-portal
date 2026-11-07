@@ -466,7 +466,13 @@ function member_age($data) {
         : null;
 }
 function render_member($id) {
-    if (!member_access() || !is_portal_user($id)) {
+    // A profile kept out of the directory (minor without consent, hidden account) stays hidden
+    // when its address is typed in by hand; only the person themselves and the administration see it.
+    if (
+        !member_access() ||
+        !is_portal_user($id) ||
+        !((int) $id === get_current_user_id() || manager_access() || directory_listed(get_user_by('id', $id)))
+    ) {
         echo '<div class="portal-empty"><h1>Profil nicht verfügbar.</h1><p>Dieses Profil gibt es nicht oder es ist nicht freigeschaltet.</p></div>';
         return;
     }
