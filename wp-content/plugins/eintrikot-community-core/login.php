@@ -336,6 +336,18 @@ add_filter('xmlrpc_enabled', '__return_false');
 // "xmlrpc_enabled" only covers the methods that need a login: without this, system.multicall and
 // pingback.ping stay open and let others use the site to send requests to third parties.
 add_filter('xmlrpc_methods', fn() => []);
+// The server itself still answers system.listMethods and system.multicall: refuse every XML-RPC request
+// before WordPress starts it. Nothing on the site uses XML-RPC (no app, no pingbacks).
+add_action(
+    'plugins_loaded',
+    function () {
+        if (defined('XMLRPC_REQUEST') && XMLRPC_REQUEST) {
+            status_header(403);
+            exit();
+        }
+    },
+    0
+);
 add_filter('wp_headers', function ($headers) {
     unset($headers['X-Pingback']);
     return $headers;
