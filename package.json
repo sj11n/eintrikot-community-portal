@@ -7,7 +7,7 @@
     "check": "prettier --check \"wp-content/plugins/eintrikot-community-core/**/*.{php,js}\" \"wp-content/plugins/eintrikot-newsletter/**/*.{php,js}\" wp-content/themes/eintrikot-community/functions.php"
   },
   "devDependencies": {
-    "@prettier/plugin-php": "0.25.0",
-    "prettier": "3.9.9"
+    "@prettier/plugin-php": "0.26.0",
+    "prettier": "3.9.10"
   }
 }
