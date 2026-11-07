@@ -177,7 +177,8 @@ function portal_shell($content, $view) {
         '<main class="portal-main" id="main" tabindex="-1">' .
         testphase_bar() .
         preview_bar() .
-        newsletter_prompt_bar() .
+        // The newsletter question only on "Start", so it never pushes a profile or the directory down.
+        ($view === 'portal' ? newsletter_prompt_bar() : '') .
         $content .
         '</main></div><nav class="bottom-nav" aria-label="Mobile Mitgliedernavigation">' .
         portal_nav_links(portal_mobile_items(), $selected) .

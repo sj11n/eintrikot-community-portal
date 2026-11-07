@@ -71,6 +71,7 @@
 .et-app textarea,
 .et-app select {
     font: inherit;
+    font-size: 1rem; /* below 16px iOS Safari zooms into the field */
     box-sizing: border-box;
     padding: 12px 14px;
     border: 1px solid #bbb;
@@ -199,7 +200,7 @@
     font-size: 0.875rem;
 }
 .et-app select.visibility {
-    font-size: 0.8125rem;
+    font-size: 1rem;
     width: 150px;
     padding: 5px 8px;
 }
@@ -501,9 +502,18 @@
         flex-wrap: wrap;
         gap: 10px;
     }
+    /* Titel oben, darunter Status und Pfeil in einer Zeile. */
     .et-app .request-card > div {
-        min-width: 70%;
+        flex-basis: 100%;
     }
+    .et-app .request-card > span[aria-hidden] {
+        margin-left: auto;
+    }
+}
+/* Links im Mitgliedschaftskasten mit ausreichender Trefferfläche. */
+.et-app .membership-box a {
+    display: inline-block;
+    padding-block: 8px;
 }
 
 .et-app .audit-values {
@@ -549,7 +559,7 @@
     max-width: 650px;
 }
 .et-app .search-field input {
-    font-size: 0.875rem;
+    font-size: 1rem;
 }
 
 /* 0.8 – Navigation, Mehr, Termine, Erstanmeldung */
@@ -952,7 +962,7 @@
     border-color: transparent;
     border-radius: 999px;
     padding: 13px 20px;
-    font-size: 0.9375rem;
+    font-size: 1rem;
     box-shadow: 0 1px 2px #0000000f;
 }
 .et-app .page-search .button {
@@ -2115,8 +2125,8 @@
 }
 .et-app .membership-facts .text-link {
     margin-left: 10px;
-    padding: 0;
-    font-size: 0.8125rem;
+    padding: 6px 0;
+    font-size: 0.875rem;
 }
 .et-app .membership-box small a {
     text-decoration: underline;
