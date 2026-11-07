@@ -491,6 +491,14 @@ check('Nach 5 Fehlversuchen gesperrt, auch mit richtigem Passwort', is_wp_error(
 $unknown = wp_authenticate('niemand_' . wp_generate_password(6, false) . '@example.test', 'egal');
 check('Unbekannte Adresse: gleiche Meldung wie falsches Passwort', is_wp_error($unknown) && $unknown->get_error_code() === 'et_failed');
 delete_transient(login_throttle_key($locked_login));
+delete_transient(login_ip_key());
+for ($i = 0; $i < LOGIN_IP_MAX_FAILS; $i++) {
+    wp_authenticate('raten_' . $i . '@example.test', 'falsch');
+}
+$ip_result = wp_authenticate($locked_login, 'Richtig-Test-Pw-9x!');
+check('Viele Namen von einer Adresse: gesperrt, auch für ein anderes Konto', is_wp_error($ip_result) && $ip_result->get_error_code() === 'et_locked');
+delete_transient(login_ip_key());
+check('Nach Ablauf der Adress-Sperre funktioniert die Anmeldung wieder', wp_authenticate($locked_login, 'Richtig-Test-Pw-9x!') instanceof \WP_User);
 
 /* ---------- Ansicht wechseln (Vorschau für Administratoren) ---------- */
 
@@ -837,7 +845,12 @@ check('Härtung: kein Generator-Hinweis', apply_filters('the_generator', '<meta 
 $hd_headers = apply_filters('wp_headers', []);
 check('Härtung: nosniff-Header', ($hd_headers['X-Content-Type-Options'] ?? '') === 'nosniff');
 check('Härtung: Permissions-Policy', str_contains($hd_headers['Permissions-Policy'] ?? '', 'camera=()'));
-check('Härtung: kein Einbetten in fremde Seiten', ($hd_headers['X-Frame-Options'] ?? '') === 'SAMEORIGIN' && ($hd_headers['Content-Security-Policy'] ?? '') === "frame-ancestors 'self'");
+check('Härtung: kein Einbetten in fremde Seiten', ($hd_headers['X-Frame-Options'] ?? '') === 'SAMEORIGIN' && str_contains($hd_headers['Content-Security-Policy'] ?? '', "frame-ancestors 'self'"));
+check('Härtung: CSP lädt nur von dieser Seite', str_contains($hd_headers['Content-Security-Policy'] ?? '', "default-src 'self'") && str_contains($hd_headers['Content-Security-Policy'] ?? '', "object-src 'none'") && str_contains($hd_headers['Content-Security-Policy'] ?? '', "form-action 'self'"));
+check('Härtung: Referrer-Policy', ($hd_headers['Referrer-Policy'] ?? '') === 'strict-origin-when-cross-origin');
+check('Härtung: XML-RPC ohne Methoden', apply_filters('xmlrpc_methods', ['pingback.ping' => 'x', 'system.multicall' => 'y']) === []);
+check('Härtung: keine Anwendungspasswörter', !wp_is_application_passwords_available());
+check('Härtung: keine Emoji-Skripte von s.w.org', !has_action('wp_head', 'print_emoji_detection_script'));
 check('Härtung: HSTS nur über https', isset($hd_headers['Strict-Transport-Security']) === is_ssl());
 $hd_embed = apply_filters('oembed_response_data', ['author_name' => 'X', 'author_url' => 'https://x.test/author/x/', 'title' => 'T'], get_post(get_option('eintrikot_portal_page')), 600, 338);
 check('Härtung: oEmbed ohne Autor', !isset($hd_embed['author_name']) && !isset($hd_embed['author_url']) && $hd_embed['title'] === 'T');

@@ -15,6 +15,8 @@ const REMEMBER_DAYS_MEMBER = 90;
 const REMEMBER_DAYS_STAFF = 14;
 const LOGIN_MAX_FAILS = 5;
 const LOGIN_LOCK_MINUTES = 15;
+// Failed logins from one address across all names; stops guessing many names with one password.
+const LOGIN_IP_MAX_FAILS = 30;
 const RESET_MAX_PER_HOUR = 3;
 
 /** Accounts that see more than their own data stay signed in for a shorter time. */
@@ -88,17 +90,22 @@ function login_throttle_key($login) {
     return 'et_login_fail_' . md5(strtolower(trim((string) $login)) . '|' . $ip);
 }
 
+function login_ip_key() {
+    return 'et_login_ip_' . md5(client_ip());
+}
+
+function login_locked($login) {
+    return (int) get_transient(login_throttle_key($login)) >= LOGIN_MAX_FAILS ||
+        (int) get_transient(login_ip_key()) >= LOGIN_IP_MAX_FAILS;
+}
+
 // One message for wrong e-mail and wrong password, so nobody can test who is a member.
 add_filter(
     'authenticate',
     function ($user, $login = '') {
         // Locked: refuse even a correct password until the lock expires. This runs after
         // WordPress has checked the password, because the core check ignores earlier errors.
-        if (
-            $login !== '' &&
-            $login !== null &&
-            (int) get_transient(login_throttle_key($login)) >= LOGIN_MAX_FAILS
-        ) {
+        if ($login !== '' && $login !== null && login_locked($login)) {
             return new \WP_Error(
                 'et_locked',
                 'Zu viele Versuche. Bitte warte ' .
@@ -131,6 +138,12 @@ add_filter(
 add_action('wp_login_failed', function ($login) {
     $key = login_throttle_key($login);
     set_transient($key, (int) get_transient($key) + 1, LOGIN_LOCK_MINUTES * MINUTE_IN_SECONDS);
+    // Not reset by a successful login, so one valid account cannot clear the count for the whole address.
+    set_transient(
+        login_ip_key(),
+        (int) get_transient(login_ip_key()) + 1,
+        LOGIN_LOCK_MINUTES * MINUTE_IN_SECONDS
+    );
 });
 add_action(
     'wp_login',
@@ -320,10 +333,21 @@ add_action(
 /* ---------- Härtung ---------- */
 
 add_filter('xmlrpc_enabled', '__return_false');
+// "xmlrpc_enabled" only covers the methods that need a login: without this, system.multicall and
+// pingback.ping stay open and let others use the site to send requests to third parties.
+add_filter('xmlrpc_methods', fn() => []);
 add_filter('wp_headers', function ($headers) {
     unset($headers['X-Pingback']);
     return $headers;
 });
+// Nobody uses application passwords; without them the REST API accepts no password-based logins.
+add_filter('wp_is_application_passwords_available', '__return_false');
+// Emoji images would load from s.w.org and tell WordPress.org who visits the site.
+remove_action('wp_head', 'print_emoji_detection_script', 7);
+remove_action('wp_print_styles', 'print_emoji_styles');
+remove_action('wp_enqueue_scripts', 'wp_enqueue_emoji_styles');
+remove_filter('the_content_feed', 'wp_staticize_emoji');
+remove_filter('wp_mail', 'wp_staticize_emoji_for_email');
 // Member names and user names are not listed publicly through the REST API or author pages.
 add_filter('rest_endpoints', function ($endpoints) {
     if (!current_user_can('list_users')) {
@@ -360,13 +384,40 @@ add_filter('wp_headers', function ($headers) {
     $headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=(), payment=()';
     // No other site may show the portal in a frame and make people click its buttons unknowingly.
     $headers['X-Frame-Options'] = 'SAMEORIGIN';
-    $headers['Content-Security-Policy'] = "frame-ancestors 'self'";
-    // Browsers only use https from now on. Short duration to start with; raise it once https has run without trouble.
+    $headers['Content-Security-Policy'] = content_security_policy();
+    $headers['Referrer-Policy'] = 'strict-origin-when-cross-origin';
+    $headers['Cross-Origin-Opener-Policy'] = 'same-origin';
+    // Browsers only use https for a year after each visit (no subdomains: eintrikot.de moves separately).
     if (is_ssl()) {
-        $headers['Strict-Transport-Security'] = 'max-age=86400';
+        $headers['Strict-Transport-Security'] = 'max-age=31536000';
     }
     return $headers;
 });
+
+/**
+ * Everything the public pages and the portal load comes from this site. Inline scripts and styles
+ * stay allowed because WordPress prints its block scripts and settings inline.
+ */
+function content_security_policy() {
+    $rules = [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline'",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: blob: https://secure.gravatar.com",
+        "font-src 'self' data:",
+        "connect-src 'self'",
+        "frame-src 'self'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'self'"
+    ];
+    // Only over https: on a local http test site it would send every request to a port without https.
+    if (is_ssl()) {
+        $rules[] = 'upgrade-insecure-requests';
+    }
+    return implode('; ', $rules);
+}
 // oEmbed and feeds would name the author with their user name (/author/<name>/), which is half a login.
 add_filter('oembed_response_data', function ($data) {
     unset($data['author_name'], $data['author_url']);
