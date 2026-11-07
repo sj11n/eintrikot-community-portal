@@ -853,6 +853,9 @@ check('Härtung: keine Anwendungspasswörter', !wp_is_application_passwords_avai
 check('Härtung: keine Emoji-Skripte von s.w.org', !has_action('wp_head', 'print_emoji_detection_script'));
 $hd_user = get_current_user_id();
 wp_set_current_user(0);
+// wp_login_form() builds its default redirect from the request, which a command-line run does not have.
+$_SERVER['HTTP_HOST'] ??= 'example.test';
+$_SERVER['REQUEST_URI'] ??= '/';
 check('Anmeldung: E-Mail-Tastatur im Adressfeld', str_contains(do_shortcode('[eintrikot_portal]'), 'name="log" inputmode="email"'));
 wp_set_current_user($hd_user);
 check('Härtung: HSTS nur über https', isset($hd_headers['Strict-Transport-Security']) === is_ssl());
