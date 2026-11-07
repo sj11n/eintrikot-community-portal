@@ -2,7 +2,7 @@
     color: #000;
     background: #fff;
     font:
-        400 16px/1.65 Montserrat,
+        400 1rem/1.65 Montserrat,
         Arial,
         sans-serif;
 }
@@ -52,10 +52,10 @@
     font-weight: 750;
 }
 .et-app h2 {
-    font-size: 28px;
+    font-size: 1.75rem;
 }
 .et-app .welcome h1 {
-    font-size: 42px;
+    font-size: 2.625rem;
 }
 .et-app .et-form {
     display: grid;
@@ -65,7 +65,7 @@
 .et-app .et-form label {
     display: grid;
     gap: 8px;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app input:not([type='checkbox']):not([type='submit']),
 .et-app textarea,
@@ -96,7 +96,7 @@
     grid-column: 1/-1;
 }
 .et-app .et-visibility {
-    font-size: 13px !important;
+    font-size: 0.8125rem !important;
 }
 .et-app .wp-element-button,
 .et-app input[type='submit'] {
@@ -107,7 +107,7 @@
     background: #000;
     color: #fff;
     font:
-        600 14px/1.4 Montserrat,
+        600 0.875rem/1.4 Montserrat,
         sans-serif;
     cursor: pointer;
     width: auto;
@@ -118,7 +118,7 @@
     padding: 24px 0;
 }
 .et-app .et-request h3 {
-    font-size: 20px;
+    font-size: 1.25rem;
 }
 .et-app .portal-success {
     padding: 14px 20px;
@@ -134,11 +134,11 @@
 }
 .et-app .et-member strong {
     display: block;
-    font-size: 18px;
+    font-size: 1.125rem;
 }
 .et-app .et-member small {
     display: block;
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 .et-app .et-member small b {
     font-weight: 650;
@@ -154,6 +154,10 @@
 .et-app .auth-inner {
     width: min(100%, 520px);
 }
+/* „Willkommen“ passt so auch bei 320 px Breite in die Karte. */
+.et-app .auth h1 {
+    font-size: clamp(2rem, 10vw, 2.625rem);
+}
 .et-app .service-back {
     display: inline-block;
     margin-bottom: 30px;
@@ -166,7 +170,7 @@
         grid-template-columns: 1fr;
     }
     .et-app .welcome h1 {
-        font-size: 32px;
+        font-size: 2rem;
     }
     .et-app .mobile-brand details nav {
         position: absolute;
@@ -192,10 +196,10 @@
     align-items: center;
 }
 .et-app .field-head label {
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app select.visibility {
-    font-size: 13px;
+    font-size: 0.8125rem;
     width: 150px;
     padding: 5px 8px;
 }
@@ -203,7 +207,7 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .check input {
     width: 18px;
@@ -223,7 +227,7 @@
     align-items: end;
 }
 .et-app .station .field {
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 .et-app .station input {
     padding: 10px;
@@ -253,7 +257,7 @@
 }
 .et-app .directory-filters summary {
     cursor: pointer;
-    font-size: 14px;
+    font-size: 0.875rem;
     width: fit-content;
     padding: 11px 0;
 }
@@ -267,7 +271,7 @@
 .et-app .filter-fields label {
     flex: 1;
     min-width: 130px;
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 .et-app .filter-fields select {
     display: block;
@@ -298,12 +302,12 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 15px;
+    font-size: 0.9375rem;
     font-weight: 650;
 }
 .et-app .et-member small {
     display: block;
-    font-size: 13px;
+    font-size: 0.8125rem;
     line-height: 1.6;
     margin-top: 3px;
     color: #656565;
@@ -313,10 +317,10 @@
     font-weight: 650;
 }
 .et-app .member-arrow {
-    font-size: 18px;
+    font-size: 1.125rem;
 }
 .et-app .result-count {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: #666;
 }
 .et-app .pagination {
@@ -325,7 +329,7 @@
     align-items: center;
     justify-content: center;
     margin: 28px 0;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .member-profile-header {
     display: flex;
@@ -338,17 +342,17 @@
     width: 96px;
     height: 96px;
     flex: 0 0 96px;
-    font-size: 28px;
+    font-size: 1.75rem;
 }
 .et-app .member-profile-header > div {
     flex: 1;
 }
 .et-app .member-profile-header h1 {
-    font-size: clamp(26px, 3vw, 40px);
+    font-size: clamp(1.625rem, 3vw, 2.5rem);
     margin: 0 0 8px;
 }
 .et-app .member-profile-header p {
-    font-size: 13px;
+    font-size: 0.8125rem;
     margin: 0;
 }
 .et-app .member-profile-sections {
@@ -359,7 +363,7 @@
     border-bottom: 1px solid #e5e5e5;
 }
 .et-app .member-profile-section h2 {
-    font-size: 20px;
+    font-size: 1.25rem;
 }
 .et-app .member-profile-section dl {
     display: grid;
@@ -368,12 +372,12 @@
     margin: 24px 0;
 }
 .et-app .member-profile-section dt {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: #666;
     margin-bottom: 6px;
 }
 .et-app .member-profile-section dd {
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.6;
     margin: 0;
     overflow-wrap: anywhere;
@@ -393,7 +397,7 @@
     row-gap: 2px;
     padding: 10px 0;
     border-bottom: 1px solid #eee;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .station-years {
     min-width: 110px;
@@ -404,7 +408,7 @@
     font-weight: 600;
 }
 .et-app .station-role {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: #666;
 }
 .et-app .profile-empty {
@@ -436,7 +440,7 @@
         column-gap: 12px;
     }
     .et-app .et-member small {
-        font-size: 13px;
+        font-size: 0.8125rem;
     }
 }
 
@@ -452,18 +456,18 @@
     flex: 1;
 }
 .et-app .request-card small {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: #666;
 }
 .et-app .request-card h3 {
-    font-size: 16px;
+    font-size: 1rem;
     margin: 7px 0;
 }
 .et-app .request-status {
     background: #eee;
     padding: 7px 10px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 0.75rem;
     white-space: nowrap;
 }
 .et-app .request-filters {
@@ -474,7 +478,7 @@
 }
 .et-app .request-filters .button {
     padding: 12px 14px;
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 .et-app .request-filters [aria-current] {
     background: #000;
@@ -510,12 +514,12 @@
 .et-app .audit-values pre {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    font-size: 12px;
+    font-size: 0.75rem;
     background: #f6f6f6;
     padding: 16px;
 }
 .et-app .audit-row h2 {
-    font-size: 20px;
+    font-size: 1.25rem;
 }
 .et-app .audit-row summary {
     cursor: pointer;
@@ -541,11 +545,11 @@
 }
 
 .et-app .directory-heading h1 {
-    font-size: clamp(32px, 3.5vw, 50px);
+    font-size: clamp(2rem, 3.5vw, 3.125rem);
     max-width: 650px;
 }
 .et-app .search-field input {
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 
 /* 0.8 – Navigation, Mehr, Termine, Erstanmeldung */
@@ -560,7 +564,7 @@
         padding: 0 16px;
         border: 1px solid #000;
         border-radius: 999px;
-        font-size: 14px;
+        font-size: 0.875rem;
         font-weight: 650;
     }
     .et-app .mobile-brand .mobile-more.active {
@@ -574,7 +578,7 @@
         align-items: center;
         justify-content: center;
         padding: 10px 4px;
-        font-size: 13px;
+        font-size: 0.8125rem;
         font-weight: 600;
     }
 }
@@ -583,7 +587,7 @@
     gap: 2px;
 }
 .et-app .service-link small {
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 400;
     color: #656565;
 }
@@ -593,12 +597,12 @@
     border-top: 1px solid #e3e3e3;
 }
 .et-app .auth-first h2 {
-    font-size: 17px;
+    font-size: 1.0625rem;
     letter-spacing: -0.02em;
     margin: 0 0 8px;
 }
 .et-app .auth-first p {
-    font-size: 13px;
+    font-size: 0.8125rem;
     line-height: 1.6;
     margin: 0 0 8px;
     color: #333;
@@ -617,11 +621,11 @@
     border-top: 1px solid #e3e3e3;
 }
 .et-app .et-events time {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: #656565;
 }
 .et-app .et-events time strong {
-    font-size: 22px;
+    font-size: 1.375rem;
     letter-spacing: -0.04em;
     color: #000;
     margin-right: 4px;
@@ -656,7 +660,7 @@
 .et-app .et-events details summary::after {
     content: '+';
     font-weight: 400;
-    font-size: 20px;
+    font-size: 1.25rem;
     line-height: 1;
 }
 .et-app .et-events details[open] summary::after {
@@ -664,7 +668,7 @@
 }
 .et-app .et-event-body {
     margin-top: 10px;
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.6;
 }
 .et-app .et-event-body p {
@@ -681,7 +685,7 @@
     padding: 18px 20px;
     background: #f4f8fa;
     border-radius: 12px;
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.6;
 }
 .et-app .visibility-intro p {
@@ -714,7 +718,7 @@
     gap: 10px;
     cursor: pointer;
     min-height: 44px;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     user-select: none;
 }
@@ -756,7 +760,7 @@
     outline-offset: 3px;
 }
 .et-app .visibility-note {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: #8a4b00;
     max-width: 34ch;
     text-align: right;
@@ -769,7 +773,7 @@
     padding: 2px 9px;
     border-radius: 999px;
     background: #eee;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -788,11 +792,11 @@
 }
 /* Lesbarkeit: Mindestgrößen für Text und Bedienflächen */
 .et-app .side-bottom {
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 @media (max-width: 360px) {
     .et-app .bottom-nav a {
-        font-size: 12px;
+        font-size: 0.75rem;
     }
 }
 
@@ -878,7 +882,7 @@
     border-right: 0;
 }
 .et-app .side-nav a {
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .side-nav a:hover {
     background: #ffffffb3;
@@ -923,13 +927,13 @@
     max-width: 720px;
 }
 .et-app .page-head h1 {
-    font-size: clamp(30px, 3.2vw, 44px);
+    font-size: clamp(1.875rem, 3.2vw, 2.75rem);
     line-height: 1.08;
     letter-spacing: -0.045em;
     margin: 0 0 8px;
 }
 .et-app .page-head .page-lead {
-    font-size: 15px;
+    font-size: 0.9375rem;
     line-height: 1.55;
     margin: 0;
     max-width: 60ch;
@@ -948,7 +952,7 @@
     border-color: transparent;
     border-radius: 999px;
     padding: 13px 20px;
-    font-size: 15px;
+    font-size: 0.9375rem;
     box-shadow: 0 1px 2px #0000000f;
 }
 .et-app .page-search .button {
@@ -959,7 +963,7 @@
     margin-top: 44px;
 }
 .et-app .portal-section > h2 {
-    font-size: 20px;
+    font-size: 1.25rem;
     letter-spacing: -0.02em;
     margin: 0 0 14px;
 }
@@ -987,7 +991,7 @@
     display: block;
     margin-top: 6px;
     color: var(--et-error);
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 600;
 }
 .et-app [aria-invalid='true'] {
@@ -999,11 +1003,11 @@
     background: var(--et-blue-soft);
 }
 .et-app .portal-empty h1 {
-    font-size: 26px;
+    font-size: 1.625rem;
     margin: 0 0 8px;
 }
 .et-app .form-note {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: var(--et-muted);
     margin: 0;
 }
@@ -1012,13 +1016,13 @@
 .et-app .et-avatar {
     background: var(--tone, var(--et-blue));
     color: #000;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 700;
     letter-spacing: 0.02em;
 }
 .et-app .member-profile-header .et-avatar,
 .et-app .form-section .et-avatar {
-    font-size: 28px;
+    font-size: 1.75rem;
 }
 
 /* Start page */
@@ -1029,7 +1033,7 @@
     background: var(--et-gold-soft);
 }
 .et-app .home-welcome h2 {
-    font-size: 22px;
+    font-size: 1.375rem;
     margin: 0 0 8px;
 }
 .et-app .home-welcome p {
@@ -1051,10 +1055,10 @@
 }
 .et-app .home-progress-text strong {
     display: block;
-    font-size: 15px;
+    font-size: 0.9375rem;
 }
 .et-app .home-progress-text small {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--et-muted);
 }
 .et-app .home-progress-bar {
@@ -1071,7 +1075,7 @@
 }
 .et-app .home-progress-cta {
     font-weight: 650;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .home-grid {
     display: grid;
@@ -1087,7 +1091,7 @@
     border-radius: var(--et-radius);
 }
 .et-app .home-card .home-card-label {
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -1095,17 +1099,17 @@
     margin: 0 0 6px;
 }
 .et-app .home-card h3 {
-    font-size: 18px;
+    font-size: 1.125rem;
     line-height: 1.3;
     letter-spacing: -0.02em;
     margin: 0;
 }
 .et-app .home-card p {
     margin: 0;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .home-card .home-card-meta {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--et-muted);
 }
 .et-app .home-card .text-link {
@@ -1130,11 +1134,11 @@
     line-height: 1.1;
 }
 .et-app .home-date time strong {
-    font-size: 26px;
+    font-size: 1.625rem;
     font-variant-numeric: tabular-nums;
 }
 .et-app .home-date time span {
-    font-size: 11px;
+    font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -1151,7 +1155,7 @@
     gap: 10px;
     padding: 10px 0;
     border-bottom: 1px solid var(--et-line);
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     min-height: 44px;
 }
@@ -1189,7 +1193,7 @@
     border-radius: 99px;
     background: #000;
     color: #fff;
-    font-size: 12px;
+    font-size: 0.75rem;
 }
 .et-app .js-autosubmit .filter-apply {
     display: none;
@@ -1221,11 +1225,11 @@
     padding: 0 14px;
     border-radius: 999px;
     background: var(--et-blue);
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
 }
 .et-app .chip span {
-    font-size: 18px;
+    font-size: 1.125rem;
     line-height: 1;
 }
 .et-app .chip:hover {
@@ -1248,7 +1252,7 @@
     background: var(--et-blue-soft);
 }
 .et-app .directory-empty h2 {
-    font-size: 20px;
+    font-size: 1.25rem;
     margin: 0 0 8px;
 }
 .et-app .directory-empty .button {
@@ -1274,11 +1278,11 @@
     min-width: 0;
 }
 .et-app .service-card strong {
-    font-size: 15px;
+    font-size: 0.9375rem;
     font-weight: 650;
 }
 .et-app .service-card small {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--et-muted);
 }
 .et-app .et-services {
@@ -1307,7 +1311,7 @@
     background: var(--et-green);
 }
 .et-app .request-confirm h2 {
-    font-size: 20px;
+    font-size: 1.25rem;
     margin: 0 0 6px;
 }
 .et-app .request-confirm p {
@@ -1332,7 +1336,7 @@
     display: grid;
     gap: 2px;
     padding-top: 30px;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .request-timeline li::before {
     content: '';
@@ -1383,7 +1387,7 @@
     color: #767676;
 }
 .et-app .request-timeline small {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--et-muted);
 }
 .et-app .request-facts {
@@ -1393,13 +1397,13 @@
     margin: 0;
 }
 .et-app .request-facts dt {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--et-muted);
     margin-bottom: 4px;
 }
 .et-app .request-facts dd {
     margin: 0;
-    font-size: 15px;
+    font-size: 0.9375rem;
     font-weight: 500;
 }
 .et-app .funding-state {
@@ -1411,7 +1415,7 @@
     margin: 0 0 6px;
 }
 .et-app .funding-state .funding-state-label {
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -1440,12 +1444,12 @@
     max-width: 760px;
 }
 .et-app .info-entry h2 {
-    font-size: 22px;
+    font-size: 1.375rem;
     letter-spacing: -0.03em;
     margin: 4px 0 10px;
 }
 .et-app .info-date {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--et-muted);
     margin: 0;
 }
@@ -1453,7 +1457,7 @@
 /* Profile picture */
 .et-app .avatar-field .field-label {
     display: block;
-    font-size: 14px;
+    font-size: 0.875rem;
     margin-bottom: 10px;
 }
 .et-app .avatar-row {
@@ -1485,7 +1489,7 @@
     border-radius: 99px;
     background: #000;
     color: #fff;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
 }
 .et-app .avatar-actions {
@@ -1503,7 +1507,7 @@
     padding: 0 18px;
     border: 1px solid #000;
     border-radius: 999px;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
 }
@@ -1533,11 +1537,11 @@
     gap: 14px;
 }
 .et-app .cropper-inner h2 {
-    font-size: 20px;
+    font-size: 1.25rem;
     margin: 0;
 }
 .et-app .cropper-inner p {
-    font-size: 14px;
+    font-size: 0.875rem;
     margin: 0;
 }
 .et-app .crop-stage {
@@ -1572,7 +1576,7 @@
 .et-app .crop-zoom {
     display: grid;
     gap: 6px;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .crop-zoom input {
     width: 100%;
@@ -1586,7 +1590,7 @@
     gap: 10px;
 }
 .et-app .save-state {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--et-muted);
     align-self: center;
 }
@@ -1626,7 +1630,7 @@
         border-radius: 16px;
     }
     .et-app .page-head h1 {
-        font-size: 30px;
+        font-size: 1.875rem;
     }
     .et-app .page-search {
         flex-direction: column;
@@ -1734,7 +1738,7 @@
     padding: 14px 18px;
     border-radius: 12px;
     background: var(--et-gold-soft);
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .onboarding-step > h2 {
     display: flex;
@@ -1748,13 +1752,13 @@
     height: 32px;
     border-radius: 50%;
     background: var(--et-blue);
-    font-size: 15px;
+    font-size: 0.9375rem;
     flex: 0 0 auto;
 }
 .et-app .onboarding-howto {
     margin: 0 0 20px;
     padding-left: 20px;
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.6;
 }
 .et-app .table-scroll {
@@ -1766,11 +1770,11 @@
 .et-app .import-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .import-table th {
     text-align: left;
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--et-muted);
     font-weight: 600;
     background: #fafafa;
@@ -1825,7 +1829,7 @@
     align-items: center;
     gap: 14px;
     flex-wrap: wrap;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: var(--et-muted);
 }
 .et-app .import-mapping {
@@ -1844,11 +1848,11 @@
     background: var(--et-blue-soft);
 }
 .et-app .request-work > h2 {
-    font-size: 22px;
+    font-size: 1.375rem;
     margin: 0 0 12px;
 }
 .et-app .request-task {
-    font-size: 15px;
+    font-size: 0.9375rem;
     margin: 0 0 16px;
     max-width: 70ch;
 }
@@ -1862,7 +1866,7 @@
     background: #fff;
 }
 .et-app .request-details dt {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--et-muted);
 }
 .et-app .request-details dd {
@@ -1870,7 +1874,7 @@
     font-weight: 600;
 }
 .et-app .et-form label small {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--et-muted);
     font-weight: 400;
 }
@@ -1902,7 +1906,7 @@
     padding: 0 6px;
     border-radius: 99px;
     background: #0000000f;
-    font-size: 12px;
+    font-size: 0.75rem;
 }
 .et-app .request-filters [aria-current] .filter-num {
     background: #ffffff33;
@@ -1920,7 +1924,7 @@
 }
 .et-app .auth-remember-hint {
     margin: -6px 0 14px;
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--et-muted, #595959);
 }
 .et-app .logout-others {
@@ -1943,7 +1947,7 @@
     min-width: 0;
 }
 .et-app .check-group legend {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     margin-bottom: 12px;
     padding: 0;
@@ -1979,7 +1983,7 @@
     margin-top: 24px;
 }
 .et-app .consent-form .field input {
-    font-size: 16px;
+    font-size: 1rem;
 }
 .et-app .consent-custody {
     border: 0;
@@ -1990,12 +1994,12 @@
 }
 .et-app .consent-custody legend {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 0.875rem;
     margin-bottom: 10px;
 }
 .et-app .email-suggest {
     margin: -8px 0 0;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .email-suggest .text-reset {
     font-weight: 700;
@@ -2003,7 +2007,7 @@
 }
 .et-app .consent-small,
 .et-app .minor-note {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: #555;
 }
 .et-app .minor-note {
@@ -2014,7 +2018,7 @@
 }
 .et-app .consent-manual {
     margin-top: 8px;
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 .et-app .consent-manual form {
     display: grid;
@@ -2026,7 +2030,7 @@
     padding: 8px;
 }
 .et-app .consent-page h1 {
-    font-size: clamp(32px, 8vw, 46px);
+    font-size: clamp(2rem, 8vw, 2.875rem);
 }
 .et-app .consent-page .field {
     margin: 0;
@@ -2067,7 +2071,7 @@
     display: block;
 }
 .et-app .social-fallback {
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 700;
     padding: 0 12px;
     border-radius: 999px;
@@ -2079,7 +2083,7 @@
 /* Mitgliedsnummer und Eintritt (nur für das Mitglied und die Verwaltung) */
 .et-app .membership-line {
     margin: 8px 0 0;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .membership-box {
     background: #edf5f8;
@@ -2089,7 +2093,7 @@
 }
 .et-app .membership-box .membership-line {
     margin: 0 0 4px;
-    font-size: 16px;
+    font-size: 1rem;
 }
 .et-app .membership-box small {
     color: #555;
@@ -2101,7 +2105,7 @@
     grid-template-columns: max-content 1fr;
     gap: 6px 18px;
     margin: 12px 0;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .membership-facts dt {
     color: #595959;
@@ -2112,7 +2116,7 @@
 .et-app .membership-facts .text-link {
     margin-left: 10px;
     padding: 0;
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 .et-app .membership-box small a {
     text-decoration: underline;
@@ -2135,10 +2139,10 @@
 }
 .et-app .review-notice p {
     margin: 0;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .portal-hint {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: #595959;
 }
 
@@ -2164,7 +2168,7 @@
     gap: 8px;
     padding: 0 16px 0 10px;
     border-radius: 999px;
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 650;
 }
 .et-app .social-link .social-name {
@@ -2190,12 +2194,12 @@
 .et-app fieldset.birthday-choice small,
 .et-app fieldset.birthday-choice .field-hint {
     color: #555;
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 .et-app .member-birthday,
 .et-app .member-role {
     margin: 4px 0 0;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #333;
 }
 
@@ -2234,7 +2238,7 @@
     border-radius: 999px;
     background: #ffffffb3;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 0.875rem;
     text-decoration: none;
 }
 .et-app .news-tabs a.active,
@@ -2261,17 +2265,17 @@
 .et-app .et-event time {
     text-align: center;
     line-height: 1.1;
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: #444;
 }
 .et-app .et-event time strong {
     display: block;
-    font-size: 26px;
+    font-size: 1.625rem;
     color: #000;
 }
 .et-app .et-event h3 {
     margin: 2px 0 4px;
-    font-size: 18px;
+    font-size: 1.125rem;
     letter-spacing: -0.01em;
 }
 .et-app .et-format {
@@ -2279,7 +2283,7 @@
     padding: 2px 10px;
     border-radius: 999px;
     background: #cedfbd;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 700;
 }
 .et-app .et-event.is-cancelled h3 {
@@ -2289,7 +2293,7 @@
 .et-app .et-event-meta {
     margin: 0 0 8px;
     color: #333;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .et-event details {
     margin: 8px 0;
@@ -2297,11 +2301,11 @@
 .et-app .et-event summary {
     cursor: pointer;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .et-event-body {
     margin-top: 8px;
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.55;
 }
 .et-app .event-signup-box {
@@ -2328,11 +2332,11 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px 14px;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .event-attendees-empty {
     margin: 8px 0 0;
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: #555;
 }
 .et-app .et-birthdays {
@@ -2348,7 +2352,7 @@
     margin: 10px 0 0;
     display: grid;
     gap: 6px;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .et-birthdays time {
     display: inline-block;
@@ -2372,7 +2376,7 @@
     background: #fff3d1;
     border: 1px solid #ffcc4e;
     color: #000;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .preview-bar form {
     margin: 0 0 0 auto;
@@ -2425,7 +2429,7 @@
     background: #f1d1dd;
     border: 1px solid #da525d;
     color: #000;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .et-app .test-bar p {
     margin: 0 0 6px;
@@ -2467,7 +2471,7 @@
 
 .et-app .sort-bar {
     margin: 0 0 10px;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #595959;
 }
 .et-app .sort-bar strong {
@@ -2491,7 +2495,7 @@
     border: 1px solid #e4e4e4;
     background: #fff;
     color: #000;
-    font-size: 14px;
+    font-size: 0.875rem;
     text-decoration: none;
 }
 .et-app .letter-bar span {
@@ -2512,7 +2516,7 @@
     margin: 18px 0 0;
     padding-bottom: 6px;
     border-bottom: 2px solid #000;
-    font-size: 22px;
+    font-size: 1.375rem;
 }
 .et-app .member-letter:first-child {
     margin-top: 0;
@@ -2531,7 +2535,7 @@
 }
 .et-app .newsletter-bar h2 {
     margin: 0 0 4px;
-    font-size: 18px;
+    font-size: 1.125rem;
 }
 .et-app .newsletter-bar p {
     margin: 0;
@@ -2550,7 +2554,7 @@
     border-bottom: 1px solid;
     background: none;
     color: inherit;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
 }
