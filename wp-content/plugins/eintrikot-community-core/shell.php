@@ -193,15 +193,20 @@ add_shortcode('eintrikot_portal', function () {
     if (!member_access()) {
         $form = is_user_logged_in()
             ? '<p>Dein Konto ist noch nicht für das Mitgliederportal freigeschaltet.</p>'
-            : wp_login_form([
-                    'echo' => false,
-                    'redirect' => portal_url(),
-                    'label_username' => 'E-Mail-Adresse',
-                    'label_password' => 'Passwort',
-                    'label_log_in' => 'Anmelden',
-                    'label_remember' => 'Angemeldet bleiben',
-                    'value_remember' => true
-                ]) .
+            : // E-mail keyboard on phones, no capital first letter and no spell check in the address field.
+                str_replace(
+                    'name="log"',
+                    'name="log" inputmode="email" autocapitalize="none" spellcheck="false"',
+                    wp_login_form([
+                        'echo' => false,
+                        'redirect' => portal_url(),
+                        'label_username' => 'E-Mail-Adresse',
+                        'label_password' => 'Passwort',
+                        'label_log_in' => 'Anmelden',
+                        'label_remember' => 'Angemeldet bleiben',
+                        'value_remember' => true
+                    ])
+                ) .
                 '<p class="auth-remember-hint">Mit Haken bleibst du auf diesem Gerät ' .
                 REMEMBER_DAYS_MEMBER .
                 ' Tage angemeldet. Auf fremden oder gemeinsam genutzten Geräten den Haken bitte entfernen.</p>';

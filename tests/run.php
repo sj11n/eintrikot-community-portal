@@ -851,6 +851,10 @@ check('Härtung: Referrer-Policy', ($hd_headers['Referrer-Policy'] ?? '') === 's
 check('Härtung: XML-RPC ohne Methoden', apply_filters('xmlrpc_methods', ['pingback.ping' => 'x', 'system.multicall' => 'y']) === []);
 check('Härtung: keine Anwendungspasswörter', !wp_is_application_passwords_available());
 check('Härtung: keine Emoji-Skripte von s.w.org', !has_action('wp_head', 'print_emoji_detection_script'));
+$hd_user = get_current_user_id();
+wp_set_current_user(0);
+check('Anmeldung: E-Mail-Tastatur im Adressfeld', str_contains(do_shortcode('[eintrikot_portal]'), 'name="log" inputmode="email"'));
+wp_set_current_user($hd_user);
 check('Härtung: HSTS nur über https', isset($hd_headers['Strict-Transport-Security']) === is_ssl());
 $hd_embed = apply_filters('oembed_response_data', ['author_name' => 'X', 'author_url' => 'https://x.test/author/x/', 'title' => 'T'], get_post(get_option('eintrikot_portal_page')), 600, 338);
 check('Härtung: oEmbed ohne Autor', !isset($hd_embed['author_name']) && !isset($hd_embed['author_url']) && $hd_embed['title'] === 'T');
