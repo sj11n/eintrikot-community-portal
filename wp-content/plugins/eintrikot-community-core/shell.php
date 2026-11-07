@@ -204,12 +204,12 @@ add_shortcode('eintrikot_portal', function () {
                         'label_password' => 'Passwort',
                         'label_log_in' => 'Anmelden',
                         'label_remember' => 'Angemeldet bleiben',
-                        'value_remember' => true
+                        'value_remember' => false
                     ])
                 ) .
                 '<p class="auth-remember-hint">Mit Haken bleibst du auf diesem Gerät ' .
                 REMEMBER_DAYS_MEMBER .
-                ' Tage angemeldet. Auf fremden oder gemeinsam genutzten Geräten den Haken bitte entfernen.</p>';
+                ' Tage angemeldet. Nur auf eigenen Geräten anhaken, nie auf fremden oder gemeinsam genutzten.</p>';
         return '<div class="et-app"><header class="header">' .
             portal_brand() .
             '</header><main class="auth"><div class="auth-inner"><h1>Willkommen zurück.</h1><p>Dein Zugang zum EINTRIKOT-Mitgliederbereich.</p>' .
