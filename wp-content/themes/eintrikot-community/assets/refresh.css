@@ -46,7 +46,7 @@
 }
 .entry-content .vision-2030 h2,
 .editor-styles-wrapper .vision-2030 h2 {
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -54,7 +54,7 @@
 }
 .entry-content .vision-2030 p,
 .editor-styles-wrapper .vision-2030 p {
-    font-size: clamp(26px, 3.4vw, 50px);
+    font-size: clamp(1.625rem, 3.4vw, 3.125rem);
     font-weight: 500;
     line-height: 1.22;
     letter-spacing: -0.035em;
@@ -70,7 +70,7 @@
 }
 .entry-content .et-join h2,
 .editor-styles-wrapper .et-join h2 {
-    font-size: clamp(30px, 3.6vw, 52px);
+    font-size: clamp(1.875rem, 3.6vw, 3.25rem);
     margin-bottom: 28px;
 }
 .entry-content .et-join .lead,
@@ -106,14 +106,14 @@
 }
 .entry-content .et-join-fee h3,
 .editor-styles-wrapper .et-join-fee h3 {
-    font-size: 15px;
+    font-size: 0.9375rem;
     font-weight: 700;
     letter-spacing: 0.02em;
     margin: 0 0 10px;
 }
 .entry-content .et-join-amount,
 .editor-styles-wrapper .et-join-amount {
-    font-size: clamp(28px, 3vw, 40px);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
     font-weight: 700;
     letter-spacing: -0.04em;
     line-height: 1.1;
@@ -126,7 +126,7 @@
 .entry-content .et-join-badge,
 .editor-styles-wrapper .et-join-badge {
     display: inline-block;
-    font-size: 11px;
+    font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -147,7 +147,7 @@
 }
 .entry-content .et-join-reasons h3,
 .editor-styles-wrapper .et-join-reasons h3 {
-    font-size: 21px;
+    font-size: 1.3125rem;
     margin-bottom: 10px;
 }
 .entry-content .et-join-steps,
@@ -174,7 +174,7 @@
     position: absolute;
     left: 0;
     top: 18px;
-    font-size: 28px;
+    font-size: 1.75rem;
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.04em;
@@ -193,7 +193,7 @@
 }
 .entry-content .et-join-meta,
 .editor-styles-wrapper .et-join-meta {
-    font-size: 15px;
+    font-size: 0.9375rem;
     margin: 0 0 8px;
 }
 @media (max-width: 800px) {
@@ -217,7 +217,7 @@
 .entry-content .legal-content h3,
 .editor-styles-wrapper .legal-content h3 {
     margin: 28px 0 10px;
-    font-size: 20px;
+    font-size: 1.25rem;
 }
 .entry-content .legal-content ul,
 .editor-styles-wrapper .legal-content ul {
@@ -373,18 +373,18 @@ a.button[href*='mitglied-werden']:focus-visible {
     line-height: 1;
 }
 .entry-content .founder-photo p {
-    font-size: 26px !important;
+    font-size: 1.625rem !important;
 }
 .entry-content .board-photo p {
-    font-size: 40px !important;
+    font-size: 2.5rem !important;
 }
 .entry-content .advisory-photo p {
-    font-size: 36px !important;
+    font-size: 2.25rem !important;
 }
 @media (max-width: 600px) {
     .entry-content .board-photo p,
     .entry-content .advisory-photo p {
-        font-size: 26px !important;
+        font-size: 1.625rem !important;
     }
 }
 
@@ -414,7 +414,7 @@ a.button[href*='mitglied-werden']:focus-visible {
 }
 .entry-content .support-card h3 {
     margin: 0;
-    font-size: 28px;
+    font-size: 1.75rem;
 }
 .entry-content .support-card p {
     margin: 0;
@@ -429,14 +429,14 @@ a.button[href*='mitglied-werden']:focus-visible {
     background: #fff;
     border-radius: 12px;
     padding: 16px 18px;
-    font-size: 15px;
+    font-size: 0.9375rem;
     line-height: 1.8;
 }
 .entry-content .bank-box span {
     display: inline-block;
     width: 84px;
     color: #595959;
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 .entry-content .bank-box strong {
     font-variant-numeric: tabular-nums;
@@ -445,7 +445,7 @@ a.button[href*='mitglied-werden']:focus-visible {
 }
 .entry-content .support-note {
     margin-top: 28px;
-    font-size: 15px;
+    font-size: 0.9375rem;
 }
 .entry-content .support-note a {
     text-decoration: underline;
@@ -465,7 +465,7 @@ a.button[href*='mitglied-werden']:focus-visible {
 }
 .entry-content .bank-box strong {
     white-space: nowrap;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .entry-content .bank-box span {
     width: 72px;
@@ -502,11 +502,11 @@ a.button[href*='mitglied-werden']:focus-visible {
     overflow: hidden;
 }
 .entry-content .board-card .board-photo p {
-    font-size: 72px !important;
+    font-size: 4.5rem !important;
 }
 .entry-content .board-card h3 {
     margin: 0;
-    font-size: 28px;
+    font-size: 1.75rem;
 }
 .entry-content .board-card p {
     margin: 0;
@@ -536,11 +536,11 @@ a.button[href*='mitglied-werden']:focus-visible {
     border-radius: 50%;
 }
 .entry-content .advisory-card .advisory-photo p {
-    font-size: 24px !important;
+    font-size: 1.5rem !important;
 }
 .entry-content .advisory-card h3 {
     margin: 0 0 4px;
-    font-size: 22px;
+    font-size: 1.375rem;
 }
 .entry-content .advisory-card p {
     margin: 0;
@@ -560,7 +560,7 @@ a.button[href*='mitglied-werden']:focus-visible {
 }
 .entry-content .founder-entry h3 {
     margin: 0;
-    font-size: 24px;
+    font-size: 1.5rem;
 }
 .entry-content .founder-entry p {
     margin: 6px 0 0;
@@ -624,7 +624,7 @@ a.button[href*='mitglied-werden']:focus-visible {
 }
 .entry-content .value-card h3 {
     margin: 0;
-    font-size: 26px;
+    font-size: 1.625rem;
     line-height: 1.15;
 }
 .entry-content .value-card p {
@@ -641,7 +641,7 @@ a.button[href*='mitglied-werden']:focus-visible {
     position: relative;
     padding-left: 20px;
     margin: 0 0 10px;
-    font-size: 15px;
+    font-size: 0.9375rem;
     line-height: 1.5;
 }
 .entry-content .value-card li::before {
@@ -667,14 +667,14 @@ a.button[href*='mitglied-werden']:focus-visible {
 }
 .footer .footer-label {
     margin: 0 0 14px;
-    font-size: 11px;
+    font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: #ffffffa6;
 }
 .footer .footer-col .wp-block-navigation {
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 .footer .footer-col .wp-block-navigation__container {
     gap: 2px;
@@ -761,7 +761,7 @@ body.seite-community-news .entry-content .page-intro {
     padding-bottom: 48px;
 }
 body.seite-community-news .entry-content .page-intro h1 {
-    font-size: clamp(36px, 4.5vw, 60px);
+    font-size: clamp(2.25rem, 4.5vw, 3.75rem);
     margin: 12px 0;
 }
 @media (max-width: 800px) {
@@ -779,7 +779,7 @@ body.seite-community-news .entry-content .page-intro h1 {
 .entry-content .story-tip p {
     max-width: 760px;
     margin: 0 0 14px;
-    font-size: clamp(18px, 2vw, 22px);
+    font-size: clamp(1.125rem, 2vw, 1.375rem);
     line-height: 1.5;
 }
 .entry-content .story-tip p:last-child {
@@ -802,7 +802,7 @@ body.seite-community-news .entry-content .page-intro h1 {
     border: 1px solid #e4e4e4;
     background: #fff;
     color: #000;
-    font-size: 14px;
+    font-size: 0.875rem;
     text-decoration: none;
 }
 .story-filter .chip:hover,
@@ -856,7 +856,7 @@ body.seite-community-news .entry-content .page-intro h1 {
 .story-meta {
     gap: 4px 12px;
     margin: 0 0 6px;
-    font-size: 12px;
+    font-size: 0.75rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #595959;
@@ -866,7 +866,7 @@ body.seite-community-news .entry-content .page-intro h1 {
 .story-meta .wp-block-post-terms,
 .story-meta .wp-block-post-date {
     margin: 0;
-    font-size: 12px;
+    font-size: 0.75rem;
 }
 .story-meta a {
     color: inherit;
@@ -876,13 +876,13 @@ body.seite-community-news .entry-content .page-intro h1 {
     text-decoration: underline;
 }
 .news-query .wp-block-post-title {
-    font-size: 20px;
+    font-size: 1.25rem;
     line-height: 1.3;
     margin: 0 0 6px;
 }
 .news-query .wp-block-post-excerpt {
     margin: 0;
-    font-size: 15px;
+    font-size: 0.9375rem;
     line-height: 1.5;
     color: #595959;
 }
@@ -957,11 +957,11 @@ body.seite-community-news .entry-content .page-intro h1 {
 .et-story .story-head .wp-block-post-title,
 .story-head h1 {
     margin: 4px 0 26px;
-    font-size: clamp(30px, 4vw, 48px);
+    font-size: clamp(1.875rem, 4vw, 3rem);
     line-height: 1.15;
 }
 .story-body {
-    font-size: 18px;
+    font-size: 1.125rem;
     line-height: 1.7;
     padding-bottom: 40px;
 }
@@ -971,7 +971,7 @@ body.seite-community-news .entry-content .page-intro h1 {
     margin: 0 0 1.1em;
 }
 .story-body .wp-block-post-content > p:first-of-type {
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 600;
 }
 .story-body h2,
@@ -990,7 +990,7 @@ body.seite-community-news .entry-content .page-intro h1 {
 }
 .story-body figcaption {
     margin-top: 6px;
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: #595959;
 }
 .story-body a {
@@ -1001,7 +1001,7 @@ body.seite-community-news .entry-content .page-intro h1 {
     margin-bottom: 24px;
 }
 .story-more-section .wp-block-post-title {
-    font-size: 17px;
+    font-size: 1.0625rem;
 }
 @media (max-width: 640px) {
     .story-filter {
@@ -1026,11 +1026,11 @@ body.seite-community-news .entry-content .page-intro h1 {
     gap: 55px;
 }
 .section.engagement-topics h2 {
-    font-size: 28px;
+    font-size: 1.75rem;
     margin: 20px 0 14px;
 }
 .section.engagement-topics p {
-    font-size: 16px;
+    font-size: 1rem;
     margin: 0;
 }
 @media (max-width: 900px) {
@@ -1055,19 +1055,19 @@ body.seite-community-news .entry-content .page-intro h1 {
     margin-bottom: 56px;
 }
 .section.et-foerderprojekte .micro {
-    font-size: 12px;
+    font-size: 0.75rem;
     letter-spacing: 0.14em;
     margin-bottom: 18px;
     font-weight: 700;
 }
 .section.et-foerderprojekte .fp-head h2 {
-    font-size: clamp(36px, 4.6vw, 66px);
+    font-size: clamp(2.25rem, 4.6vw, 4.125rem);
     margin: 0;
     max-width: 720px;
 }
 .section.et-foerderprojekte .fp-intro {
     max-width: 400px;
-    font-size: 15px;
+    font-size: 0.9375rem;
     color: #555;
 }
 .section.et-foerderprojekte .fp-group-head {
@@ -1080,12 +1080,12 @@ body.seite-community-news .entry-content .page-intro h1 {
     margin-bottom: 32px;
 }
 .section.et-foerderprojekte .fp-group-head h3 {
-    font-size: 25px;
+    font-size: 1.5625rem;
     font-weight: 650;
     margin: 0;
 }
 .section.et-foerderprojekte .fp-group-head p {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #555;
 }
 .section.et-foerderprojekte h4 {
@@ -1097,7 +1097,7 @@ body.seite-community-news .entry-content .page-intro h1 {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -1117,7 +1117,7 @@ body.seite-community-news .entry-content .page-intro h1 {
     gap: 10px;
     border-top: 1px solid #ddd;
     padding-top: 14px;
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 .section.et-foerderprojekte .fp-meta strong {
     white-space: nowrap;
@@ -1140,7 +1140,7 @@ body.seite-community-news .entry-content .page-intro h1 {
     bottom: 0;
     margin: 0;
     padding: 34px 18px 12px;
-    font-size: 11px;
+    font-size: 0.6875rem;
     color: #fff;
     background: linear-gradient(transparent, #0009);
 }
@@ -1188,13 +1188,13 @@ body.seite-community-news .entry-content .page-intro h1 {
     opacity: 0;
 }
 .section.et-foerderprojekte .fp-num {
-    font-size: clamp(150px, 17vw, 240px);
+    font-size: clamp(9.375rem, 17vw, 15rem);
     font-weight: 800;
     letter-spacing: -0.08em;
     line-height: 0.8;
 }
 .section.et-foerderprojekte .fp-unit {
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 650;
     margin-top: 14px;
 }
@@ -1204,14 +1204,18 @@ body.seite-community-news .entry-content .page-intro h1 {
     flex-direction: column;
     justify-content: center;
 }
+/* Text schwarz (Rot auf Rosa erreicht nur 2,8:1), Rot bleibt im Punkt. */
 .section.et-foerderprojekte .fp-lead .fp-tag {
-    color: #da525d;
+    color: #000;
+}
+.section.et-foerderprojekte .fp-lead .fp-tag::before {
+    background: #da525d;
 }
 .section.et-foerderprojekte .fp-lead .fp-tag strong {
     color: #000;
 }
 .section.et-foerderprojekte .fp-lead h4 {
-    font-size: clamp(32px, 3.6vw, 52px);
+    font-size: clamp(2rem, 3.6vw, 3.25rem);
     margin: 0 0 20px;
 }
 .section.et-foerderprojekte .fp-facts {
@@ -1223,13 +1227,13 @@ body.seite-community-news .entry-content .page-intro h1 {
     padding-top: 22px;
 }
 .section.et-foerderprojekte .fp-facts p {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #333;
 }
 .section.et-foerderprojekte .fp-facts strong {
     display: block;
     margin-top: 4px;
-    font-size: 24px;
+    font-size: 1.5rem;
     color: #000;
     letter-spacing: -0.04em;
     white-space: nowrap;
@@ -1255,15 +1259,15 @@ body.seite-community-news .entry-content .page-intro h1 {
     flex: 1;
 }
 .section.et-foerderprojekte .fp-card h4 {
-    font-size: 30px;
+    font-size: 1.875rem;
     margin: 0 0 14px;
 }
 .section.et-foerderprojekte .fp-card p:not(.fp-tag, .fp-meta) {
-    font-size: 15.5px;
+    font-size: 0.9688rem;
     margin-bottom: 14px;
 }
 .section.et-foerderprojekte .fp-card .fp-thanks {
-    font-size: 13px;
+    font-size: 0.8125rem;
     border-left: 3px solid #cedfbd;
     padding-left: 12px;
     color: #333;
@@ -1283,20 +1287,20 @@ body.seite-community-news .entry-content .page-intro h1 {
     margin-bottom: 16px;
 }
 .section.et-foerderprojekte .fp-item h4 {
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 650;
     letter-spacing: -0.03em;
     line-height: 1.2;
     margin: 0 0 8px;
 }
 .section.et-foerderprojekte .fp-item p:not(.fp-meta) {
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.55;
     color: #333;
     margin-bottom: 14px;
 }
 .section.et-foerderprojekte .fp-item .fp-meta {
-    font-size: 12px;
+    font-size: 0.75rem;
     padding-top: 10px;
 }
 @media (max-width: 1100px) {
@@ -1334,7 +1338,7 @@ body.seite-community-news .entry-content .page-intro h1 {
         padding: 22px 20px 24px;
     }
     .section.et-foerderprojekte .fp-card h4 {
-        font-size: 25px;
+        font-size: 1.5625rem;
     }
     .section.et-foerderprojekte .fp-family {
         grid-template-columns: 1fr;
@@ -1342,7 +1346,7 @@ body.seite-community-news .entry-content .page-intro h1 {
     }
     .section.et-foerderprojekte .fp-item {
         display: grid;
-        grid-template-columns: 104px 1fr;
+        grid-template-columns: 104px minmax(0, 1fr);
         column-gap: 16px;
         align-content: start;
         border-top: 1px solid #ddd;
@@ -1360,7 +1364,7 @@ body.seite-community-news .entry-content .page-intro h1 {
         aspect-ratio: 1;
     }
     .section.et-foerderprojekte .fp-item h4 {
-        font-size: 17px;
+        font-size: 1.0625rem;
         margin: 0 0 4px;
     }
     .section.et-foerderprojekte .fp-item p:not(.fp-meta) {
@@ -1371,5 +1375,31 @@ body.seite-community-news .entry-content .page-intro h1 {
         padding: 6px 0 0;
         justify-content: flex-start;
         gap: 14px;
+    }
+}
+
+/* Seitenzahlen der Stories: Trefferfläche mindestens 44 × 44 px. */
+.wp-block-query-pagination .page-numbers,
+.wp-block-query-pagination-previous,
+.wp-block-query-pagination-next {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+}
+/* Die erste Ziffer steht optisch bündig mit dem Text darüber. */
+.wp-block-query-pagination > .wp-block-query-pagination-numbers {
+    margin-inline-start: -17px;
+}
+
+/* Lange deutsche Wörter in Überschriften trennen statt abschneiden. */
+@media (max-width: 600px) {
+    .entry-content :is(h1, h2, h3, h4),
+    .editor-styles-wrapper :is(h1, h2, h3, h4),
+    .section.et-foerderprojekte p {
+        -webkit-hyphens: auto;
+        hyphens: auto;
+        hyphenate-limit-chars: 12 5 5;
     }
 }
