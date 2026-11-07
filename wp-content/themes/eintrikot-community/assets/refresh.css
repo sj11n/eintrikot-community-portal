@@ -1484,3 +1484,20 @@ body.seite-community-news .entry-content .page-intro h1 {
     display: inline-block;
     padding-block: 10px;
 }
+
+/* Weiß auf Rot (3,9:1) gilt nur für fette Großschrift als ausreichend. */
+.section.et-foerderprojekte .fp-unit {
+    font-weight: 700;
+}
+
+/* Logo-Links haben die Höhe des Logos als Trefferfläche, nicht nur die Textzeile. */
+a.brand {
+    display: inline-block;
+}
+
+/* Rubrik-Links (Stories) mit 32 px Trefferfläche, ohne die Zeile zu verschieben. */
+.wp-block-post-terms a {
+    display: inline-block;
+    padding-block: 8px;
+    margin-block: -8px;
+}
