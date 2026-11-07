@@ -179,3 +179,49 @@ add_action('do_faviconico', function () {
     wp_safe_redirect(get_theme_file_uri('assets/favicon/favicon.ico'), 301);
     exit();
 });
+
+/**
+ * The arrow ↗ means "opens another website". Internal links written with ↗ in page content get → instead,
+ * so people can tell from the arrow whether they stay on the site.
+ */
+function eintrikot_link_arrows($html) {
+    if (!str_contains($html, '↗')) {
+        return $html;
+    }
+    $home = preg_quote(untrailingslashit(home_url()), '#');
+    return preg_replace_callback(
+        '#<a\b[^>]*\bhref="([^"]*)"[^>]*>.*?</a>#s',
+        function ($m) use ($home) {
+            $external = preg_match('#^https?://#i', $m[1]) && !preg_match('#^' . $home . '(/|$)#i', $m[1]);
+            return $external ? $m[0] : str_replace('↗', '→', $m[0]);
+        },
+        $html
+    );
+}
+add_filter('render_block', fn($html) => is_admin() ? $html : eintrikot_link_arrows($html), 20);
+
+/**
+ * Story cards link to the story three times (picture, title, "Beitrag lesen"). Keyboard and screen reader
+ * users get the title only; picture and "Beitrag lesen" stay clickable with mouse and touch.
+ */
+add_filter(
+    'render_block_core/post-featured-image',
+    function ($html, $parsed) {
+        if (is_admin() || str_contains((string) ($parsed['attrs']['className'] ?? ''), 'story-banner')) {
+            return $html;
+        }
+        return preg_replace('#<a\b#', '<a tabindex="-1" aria-hidden="true"', $html, 1);
+    },
+    20,
+    2
+);
+add_filter(
+    'render_block_core/post-excerpt',
+    fn($html) => is_admin()
+        ? $html
+        : str_replace(
+            'class="wp-block-post-excerpt__more-link"',
+            'class="wp-block-post-excerpt__more-link" tabindex="-1" aria-hidden="true"',
+            $html
+        )
+);

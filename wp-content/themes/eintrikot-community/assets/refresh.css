@@ -1403,3 +1403,84 @@ body.seite-community-news .entry-content .page-intro h1 {
         hyphenate-limit-chars: 12 5 5;
     }
 }
+
+/* Hauptaktion überall gleich gewichtet: „Mitglied werden“ gefüllt, „Anmelden“ umrandet
+   (Kopfzeile, Handy-Menü und Hero). */
+.header .et-nav-join > a {
+    background: #000;
+    color: #fff !important;
+    border-color: #000 !important;
+}
+.header .et-nav-join > a:hover {
+    background: #303030;
+}
+.header .et-nav-login > a {
+    border-color: #000 !important;
+}
+.header .is-menu-open .et-nav-join a {
+    background: #000;
+    color: #fff !important;
+    border-color: #000;
+}
+.header .is-menu-open .et-nav-login a {
+    background: transparent !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+}
+/* „Kontakt“ steht am Desktop im Footer, im Handy-Menü zusätzlich in der Liste. */
+.header .et-nav-mobile {
+    display: none;
+}
+.header .is-menu-open .et-nav-mobile {
+    display: block;
+}
+
+/* Hero-Buttons am Handy bündig mit dem Text; die Mindestbreite gilt für den Button selbst. */
+@media (max-width: 380px) {
+    .entry-content .hero .wp-block-button.button {
+        min-width: 0;
+        justify-content: flex-start;
+    }
+    .entry-content .hero .wp-block-button__link {
+        min-width: 190px;
+        justify-content: center;
+    }
+}
+
+/* Weißer Text auf Fotos: dunklere Abdeckung, damit auch helle Bildstellen 4,5:1 erreichen. */
+.entry-content .hero:has(.wp-block-cover__image-background) > .wp-block-cover__background,
+.entry-content .page-intro:has(.wp-block-cover__image-background) > .wp-block-cover__background {
+    opacity: 0.58 !important;
+}
+
+/* Tabellen in Stories: Wörter nicht mitten im Wort umbrechen. */
+.entry-content .wp-block-table :is(td, th) {
+    word-break: normal;
+    overflow-wrap: normal;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+}
+@media (max-width: 600px) {
+    .entry-content .wp-block-table table.has-fixed-layout {
+        table-layout: auto;
+    }
+    .entry-content .wp-block-table {
+        font-size: 0.9375rem;
+    }
+    .entry-content .wp-block-table :is(td, th) {
+        padding: 8px 6px;
+    }
+}
+
+/* Aktuelle Seitenzahl sichtbar markieren, nicht nur für Screenreader. */
+.wp-block-query-pagination .page-numbers.current {
+    background: #000;
+    color: #fff;
+    border-radius: 99px;
+}
+
+/* „Beitrag lesen“ mit ausreichender Trefferfläche. */
+.wp-block-post-excerpt__more-link {
+    display: inline-block;
+    padding-block: 10px;
+}
