@@ -500,6 +500,23 @@ check('Viele Namen von einer Adresse: gesperrt, auch für ein anderes Konto', is
 delete_transient(login_ip_key());
 check('Nach Ablauf der Adress-Sperre funktioniert die Anmeldung wieder', wp_authenticate($locked_login, 'Richtig-Test-Pw-9x!') instanceof \WP_User);
 
+/* ---------- Zweite Anmeldestufe ---------- */
+
+// RFC 6238, Anhang B: Schlüssel "12345678901234567890", Zeit 59 s ergibt 94287082 (hier die letzten 6 Stellen).
+$tf_secret = base32_encode('12345678901234567890');
+check('2FA: Base32 wie in RFC 4648', $tf_secret === 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ' && base32_decode($tf_secret) === '12345678901234567890');
+check('2FA: TOTP-Testvektor aus RFC 6238', totp_code($tf_secret, 1) === '287082');
+check('2FA: Code gilt mit einem Schritt Abweichung', totp_verify($tf_secret, '287082', 59 + 30) === 1 && totp_verify($tf_secret, '287082', 59 + 90) === false);
+check('2FA: falsche oder kurze Codes zählen nicht', totp_verify($tf_secret, '000000', 59) === false && totp_verify($tf_secret, '28708', 59) === false);
+$tf_admin = make_user('administrator');
+$tf_member = make_user('eintrikot_member');
+check('2FA: Pflicht für Admins, nicht für Mitglieder', twofa_required($tf_admin) && !twofa_required($tf_member));
+$tf_codes = twofa_new_recovery_codes($tf_admin);
+check('2FA: zehn Wiederherstellungscodes', count($tf_codes) === TWOFA_RECOVERY_CODES);
+check('2FA: Wiederherstellungscode gilt genau einmal', twofa_use_recovery_code($tf_admin, $tf_codes[0]) && !twofa_use_recovery_code($tf_admin, $tf_codes[0]) && !twofa_use_recovery_code($tf_admin, 'falsch-code'));
+check('2FA: wp_authenticate außerhalb der Anmeldeseite unverändert', wp_authenticate(get_user_by('id', $tf_admin)->user_login, 'falsch') instanceof \WP_Error);
+delete_transient(login_ip_key());
+
 /* ---------- Ansicht wechseln (Vorschau für Administratoren) ---------- */
 
 $pv_admin = make_user('administrator');
@@ -854,9 +871,13 @@ check('Härtung: keine Emoji-Skripte von s.w.org', !has_action('wp_head', 'print
 $hd_user = get_current_user_id();
 wp_set_current_user(0);
 // wp_login_form() builds its default redirect from the request, which a command-line run does not have.
-$_SERVER['HTTP_HOST'] ??= 'example.test';
-$_SERVER['REQUEST_URI'] ??= '/';
+// Restored afterwards: with a host, redirect_canonical() would redirect and end later tests.
+$hd_server = $_SERVER;
+$_SERVER['HTTP_HOST'] = 'example.test';
+$_SERVER['REQUEST_URI'] = '/';
 check('Anmeldung: E-Mail-Tastatur im Adressfeld', str_contains(do_shortcode('[eintrikot_portal]'), 'name="log" inputmode="email"'));
+check('Anmeldung: „Angemeldet bleiben“ nicht vorab angehakt', !preg_match('/name="rememberme"[^>]*checked/', do_shortcode('[eintrikot_portal]')));
+$_SERVER = $hd_server;
 wp_set_current_user($hd_user);
 check('Härtung: HSTS nur über https', isset($hd_headers['Strict-Transport-Security']) === is_ssl());
 $hd_embed = apply_filters('oembed_response_data', ['author_name' => 'X', 'author_url' => 'https://x.test/author/x/', 'title' => 'T'], get_post(get_option('eintrikot_portal_page')), 600, 338);

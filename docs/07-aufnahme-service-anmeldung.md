@@ -67,10 +67,13 @@ Statt eines Status-Menüs hat jede Anfrage Schaltflächen für den nächsten Sch
 
 ## Anmeldung und Passwort (0.11)
 
-- **Angemeldet bleiben:** Haken ist vorausgewählt. Mit Haken 90 Tage (Vorstand, Redaktion, Admins: 14 Tage), ohne Haken bis der Browser geschlossen wird.
+- **Angemeldet bleiben:** Haken ist nicht vorausgewählt (nur auf eigenen Geräten setzen). Mit Haken 90 Tage (Vorstand, Redaktion, Admins: 14 Tage), ohne Haken bis der Browser geschlossen wird.
 - **Auf allen anderen Geräten abmelden:** Service → Konto.
 - **Passwort vergessen:** einmaliger Link per EINTRIKOT-Mail, 24 Stunden gültig. Die Seite sagt immer „Wenn diese Adresse bei uns hinterlegt ist …“, auch bei unbekannten Adressen. Höchstens 3 Anfragen pro Stunde und Konto. Nach dem Festlegen werden alle Sitzungen beendet und das Mitglied bekommt eine Bestätigungsmail. Eine erfolgreiche Anmeldung macht offene Links ungültig (WordPress-Standard).
 - **Passwort-Raten:** 5 Fehlversuche je Konto und Anschluss → 15 Minuten gesperrt; eine gemeinsame Fehlermeldung für falsche E-Mail und falsches Passwort.
+- **Passwort-Raten über viele Namen (0.39):** 30 Fehlversuche von einem Anschluss, egal mit welchem Namen → 15 Minuten gesperrt.
+- **Zweite Anmeldestufe (0.40):** Vorstand, Redaktion und Admins geben nach dem Passwort einen sechsstelligen Code aus einer Authenticator-App ein (Passwörter auf dem iPhone, Google Authenticator, 1Password …). Beim ersten Mal richtet die Anmeldeseite das ein und zeigt zehn Wiederherstellungscodes, je einmal gültig – sicher aufbewahren. Handy und Codes weg: ein Admin setzt die Stufe unter Benutzer → Profil → „Zweite Anmeldestufe zurücksetzen“ zurück. Notfall ohne Admin-Zugang: `define('EINTRIKOT_2FA_OFF', true);` in `wp-config.php`, nach der Anmeldung wieder entfernen.
+- **Sicherheits-Header (0.39/0.40):** Content-Security-Policy (Skripte nur von dieser Seite oder mit dem Nonce der Seite), Referrer-Policy, HSTS ein Jahr; XML-RPC antwortet mit 403.
 - **Härtung:** XML-RPC aus, Benutzerliste der REST-Schnittstelle und Autorenseiten für Gäste gesperrt, keine Benutzer-Sitemap.
 - **Mit HTTPS (eintrikot.de):** WordPress setzt die Anmelde-Cookies dann automatisch als „secure“; zusätzlich HTTPS-Weiterleitung einschalten. Zweite Stufe (Authenticator-App) für Vorstand und Admins ist vorbereitet als Empfehlung, aber bewusst noch nicht eingerichtet.
 

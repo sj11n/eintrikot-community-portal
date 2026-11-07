@@ -157,6 +157,7 @@ require_once __DIR__ . '/people.php';
 require_once __DIR__ . '/texts.php';
 
 require_once __DIR__ . '/login.php';
+require_once __DIR__ . '/twofactor.php';
 
 require_once __DIR__ . '/consent.php';
 

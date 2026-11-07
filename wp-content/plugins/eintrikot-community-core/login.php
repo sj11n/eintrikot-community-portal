@@ -40,10 +40,7 @@ add_filter(
     3
 );
 
-// "Angemeldet bleiben" is ticked by default on the WordPress sign-in page as well.
-add_action('login_footer', function () {
-    echo '<script>(function(){var r=document.getElementById("rememberme");if(r&&!document.getElementById("login_error")){r.checked=true;}})();</script>';
-});
+// "Angemeldet bleiben" stays unticked: people choose it themselves, on their own devices only.
 add_filter(
     'gettext',
     function ($translation, $text, $domain) {
@@ -406,14 +403,25 @@ add_filter('wp_headers', function ($headers) {
     return $headers;
 });
 
+/** One random value per page view; only scripts that carry it may run inline. */
+function csp_nonce() {
+    static $nonce = null;
+    return $nonce ??= bin2hex(random_bytes(16));
+}
+// WordPress prints its inline scripts (import map, speculation rules, script settings) and script tags
+// through these two filters, so every script WordPress or this plugin adds carries the nonce.
+add_filter('wp_inline_script_attributes', fn($attributes) => $attributes + ['nonce' => csp_nonce()]);
+add_filter('wp_script_attributes', fn($attributes) => $attributes + ['nonce' => csp_nonce()]);
+
 /**
- * Everything the public pages and the portal load comes from this site. Inline scripts and styles
- * stay allowed because WordPress prints its block scripts and settings inline.
+ * Everything the public pages and the portal load comes from this site. Inline scripts run only with
+ * the nonce of the page, so injected markup cannot run code. Inline styles stay allowed because
+ * blocks write their layout into style attributes.
  */
 function content_security_policy() {
     $rules = [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline'",
+        "script-src 'self' 'nonce-" . csp_nonce() . "'",
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: blob: https://secure.gravatar.com",
         "font-src 'self' data:",
