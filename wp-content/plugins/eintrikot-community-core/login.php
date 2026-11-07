@@ -358,8 +358,21 @@ add_filter('the_generator', '__return_empty_string');
 add_filter('wp_headers', function ($headers) {
     $headers['X-Content-Type-Options'] = 'nosniff';
     $headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=(), payment=()';
+    // No other site may show the portal in a frame and make people click its buttons unknowingly.
+    $headers['X-Frame-Options'] = 'SAMEORIGIN';
+    $headers['Content-Security-Policy'] = "frame-ancestors 'self'";
+    // Browsers only use https from now on. Short duration to start with; raise it once https has run without trouble.
+    if (is_ssl()) {
+        $headers['Strict-Transport-Security'] = 'max-age=86400';
+    }
     return $headers;
 });
+// oEmbed and feeds would name the author with their user name (/author/<name>/), which is half a login.
+add_filter('oembed_response_data', function ($data) {
+    unset($data['author_name'], $data['author_url']);
+    return $data;
+});
+add_filter('the_author', fn($name) => is_feed() ? get_bloginfo('name') : $name);
 // Members have no use for the WordPress back end: send them to the portal. admin-post.php and
 // admin-ajax.php stay open because the portal forms post there.
 function member_backend_blocked(string $page): bool {
