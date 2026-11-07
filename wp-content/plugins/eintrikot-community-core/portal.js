@@ -96,6 +96,21 @@
         app.addEventListener('focusout', () => app.classList.remove('is-typing'));
     }
 
+    // Account menu: Escape and a click outside close it; Escape gives the focus back to the button.
+    // Stays above the profile picture block, which returns early on every other page.
+    const menu = document.querySelector('details.account-menu');
+    if (menu) {
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && menu.open) {
+                menu.open = false;
+                menu.querySelector('summary')?.focus();
+            }
+        });
+        document.addEventListener('click', (e) => {
+            if (menu.open && !menu.contains(e.target)) menu.open = false;
+        });
+    }
+
     // Profile picture: click the picture, choose a file, pick the square section.
     const input = document.querySelector('[data-avatar-input]'),
         pick = document.querySelector('[data-avatar-pick]'),
@@ -249,18 +264,4 @@
             0.9,
         );
     });
-
-    // Account menu: Escape and a click outside close it; Escape gives the focus back to the button.
-    const menu = document.querySelector('details.account-menu');
-    if (menu) {
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && menu.open) {
-                menu.open = false;
-                menu.querySelector('summary')?.focus();
-            }
-        });
-        document.addEventListener('click', (e) => {
-            if (menu.open && !menu.contains(e.target)) menu.open = false;
-        });
-    }
 })();
