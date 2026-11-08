@@ -209,6 +209,8 @@
     align-items: flex-start;
     gap: 12px;
     font-size: 0.875rem;
+    /* Einzeilige Auswahl-Labels bleiben eine ausreichend große Trefferfläche. */
+    min-height: 36px;
 }
 .et-app .check input {
     width: 18px;
