@@ -277,7 +277,7 @@ function meta_box($post) {
             ['option' => ['value' => true, 'selected' => true]]
         ) .
         '</select><small>Färbt Titelkasten, Rubrikpunkte, Datumskacheln und den Abpfiff.</small></p>' .
-        '<p><small>Der Titel ist der Betreff. Die Anrede („Hallo Vorname,“), das Logo und die Fußzeile mit Abmeldelink setzt das System selbst.</small></p>' .
+        '<p><small>Der Titel ist der Betreff. Die Anrede („Hallo Vorname,“, unter der ersten Rubrik), das Logo und die Fußzeile mit Abmeldelink setzt das System selbst.</small></p>' .
         '<p><a class="button" href="' .
         esc_url(issue_url($post->ID)) .
         '">Vorschau, Test und Prüfung im Portal →</a></p>';

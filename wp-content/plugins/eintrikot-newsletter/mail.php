@@ -341,6 +341,25 @@ function draft_data($id) {
 
 /* ---------- Rahmen ---------- */
 
+/** The greeting goes under the first rubric line (the Bully), so the editorial starts with it; without a rubric in front. */
+function greet_html($body, $greeting) {
+    if (!preg_match('/<p class="et-rubrik"[^>]*>.*?<\/p>/is', $body, $m, PREG_OFFSET_CAPTURE)) {
+        return $greeting . $body;
+    }
+    $end = $m[0][1] + strlen($m[0][0]);
+    return substr($body, 0, $end) . $greeting . substr($body, $end);
+}
+function greet_text($text, $greeting) {
+    $greeted = preg_replace_callback(
+        '/^●[^\n]*$/mu',
+        static fn($m) => $m[0] . "\n" . $greeting,
+        $text,
+        1,
+        $count
+    );
+    return $count ? (string) $greeted : $greeting . "\n\n" . $text;
+}
+
 /**
  * The complete mail.
  *
@@ -429,8 +448,10 @@ function render_mail(array $data, array $ctx = []) {
         '<h1 class="et-h1" style="margin:0 0 18px;font-family:Montserrat,Arial,sans-serif;font-size:36px;line-height:1.05;font-weight:800;letter-spacing:-0.045em;color:#000000">' .
         esc_html($data['subject']) .
         '</h1>' .
-        mail_paragraph($name !== '' ? 'Hallo ' . esc_html($name) . ',' : 'Hallo,') .
-        $data['body'] .
+        greet_html(
+            $data['body'],
+            mail_paragraph($name !== '' ? 'Hallo ' . esc_html($name) . ',' : 'Hallo,')
+        ) .
         '</div>' .
         '<div class="et-foot et-muted" style="background:#f6f6f6;padding:22px 28px;font-size:13px;line-height:1.6;color:#595959">' .
         '<p style="margin:0 0 10px">Du bekommst diese E-Mail, weil du im EINTRIKOT-Mitgliederportal dem Newsletter zugestimmt hast. ' .
@@ -450,9 +471,10 @@ function render_mail_text(array $data, array $ctx = []) {
     return ($data['label'] !== '' ? name() . ' · ' . $data['label'] . "\n\n" : '') .
         $data['subject'] .
         "\n\n" .
-        ($name !== '' ? 'Hallo ' . $name . ',' : 'Hallo,') .
-        "\n\n" .
-        ($data['text'] !== '' ? $data['text'] : render_text($data['body'])) .
+        greet_text(
+            $data['text'] !== '' ? $data['text'] : render_text($data['body']),
+            $name !== '' ? 'Hallo ' . $name . ',' : 'Hallo,'
+        ) .
         "\n\n--\nDu bekommst diese E-Mail, weil du im EINTRIKOT-Mitgliederportal dem Newsletter zugestimmt hast.\n" .
         ($unsubscribe !== '' ? 'Abmelden: ' . $unsubscribe . "\n" : '') .
         'Im Profil ändern: ' .
