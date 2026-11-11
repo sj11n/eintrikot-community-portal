@@ -654,6 +654,27 @@ if ($st_new) {
     wp_delete_post($st_new, true);
 }
 
+/* ---------- Startseite: im Hero nur „Mitglied werden“ ---------- */
+
+$hh_pattern = pattern_markup('mvp-startseite');
+check('Startseiten-Muster: Hero ohne „Anmelden“, „Mitglied werden“ schwarz', !is_wp_error($hh_pattern) && !str_contains(explode('<!-- /wp:cover -->', $hh_pattern)[0], '/community-portal/') && str_contains($hh_pattern, '"backgroundColor":"black","textColor":"white"} --><div class="wp-block-button button solid"><a class="wp-block-button__link has-white-color has-black-background-color'));
+$hh_old = '<!-- wp:cover {"overlayColor":"blue","dimRatio":100,"isUserOverlayColor":true,"className":"hero et-mvp-hero"} --><div class="wp-block-cover hero et-mvp-hero"><div class="wp-block-cover__inner-container"><!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Das Netzwerk<br>der Nationalteams.</h1><!-- /wp:heading -->
+<!-- wp:group {"className":"actions","tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group actions"><!-- wp:button {"className":"button white","backgroundColor":"white","textColor":"black"} --><div class="wp-block-button button white"><a class="wp-block-button__link has-black-color has-white-background-color has-text-color has-background wp-element-button" href="/mitglied-werden/">Mitglied werden</a></div><!-- /wp:button -->
+<!-- wp:button {"className":"button ","backgroundColor":"white","textColor":"black"} --><div class="wp-block-button button "><a class="wp-block-button__link has-black-color has-white-background-color has-text-color has-background wp-element-button" href="/community-portal/">Anmelden</a></div><!-- /wp:button -->
+</div><!-- /wp:group -->
+</div></div><!-- /wp:cover -->
+<!-- wp:paragraph --><p><a href="/community-portal/">Anmelden</a></p><!-- /wp:paragraph -->';
+$hh_front_before = get_option('page_on_front');
+$hh_page = wp_insert_post(['post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Start-Test', 'post_content' => $hh_old]);
+update_option('page_on_front', $hh_page);
+$hh_msg = update_home_hero_button();
+$hh_new = get_post($hh_page)->post_content;
+check('Hero-Button: „Anmelden“ im Hero entfernt, „Mitglied werden“ schwarz', is_string($hh_msg) && str_contains($hh_msg, 'entfernt') && !str_contains(explode('<!-- /wp:cover -->', $hh_new)[0], '/community-portal/') && str_contains($hh_new, 'has-white-color has-black-background-color') && str_contains($hh_new, '"backgroundColor":"black","textColor":"white"'));
+check('Hero-Button: Inhalt außerhalb des Hero bleibt', str_contains($hh_new, '<p><a href="/community-portal/">Anmelden</a></p>') && str_contains($hh_new, 'Das Netzwerk<br>der Nationalteams.'));
+check('Hero-Button: zweiter Lauf ändert nichts', str_contains(update_home_hero_button(), 'Nichts zu ändern'));
+update_option('page_on_front', $hh_front_before);
+wp_delete_post($hh_page, true);
+
 /* ---------- Stories: Hinweis unten ---------- */
 
 ob_start();

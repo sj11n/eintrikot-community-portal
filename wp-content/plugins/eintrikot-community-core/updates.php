@@ -73,6 +73,12 @@ function content_updates() {
                 'Fügt auf der Seite „Engagement“ vor „Aus der Community. Für die Zukunft.“ den Abschnitt „Förderprojekte“ ein (Defibrillatoren 2026, Air Lounger, Lymphomaten sowie die acht Projekte der DHB-Alumni-Familie). Entfernt die Fotos aus den drei Bereichen „Nachwuchs fördern“, „Erfahrung weitergeben“ und „Begegnungen schaffen“; Icons und Texte bleiben. Ersetzt den Satz „Mitgliedsbeiträge, Spenden und gezielte Kampagnen …“ durch den neuen Text ohne projektbezogene Spendenaufrufe. Kopfbild und übrige Inhalte bleiben unverändert.',
             'run' => __NAMESPACE__ . '\\update_engagement_projects'
         ],
+        '0.41-hero-ein-button' => [
+            'title' => 'Startseite: im Hero nur noch „Mitglied werden“',
+            'text' =>
+                'Entfernt im Kopfbereich der Startseite den Button „Anmelden“ und färbt „Mitglied werden“ schwarz wie in der Kopfzeile. „Anmelden“ bleibt in der Menüleiste. Überschrift, Text und ein eingesetztes Bild bleiben unverändert.',
+            'run' => __NAMESPACE__ . '\\update_home_hero_button'
+        ],
         '0.7-vision' => [
             'title' => 'Schreibweise „EINTRIKOT" in der Vision 2030',
             'text' =>
@@ -317,6 +323,63 @@ function update_vision_spelling() {
     }
     $result = wp_update_post(wp_slash(['ID' => $page->ID, 'post_content' => $content]), true);
     return is_wp_error($result) ? $result : 'Schreibweise angepasst.';
+}
+
+/** Start page hero: one action only. Changes nothing outside the hero cover block. */
+function update_home_hero_button() {
+    $page = get_post((int) get_option('page_on_front'));
+    if (!$page) {
+        return new \WP_Error('missing', 'Startseite nicht gefunden.');
+    }
+    $content = $page->post_content;
+    if (
+        !preg_match(
+            '/<!-- wp:cover \{[^\n]*?et-mvp-hero.*?<!-- \/wp:cover -->/s',
+            $content,
+            $m,
+            PREG_OFFSET_CAPTURE
+        )
+    ) {
+        return new \WP_Error(
+            'shape',
+            'Den Kopfbereich der Startseite nicht gefunden. Bitte im Editor prüfen.'
+        );
+    }
+    [$hero, $offset] = $m[0];
+    $log = [];
+    $new = preg_replace(
+        '/\s*<!-- wp:button (?:\{[^}]*\} )?-->\s*<div class="wp-block-button[^"]*">\s*<a [^>]*href="[^"]*\/community-portal\/?"[^>]*>\s*Anmelden\s*<\/a>\s*<\/div>\s*<!-- \/wp:button -->/u',
+        '',
+        $hero,
+        -1,
+        $removed
+    );
+    if ($removed) {
+        $log[] = 'Button „Anmelden“ aus dem Hero entfernt.';
+    }
+    $new = preg_replace_callback(
+        '/<!-- wp:button (?:\{[^}]*\} )?-->\s*<div class="wp-block-button[^"]*">\s*<a [^>]*href="[^"]*\/mitglied-werden\/?"[^>]*>.*?<!-- \/wp:button -->/su',
+        function ($b) use (&$log) {
+            $out = strtr($b[0], [
+                '"className":"button white"' => '"className":"button solid"',
+                '"backgroundColor":"white","textColor":"black"' =>
+                    '"backgroundColor":"black","textColor":"white"',
+                'class="wp-block-button button white"' => 'class="wp-block-button button solid"',
+                'has-black-color has-white-background-color' => 'has-white-color has-black-background-color'
+            ]);
+            if ($out !== $b[0]) {
+                $log[] = '„Mitglied werden“ im Hero ist jetzt schwarz.';
+            }
+            return $out;
+        },
+        $new
+    );
+    if ($new === $hero) {
+        return 'Nichts zu ändern – im Hero steht nur noch „Mitglied werden“.';
+    }
+    $content = substr_replace($content, $new, $offset, strlen($hero));
+    $result = wp_update_post(wp_slash(['ID' => $page->ID, 'post_content' => $content]), true);
+    return is_wp_error($result) ? $result : implode("\n", $log);
 }
 
 /**
