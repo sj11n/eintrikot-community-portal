@@ -79,6 +79,12 @@ function content_updates() {
                 'Entfernt im Kopfbereich der Startseite den Button „Anmelden“ und färbt „Mitglied werden“ schwarz wie in der Kopfzeile. „Anmelden“ bleibt in der Menüleiste. Überschrift, Text und ein eingesetztes Bild bleiben unverändert.',
             'run' => __NAMESPACE__ . '\\update_home_hero_button'
         ],
+        '0.42-datenschutz-geburtstag' => [
+            'title' => 'Datenschutz: Absatz zum Geburtstagsgruß',
+            'text' =>
+                'Fügt in der Datenschutzerklärung unter „7. Vereinsinformationen und Newsletter“ nach dem Absatz zum Newsletter einen Absatz zum Geburtstagsgruß per E-Mail ein (Zweck, Daten, Rechtsgrundlage, Widerspruch per Mail an info@eintrikot.de) und setzt den Stand auf November 2026. Der übrige Text bleibt unverändert.',
+            'run' => __NAMESPACE__ . '\\update_privacy_birthday'
+        ],
         '0.7-vision' => [
             'title' => 'Schreibweise „EINTRIKOT" in der Vision 2030',
             'text' =>
@@ -157,6 +163,45 @@ function update_privacy_page() {
         update_option('wp_page_for_privacy_policy', $page->ID);
     }
     return is_wp_error($result) ? $result : 'Datenschutzerklärung aktualisiert.';
+}
+
+/** Privacy policy: inserts the birthday greeting paragraph after the newsletter paragraph. Nothing else changes. */
+function update_privacy_birthday() {
+    $page = get_page_by_path('datenschutz');
+    if (!$page) {
+        return new \WP_Error('missing', 'Die Seite „Datenschutz" wurde nicht gefunden.');
+    }
+    $pattern = pattern_markup('mvp-datenschutz');
+    if (is_wp_error($pattern)) {
+        return $pattern;
+    }
+    if (
+        !preg_match(
+            '/<!-- wp:paragraph --><p>Zu Ihrem Geburtstag schicken wir.*?<!-- \/wp:paragraph -->/su',
+            $pattern,
+            $m
+        )
+    ) {
+        return new \WP_Error('theme', 'Bitte zuerst das aktuelle Theme installieren.');
+    }
+    $paragraph = $m[0];
+    $content = $page->post_content;
+    if (str_contains($content, 'Zu Ihrem Geburtstag schicken wir')) {
+        return 'Nichts zu ändern – der Absatz zum Geburtstagsgruß steht bereits in der Datenschutzerklärung.';
+    }
+    $anchor = '/(jede Ausgabe enthält außerdem einen Abmeldelink\.[^<]*<\/p>\s*<!-- \/wp:paragraph -->)/u';
+    if (!preg_match($anchor, $content)) {
+        return new \WP_Error(
+            'shape',
+            'Den Absatz zum Newsletter in der Datenschutzerklärung nicht gefunden. Bitte den Absatz zum Geburtstagsgruß im Editor von Hand einfügen (Vorlage „EINTRIKOT datenschutz“).'
+        );
+    }
+    $content = preg_replace_callback($anchor, fn($a) => $a[1] . "\n" . $paragraph, $content, 1);
+    $content = str_replace('<em>Stand: Oktober 2026</em>', '<em>Stand: November 2026</em>', $content);
+    $result = wp_update_post(wp_slash(['ID' => $page->ID, 'post_content' => $content]), true);
+    return is_wp_error($result)
+        ? $result
+        : 'Absatz zum Geburtstagsgruß in die Datenschutzerklärung eingefügt.';
 }
 
 /** "News" becomes "Stories" in pages, navigation and customised templates. Only fixed phrases are replaced. */

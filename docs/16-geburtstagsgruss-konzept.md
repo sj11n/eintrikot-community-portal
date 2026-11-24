@@ -1,6 +1,6 @@
 # Konzept: Automatischer Geburtstagsgruß per E-Mail
 
-Stand: 24.11.2026. Status: **gebaut in Core 0.42.0** (`greeting.php`, Tests in `tests/run.php`). Konzept und Design von B freigegeben am 24.11.2026, Variante B „Festlich“, Mail-Entwurf: `docs/entwuerfe/geburtstagsmail.html`. Umgesetzt mit den Vorschlägen aus der Tabelle unten (nur aktivierte Konten, unter 18 mit Zustimmung der Eltern, Unterschrift „dein EINTRIKOT-Vorstand“). Offen: der Satz in der Datenschutzerklärung (V) und die Einführung (unten).
+Stand: 24.11.2026. Status: **gebaut in Core 0.42.0** (`greeting.php`, Tests in `tests/run.php`). Konzept und Design von B freigegeben am 24.11.2026, Variante B „Festlich“, Mail-Entwurf: `docs/entwuerfe/geburtstagsmail.html`. Umgesetzt mit den Vorschlägen aus der Tabelle unten (nur aktivierte Konten, unter 18 mit Zustimmung der Eltern, Unterschrift „dein EINTRIKOT-Vorstand“). Eingespielt auf Produktion am 24.11.2026. Der Absatz in der Datenschutzerklärung steht seit Core 0.42.1 bereit (Aktualisierung „Datenschutz: Absatz zum Geburtstagsgruß“); V schaut drüber.
 
 **Wer macht was:** B = Björn, V = Vorstand, C = Claude.
 
@@ -78,7 +78,7 @@ Im Portal unter **Verwaltung → Geburtstagsgrüße** (Vorstand und Administrato
 
 ## Datenschutz
 
-B sieht hier kein Problem, weil die Mail nur an das Mitglied selbst geht. Das Konzept hält es deshalb schlank: Der Gruß geht an alle, ohne Option im Profil und ohne Hinweis in der Mail. Wer keine Grüße möchte, meldet sich beim Verein, und die Verwaltung schaltet sie für dieses Konto ab. Offen für V ist ein Satz in der Datenschutzerklärung (`patterns/mvp-datenschutz.php`), dass das Geburtsdatum auch für einen Glückwunsch per E-Mail genutzt wird und man dem per Mail an den Verein widersprechen kann. Der Text ist ein Prüfpunkt für V und wird nicht von C erfunden.
+B sieht hier kein Problem, weil die Mail nur an das Mitglied selbst geht. Das Konzept hält es deshalb schlank: Der Gruß geht an alle, ohne Option im Profil und ohne Hinweis in der Mail. Wer keine Grüße möchte, meldet sich beim Verein, und die Verwaltung schaltet sie für dieses Konto ab. Der Absatz steht in der Datenschutzerklärung unter Ziffer 7 (`patterns/mvp-datenschutz.php`, auf B's Wunsch von C formuliert): Zweck, genutzte Daten, Rechtsgrundlage Art. 6 Abs. 1 lit. f DSGVO und Widerspruch per Mail an info@eintrikot.de. Auf die Live-Seite kommt er über WordPress → EINTRIKOT → Aktualisierungen → „Datenschutz: Absatz zum Geburtstagsgruß“. V prüft den Wortlaut.
 
 ## Entscheidungen für B
 
@@ -110,6 +110,6 @@ Umgesetzt wie vorgeschlagen; jede Zeile lässt sich mit einer kleinen Änderung 
 
 1. ~~B gibt Ablauf und Design frei.~~ Erledigt am 24.11.2026 (Variante B).
 2. ~~C baut das Modul mit Tests.~~ Erledigt: Core 0.42.0.
-3. Einspielen auf Staging, Testmail an B, ein Testkonto mit Geburtstag heute → Gruß prüfen (Gmail, Outlook, Apple Mail, hell und dunkel).
-4. V prüft den Satz in der Datenschutzerklärung.
-5. Einspielen auf Produktion, B schaltet den Hauptschalter an.
+3. ~~Einspielen auf Produktion~~ Erledigt am 24.11.2026 (Staging auf B's Wunsch übersprungen, Testseite mit gleichem Stand).
+4. Absatz in der Datenschutzerklärung übernehmen (Aktualisierung in WordPress), V schaut drüber.
+5. Testmail an B (Gmail, Outlook, Apple Mail, hell und dunkel), dann schaltet B den Hauptschalter an.
