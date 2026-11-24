@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Geburtstagsgruß – Mail-Entwurf</title>
+<style>
+@font-face{font-family:Montserrat;src:url(../../wp-content/themes/eintrikot-community/assets/montserrat.woff2) format('woff2');font-weight:100 900;font-display:swap}
+:root{--rose:#f1d1dd;--blau:#c8e2ee;--gruen:#cedfbd;--grau:#595959}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:#000;font:400 16px/1.6 Montserrat,Arial,sans-serif}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+
+/* ---------- Konzeptseite ---------- */
+.intro{background:linear-gradient(105deg,var(--rose),var(--blau));padding:56px 0 48px}
+.intro .tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:1.5px solid #000;border-radius:99px;padding:5px 12px;margin-bottom:20px}
+.intro h1{font-size:clamp(40px,6vw,80px);line-height:.98;letter-spacing:-.055em;font-weight:800;margin:0 0 18px}
+.intro p{font-size:clamp(17px,1.5vw,20px);max-width:760px;margin:0}
+section.k{padding:56px 0;border-bottom:1px solid #eee}
+section.k h2{font-size:clamp(26px,3vw,40px);letter-spacing:-.045em;line-height:1.05;margin:0 0 8px}
+section.k p.lead{max-width:760px;color:#333;margin:0 0 28px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--grau);margin:0 0 10px}
+.inbox{border:1px solid #e6e6e6;border-radius:14px;padding:14px 16px;margin:0 0 28px;max-width:620px;display:flex;gap:14px;align-items:flex-start}
+.inbox .av{width:40px;height:40px;border-radius:50%;background:var(--blau);display:grid;place-items:center;font-weight:800;flex:none}
+.inbox b{display:block}
+.inbox span{color:var(--grau);font-size:14px}
+.phone{width:375px;border:10px solid #111;border-radius:36px;overflow:hidden;margin:0 auto}
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.notes div{border:1px solid #e6e6e6;border-radius:16px;padding:20px;font-size:15px}
+.notes h3{margin:0 0 6px;font-size:19px;letter-spacing:-.03em}
+.reco{display:inline-block;background:var(--gruen);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700;margin-left:8px;vertical-align:middle}
+@media(max-width:900px){.pair,.notes{grid-template-columns:1fr}}
+
+/* ---------- Mail (wie mail_wrap im Core) ---------- */
+.et-bg{background:#edf5f8;padding:24px 12px;font-family:Montserrat,Arial,sans-serif;color:#000}
+.et-card{max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden}
+.et-band{height:10px;background:linear-gradient(90deg,#f1d1dd,#c8e2ee)}
+.et-text{padding:28px 28px 8px}
+.et-logo{display:block;width:165px;height:42px;margin:0 0 28px}
+.et-logo.dark{display:none}
+.et-text p{margin:0 0 16px;font-size:16px;line-height:1.6}
+.et-muted{font-size:14px!important;color:#595959}
+.et-muted a{color:#595959}
+.et-rule{border:0;border-top:1px solid #e4e4e4;margin:8px 0 16px}
+/* Variante A */
+.a-h{font-size:28px;line-height:1.15;letter-spacing:-.03em;font-weight:800;margin:0 0 20px}
+/* Variante B */
+.b-hero{margin:0 -28px 28px;padding:30px 28px 26px;background:#f1d1dd;background:linear-gradient(120deg,#f1d1dd,#c8e2ee 70%,#cedfbd);color:#000}
+.b-date{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:1.5px solid #000;border-radius:99px;padding:4px 11px;margin:0 0 16px}
+.b-h{font-size:42px;line-height:.98;letter-spacing:-.05em;font-weight:800;margin:0}
+.b-dots{margin:18px 0 0;font-size:0}
+.b-dots i{display:inline-block;width:14px;height:14px;border-radius:50%;border:1.5px solid #000;margin-right:6px}
+
+/* Dunkelmodus (prefers-color-scheme im Core) */
+.dark-mode .et-bg{background:#121416}
+.dark-mode .et-card{background:#1f2427}
+.dark-mode .et-text,.dark-mode .et-text p,.dark-mode .a-h{color:#f2f2f2}
+.dark-mode .et-muted,.dark-mode .et-muted a{color:#b9c0c4}
+.dark-mode .et-rule{border-color:#3b4247}
+.dark-mode .et-logo.light{display:none}
+.dark-mode .et-logo.dark{display:block}
+.dark-mode .b-hero,.dark-mode .b-hero .b-h{color:#000}
+</style>
+</head>
+<body>
+
+<header class="intro"><div class="wrap">
+  <span class="tag">Entwurf zur Freigabe · 24.11.2026</span>
+  <h1>Geburtstagsgruß</h1>
+  <p>Automatische Glückwunsch-Mail am Geburtstag jedes Mitglieds, morgens ab 8 Uhr. Zwei Gestaltungsvarianten im Rahmen aller EINTRIKOT-Mails, jeweils hell und dunkel. Ablauf und Regeln stehen in <code>docs/16-geburtstagsgruss-konzept.md</code>. Name und Datum sind Beispiele.</p>
+</div></header>
+
+<section class="k"><div class="wrap">
+  <h2>So sieht es im Posteingang aus</h2>
+  <p class="lead">Betreff und Vorschautext sind bei beiden Varianten gleich.</p>
+  <div class="inbox"><div class="av">E</div><div><b>EINTRIKOT e.V.</b><b>Alles Gute zum Geburtstag, Anna!</b><span>Heute ist dein Tag. Herzliche Grüße von EINTRIKOT.</span></div></div>
+</div></section>
+
+<section class="k"><div class="wrap">
+  <h2>Variante A · Ruhig</h2>
+  <p class="lead">Genau wie die übrigen Mails des Portals (Einladung, Passwort): Farbband oben, Logo, große Überschrift, Text. Unaufgeregt, passt sicher zu allem.</p>
+  <div class="pair">
+    <div><p class="label">Hell</p><div data-mail="a"></div></div>
+    <div class="dark-mode"><p class="label">Dunkel</p><div data-mail="a"></div></div>
+  </div>
+</div></section>
+
+<section class="k"><div class="wrap">
+  <h2>Variante B · Festlich <span class="reco">Vorschlag</span></h2>
+  <p class="lead">Derselbe Rahmen, aber mit einem farbigen Kopf im Verlauf aus Rosé, Hellblau und Grün, dem Datum als Etikett und einer großen Überschrift. Fühlt sich nach Gruß an und nicht nach Systemmail. Der Kopf bleibt auch im Dunkelmodus hell.</p>
+  <div class="pair">
+    <div><p class="label">Hell</p><div data-mail="b"></div></div>
+    <div class="dark-mode"><p class="label">Dunkel</p><div data-mail="b"></div></div>
+  </div>
+</div></section>
+
+<section class="k"><div class="wrap">
+  <h2>Auf dem Handy</h2>
+  <p class="lead">Variante B bei 375 Pixel Breite.</p>
+  <div class="phone"><div data-mail="b"></div></div>
+</div></section>
+
+<section class="k"><div class="wrap">
+  <h2>Was bewusst fehlt</h2>
+  <div class="notes">
+    <div><h3>Kein Alter</h3>Nicht jede und jeder mag die Zahl lesen. Der Gruß nennt nur den Vornamen.</div>
+    <div><h3>Kein Knopf</h3>Ein Glückwunsch, keine Aufforderung. Wer antwortet, landet bei der Antwortadresse des Vereins.</div>
+    <div><h3>Kein Tracking</h3>Keine Bilder von außen, kein Öffnungs- oder Klickzähler. Das Logo steckt in der Mail.</div>
+  </div>
+</div></section>
+
+<template id="mail-a">
+  <div class="et-bg"><div class="et-card"><div class="et-band"></div><div class="et-text">
+    <img class="et-logo light" src="data:image/png;base64,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" alt="EINTRIKOT">
+    <img class="et-logo dark" src="data:image/png;base64,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" alt="EINTRIKOT">
+    <h1 class="a-h">Alles Gute zum Geburtstag, Anna!</h1>
+    {{text}}
+  </div></div></div>
+</template>
+
+<template id="mail-b">
+  <div class="et-bg"><div class="et-card"><div class="et-text">
+    <img class="et-logo light" src="data:image/png;base64,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" alt="EINTRIKOT">
+    <img class="et-logo dark" src="data:image/png;base64,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" alt="EINTRIKOT">
+    <div class="b-hero">
+      <span class="b-date">Heute · 17. Mai</span>
+      <h1 class="b-h">Alles Gute,<br>Anna!</h1>
+      <div class="b-dots"><i style="background:#f1d1dd"></i><i style="background:#c8e2ee"></i><i style="background:#cedfbd"></i></div>
+    </div>
+    {{text}}
+  </div></div></div>
+</template>
+
+<template id="mail-text">
+  <p>Hallo Anna,</p>
+  <p>heute hast du Geburtstag, und dazu gratulieren wir dir von Herzen! Wir wünschen dir ein gesundes, glückliches neues Lebensjahr und viele schöne Momente, auf dem Platz und daneben.</p>
+  <p>Schön, dass du Teil von EINTRIKOT bist.</p>
+  <p>Liebe Grüße<br>dein EINTRIKOT-Vorstand</p>
+</template>
+
+<script>
+const text = document.getElementById('mail-text').innerHTML;
+document.querySelectorAll('[data-mail]').forEach(el => {
+  el.innerHTML = document.getElementById('mail-' + el.dataset.mail).innerHTML.replace('{{text}}', text);
+});
+</script>
+</body>
+</html>

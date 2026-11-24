@@ -45,6 +45,7 @@ function portal_nav_section($view) {
         'audit' => 'admin',
         'onboarding' => 'admin',
         'maillist' => 'admin',
+        'greetings' => 'admin',
         'profile' => 'account'
     ];
     // Add-ons such as the newsletter plugin place their own views in a section.
@@ -281,6 +282,9 @@ add_shortcode('eintrikot_portal', function () {
         case 'maillist':
             render_mail_list();
             break;
+        case 'greetings':
+            render_greetings();
+            break;
         case 'audit':
             echo view_manager() ? '' : wp_kses_post($denied);
             if (view_manager()) {
@@ -308,6 +312,11 @@ add_shortcode('eintrikot_portal', function () {
                     portal_url('maillist'),
                     'E-Mail-Verteiler',
                     'Alle Mitgliederadressen für das BCC-Feld kopieren'
+                ) .
+                service_link(
+                    portal_url('greetings'),
+                    'Geburtstagsgrüße',
+                    greeting_enabled() ? 'Eingeschaltet, täglich ab 8 Uhr' : 'Ausgeschaltet'
                 ) .
                 service_link(audit_url(), 'Änderungsprotokoll öffnen') .
                 '</section>';
