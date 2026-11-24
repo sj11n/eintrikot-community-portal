@@ -65,7 +65,12 @@ $shared = [
     'team' => 'Damen',
     'region' => 'NRW',
     'age_class' => 'U16',
-    'visibility' => ['city' => 'members', 'team' => 'members', 'region' => 'members', 'age_class' => 'members']
+    'visibility' => [
+        'city' => 'members',
+        'team' => 'members',
+        'region' => 'members',
+        'age_class' => 'members'
+    ]
 ];
 $adult = $shared + ['birthday' => day('-30 years')];
 $kid = $shared + ['birthday' => day('-15 years')];
@@ -86,28 +91,85 @@ check('Minderjährig: nie ein Alter', member_age($kid + ['show_age' => true]) ==
 /* ---------- Geburtstag: nur, was das Mitglied freigibt ---------- */
 
 $birth_adult = ['birthday' => '1990-05-17'];
-check('Geburtstag: ohne Wahl privat', birthday_mode($birth_adult) === '' && birthday_text($birth_adult) === '');
-check('Geburtstag: Tag und Monat ohne Jahr', preg_match('/^17\. \p{L}+$/u', birthday_text($birth_adult + ['birthday_visibility' => 'day'])) === 1);
-check('Geburtstag: mit Jahr', preg_match('/^17\. \p{L}+ 1990$/u', birthday_text($birth_adult + ['birthday_visibility' => 'full'])) === 1);
-check('Geburtstag: ungültige Wahl = privat', birthday_mode($birth_adult + ['birthday_visibility' => 'alle']) === '');
-check('Geburtstag: altes Häkchen gilt als Tag und Monat', birthday_mode($birth_adult + ['birthday_notice' => true]) === 'day');
-check('Geburtstag: neue Wahl schlägt das alte Häkchen', birthday_mode($birth_adult + ['birthday_notice' => true, 'birthday_visibility' => '']) === '');
+check(
+    'Geburtstag: ohne Wahl privat',
+    birthday_mode($birth_adult) === '' && birthday_text($birth_adult) === ''
+);
+check(
+    'Geburtstag: Tag und Monat ohne Jahr',
+    preg_match('/^17\. \p{L}+$/u', birthday_text($birth_adult + ['birthday_visibility' => 'day'])) === 1
+);
+check(
+    'Geburtstag: mit Jahr',
+    preg_match('/^17\. \p{L}+ 1990$/u', birthday_text($birth_adult + ['birthday_visibility' => 'full'])) === 1
+);
+check(
+    'Geburtstag: ungültige Wahl = privat',
+    birthday_mode($birth_adult + ['birthday_visibility' => 'alle']) === ''
+);
+check(
+    'Geburtstag: altes Häkchen gilt als Tag und Monat',
+    birthday_mode($birth_adult + ['birthday_notice' => true]) === 'day'
+);
+check(
+    'Geburtstag: neue Wahl schlägt das alte Häkchen',
+    birthday_mode($birth_adult + ['birthday_notice' => true, 'birthday_visibility' => '']) === ''
+);
 $kid_birth = ['birthday' => day('-15 years'), 'birthday_visibility' => 'full'];
-check('Geburtstag: Minderjährige zeigen nie einen Geburtstag', birthday_mode($kid_birth) === '' && birthday_text($kid_birth) === '');
+check(
+    'Geburtstag: Minderjährige zeigen nie einen Geburtstag',
+    birthday_mode($kid_birth) === '' && birthday_text($kid_birth) === ''
+);
 check('Geburtstag: ohne gültiges Datum nichts', birthday_mode(['birthday_visibility' => 'full']) === '');
 
-$bday_day = make_user('eintrikot_member', ['birthday' => day('+10 days -30 years'), 'birthday_visibility' => 'day'], ['eintrikot_activated_at' => time()]);
-$bday_full = make_user('eintrikot_member', ['birthday' => day('+12 days -40 years'), 'birthday_visibility' => 'full'], ['eintrikot_activated_at' => time()]);
-$bday_private = make_user('eintrikot_member', ['birthday' => day('+11 days -35 years')], ['eintrikot_activated_at' => time()]);
-$bday_hidden = make_user('eintrikot_member', ['birthday' => day('+13 days -33 years'), 'birthday_visibility' => 'full', 'directory_listing' => 'hide'], ['eintrikot_activated_at' => time()]);
-$bday_kid = make_user('eintrikot_member', ['birthday' => day('+14 days -15 years'), 'birthday_visibility' => 'full'], ['eintrikot_activated_at' => time(), 'eintrikot_consent' => 'given', 'eintrikot_consent_record' => ['method' => 'manual']]);
+$bday_day = make_user(
+    'eintrikot_member',
+    ['birthday' => day('+10 days -30 years'), 'birthday_visibility' => 'day'],
+    ['eintrikot_activated_at' => time()]
+);
+$bday_full = make_user(
+    'eintrikot_member',
+    ['birthday' => day('+12 days -40 years'), 'birthday_visibility' => 'full'],
+    ['eintrikot_activated_at' => time()]
+);
+$bday_private = make_user(
+    'eintrikot_member',
+    ['birthday' => day('+11 days -35 years')],
+    ['eintrikot_activated_at' => time()]
+);
+$bday_hidden = make_user(
+    'eintrikot_member',
+    ['birthday' => day('+13 days -33 years'), 'birthday_visibility' => 'full', 'directory_listing' => 'hide'],
+    ['eintrikot_activated_at' => time()]
+);
+$bday_kid = make_user(
+    'eintrikot_member',
+    ['birthday' => day('+14 days -15 years'), 'birthday_visibility' => 'full'],
+    [
+        'eintrikot_activated_at' => time(),
+        'eintrikot_consent' => 'given',
+        'eintrikot_consent_record' => ['method' => 'manual']
+    ]
+);
 $titles = array_column(birthday_items(60), 'title');
 $name = fn($id) => get_user_by('id', $id)->display_name;
 check('Termine: Tag und Monat ohne Alter', in_array('Geburtstag: ' . $name($bday_day), $titles, true));
-check('Termine: mit Jahr zeigt das neue Alter', in_array('Geburtstag: ' . $name($bday_full) . ' (wird 40)', $titles, true));
-check('Termine: privat erscheint nicht', !array_filter($titles, fn($t) => str_contains($t, $name($bday_private))));
-check('Termine: im Verzeichnis ausgeblendete Konten erscheinen nicht', !array_filter($titles, fn($t) => str_contains($t, $name($bday_hidden))));
-check('Termine: Minderjährige erscheinen nicht', !array_filter($titles, fn($t) => str_contains($t, $name($bday_kid))));
+check(
+    'Termine: mit Jahr zeigt das neue Alter',
+    in_array('Geburtstag: ' . $name($bday_full) . ' (wird 40)', $titles, true)
+);
+check(
+    'Termine: privat erscheint nicht',
+    !array_filter($titles, fn($t) => str_contains($t, $name($bday_private)))
+);
+check(
+    'Termine: im Verzeichnis ausgeblendete Konten erscheinen nicht',
+    !array_filter($titles, fn($t) => str_contains($t, $name($bday_hidden)))
+);
+check(
+    'Termine: Minderjährige erscheinen nicht',
+    !array_filter($titles, fn($t) => str_contains($t, $name($bday_kid)))
+);
 
 /* ---------- Eltern-Zustimmung ---------- */
 
@@ -150,15 +212,24 @@ $render = function ($error) use ($page_user, $page_token) {
 };
 check('Seite mit gültigem Schlüssel zeigt das Formular', str_contains($render(null), 'parent_email'));
 check('Bekannte Meldung wird angezeigt', str_contains($render('email_own'), 'eigene Adresse'));
-check('Frei erfundener Text wird nicht angezeigt', !str_contains($render('Ihr Konto ist gesperrt, rufen Sie an'), 'gesperrt'));
-check('HTML in der Meldung wird nicht ausgegeben', !str_contains($render('<script>alert(1)</script>'), '<script>alert'));
+check(
+    'Frei erfundener Text wird nicht angezeigt',
+    !str_contains($render('Ihr Konto ist gesperrt, rufen Sie an'), 'gesperrt')
+);
+check(
+    'HTML in der Meldung wird nicht ausgegeben',
+    !str_contains($render('<script>alert(1)</script>'), '<script>alert')
+);
 check('Alle Meldungen vorhanden', count(consent_errors()) === 6);
 $_GET = [];
 
 /* ---------- Verzeichnis ---------- */
 
 check('Mitglied ist gelistet', directory_listed(get_user_by('id', $adult_id)));
-update_user_meta($adult_id, 'eintrikot_profile', ['birthday' => day('-30 years'), 'directory_listing' => 'hide']);
+update_user_meta($adult_id, 'eintrikot_profile', [
+    'birthday' => day('-30 years'),
+    'directory_listing' => 'hide'
+]);
 check('Verwaltung kann ausblenden', !directory_listed(get_user_by('id', $adult_id)));
 $other = make_user('subscriber');
 check('Technisches Konto nicht gelistet', !directory_listed(get_user_by('id', $other)));
@@ -167,7 +238,15 @@ check('Technisches Konto nicht gelistet', !directory_listed(get_user_by('id', $o
 
 flush_caps_stats();
 $base = caps_stats();
-$member_stations = [['role' => 'Spieler/in', 'organisation' => 'Damen', 'age_class' => 'U16', 'from' => '1901', 'to' => '1902']];
+$member_stations = [
+    [
+        'role' => 'Spieler/in',
+        'organisation' => 'Damen',
+        'age_class' => 'U16',
+        'from' => '1901',
+        'to' => '1902'
+    ]
+];
 make_user('eintrikot_member', [
     'birthday' => day('-60 years'),
     'caps' => '11',
@@ -180,12 +259,20 @@ check('Privates Jahr zählt nicht', $private['first_year'] === $base['first_year
 check('Private Länderspiele zählen nicht', $private['sum'] === $base['sum']);
 check('Konto zählt als Mitglied', $private['total'] === $base['total'] + 1);
 
-make_user('eintrikot_member', [
-    'birthday' => day('-14 years'),
-    'caps' => '5',
-    'stations' => $member_stations,
-    'visibility' => ['stations' => 'members', 'caps' => 'members']
-], ['eintrikot_activated_at' => time(), 'eintrikot_consent' => 'given', 'eintrikot_consent_record' => ['method' => 'manual']]);
+make_user(
+    'eintrikot_member',
+    [
+        'birthday' => day('-14 years'),
+        'caps' => '5',
+        'stations' => $member_stations,
+        'visibility' => ['stations' => 'members', 'caps' => 'members']
+    ],
+    [
+        'eintrikot_activated_at' => time(),
+        'eintrikot_consent' => 'given',
+        'eintrikot_consent_record' => ['method' => 'manual']
+    ]
+);
 flush_caps_stats();
 $kids = caps_stats();
 check('Jugendliche: freigegebene Station zählt nicht', $kids['first_year'] === $base['first_year']);
@@ -214,7 +301,15 @@ check('Profiländerung leert den Zwischenspeicher', get_transient('eintrikot_cap
 
 $import_rows = [
     ['Mitgliedsnr.', 'Vorname', 'Nachname', 'E-Mail', 'Geburtstag', 'Mitglied seit', 'Zusatzbetrag NDAlumni'],
-    ['4711', 'Test', 'Import', 'import.' . wp_generate_password(6, false) . '@example.test', '35000', '45923', '60.0']
+    [
+        '4711',
+        'Test',
+        'Import',
+        'import.' . wp_generate_password(6, false) . '@example.test',
+        '35000',
+        '45923',
+        '60.0'
+    ]
 ];
 $import_map = import_extract($import_rows, [])['map'];
 check('Import: Mitgliedsnummer erkannt', $import_map['number'] === 0);
@@ -222,9 +317,22 @@ check('Import: Geburtstag erkannt', $import_map['birthday'] === 4);
 check('Import: Mitglied seit erkannt', $import_map['joined'] === 5);
 check('Import: Zusatzbetrag NDAlumni wird zur Jahresspende', $import_map['donation'] === 6);
 $import_checked = import_check(import_extract($import_rows, [])['rows']);
-check('Import: Excel-Datum und Spende gelesen', $import_checked[0]['birthday'] === '1995-10-28' && $import_checked[0]['donation'] === '6000');
+check(
+    'Import: Excel-Datum und Spende gelesen',
+    $import_checked[0]['birthday'] === '1995-10-28' && $import_checked[0]['donation'] === '6000'
+);
 check('Import: Eintritt am Gründungstag ist gültig', $import_checked[0]['status'] === 'new');
-$before = import_check([['first_name' => 'A', 'last_name' => 'B', 'email' => 'vorher@example.test', 'number' => '1', 'joined' => '2020-12-15', 'birthday' => '', 'donation' => '']]);
+$before = import_check([
+    [
+        'first_name' => 'A',
+        'last_name' => 'B',
+        'email' => 'vorher@example.test',
+        'number' => '1',
+        'joined' => '2020-12-15',
+        'birthday' => '',
+        'donation' => ''
+    ]
+]);
 check('Import: Eintritt vor der Gründung wird abgelehnt', $before[0]['status'] === 'invalid');
 
 /* ---------- Aktuelles: Termine und Anmeldung ---------- */
@@ -232,22 +340,61 @@ check('Import: Eintritt vor der Gründung wird abgelehnt', $before[0]['status'] 
 $event_posts = [];
 function make_event($title, $meta) {
     global $event_posts;
-    $id = wp_insert_post(['post_type' => 'et_calendar', 'post_status' => 'publish', 'post_title' => $title, 'post_content' => 'Beschreibung ' . $title]);
+    $id = wp_insert_post([
+        'post_type' => 'et_calendar',
+        'post_status' => 'publish',
+        'post_title' => $title,
+        'post_content' => 'Beschreibung ' . $title
+    ]);
     foreach ($meta as $k => $v) {
         update_post_meta($id, $k, $v);
     }
     $event_posts[] = $id;
     return $id;
 }
-$ev_open = make_event('Test Treffen Köln', ['et_date' => day('+20 days'), 'et_time' => '18:30', 'et_end_time' => '21:00', 'et_place' => 'Test-Ort', 'et_meetpoint' => 'Eingang', 'et_contact' => 'Anna', 'et_format' => 'treffen', 'et_signup' => '1']);
-$ev_multi = make_event('Test Turnier', ['et_date' => day('+30 days'), 'et_end_date' => day('+31 days'), 'et_format' => 'unterwegs', 'et_signup' => '1']);
-$ev_cancel = make_event('Test Abgesagt', ['et_date' => day('+25 days'), 'et_signup' => '1', 'et_cancelled' => '1']);
+$ev_open = make_event('Test Treffen Köln', [
+    'et_date' => day('+20 days'),
+    'et_time' => '18:30',
+    'et_end_time' => '21:00',
+    'et_place' => 'Test-Ort',
+    'et_meetpoint' => 'Eingang',
+    'et_contact' => 'Anna',
+    'et_format' => 'treffen',
+    'et_signup' => '1'
+]);
+$ev_multi = make_event('Test Turnier', [
+    'et_date' => day('+30 days'),
+    'et_end_date' => day('+31 days'),
+    'et_format' => 'unterwegs',
+    'et_signup' => '1'
+]);
+$ev_cancel = make_event('Test Abgesagt', [
+    'et_date' => day('+25 days'),
+    'et_signup' => '1',
+    'et_cancelled' => '1'
+]);
 $ev_past = make_event('Test Vergangen', ['et_date' => day('-5 days'), 'et_signup' => '1']);
-$ev_running = make_event('Test Läuft gerade', ['et_date' => day('-1 day'), 'et_end_date' => day('+1 day'), 'et_signup' => '1']);
-$ev_deadline = make_event('Test Schluss', ['et_date' => day('+40 days'), 'et_signup' => '1', 'et_deadline' => day('-1 day')]);
-$ev_annual = make_event('Test Jahrestag', ['et_date' => day('+10 days -3 years'), 'et_annual' => '1', 'et_signup' => '1']);
+$ev_running = make_event('Test Läuft gerade', [
+    'et_date' => day('-1 day'),
+    'et_end_date' => day('+1 day'),
+    'et_signup' => '1'
+]);
+$ev_deadline = make_event('Test Schluss', [
+    'et_date' => day('+40 days'),
+    'et_signup' => '1',
+    'et_deadline' => day('-1 day')
+]);
+$ev_annual = make_event('Test Jahrestag', [
+    'et_date' => day('+10 days -3 years'),
+    'et_annual' => '1',
+    'et_signup' => '1'
+]);
 $ev_free = make_event('Test Ohne Anmeldung', ['et_date' => day('+50 days')]);
-$ev_draft = wp_insert_post(['post_type' => 'et_calendar', 'post_status' => 'draft', 'post_title' => 'Test Entwurf']);
+$ev_draft = wp_insert_post([
+    'post_type' => 'et_calendar',
+    'post_status' => 'draft',
+    'post_title' => 'Test Entwurf'
+]);
 update_post_meta($ev_draft, 'et_date', day('+5 days'));
 $event_posts[] = $ev_draft;
 $items = event_items();
@@ -255,24 +402,65 @@ $by = array_column($items, null, 'id');
 check('Termine: Entwurf erscheint nicht', !isset($by[$ev_draft]));
 check('Termine: Vergangenes erscheint nicht', !isset($by[$ev_past]));
 check('Termine: laufender mehrtägiger Termin erscheint', isset($by[$ev_running]));
-check('Termine: Felder gelesen', ($by[$ev_open]['place'] ?? '') === 'Test-Ort' && ($by[$ev_open]['meetpoint'] ?? '') === 'Eingang' && ($by[$ev_open]['format'] ?? '') === 'treffen');
+check(
+    'Termine: Felder gelesen',
+    ($by[$ev_open]['place'] ?? '') === 'Test-Ort' &&
+        ($by[$ev_open]['meetpoint'] ?? '') === 'Eingang' &&
+        ($by[$ev_open]['format'] ?? '') === 'treffen'
+);
 check('Termine: Uhrzeit-Text', event_time_text($by[$ev_open]) === '18:30–21:00 Uhr');
 check('Termine: mehrtägig hat Ende', ($by[$ev_multi]['end'] ?? '') === day('+31 days'));
-check('Termine: Jahrestag hat keine Anmeldung', ($by[$ev_annual]['signup'] ?? true) === false && str_contains($by[$ev_annual]['title'] ?? '', '3. Jahrestag'));
-check('Termine: Jahrestag zeigt immer das Format Jahrestag, auch wenn Sonstiges gewählt war', ($by[$ev_annual]['format'] ?? '') === 'jahrestag' && event_formats()['jahrestag'] === 'Jahrestag');
-check('Termine: unbekanntes Format wird Sonstiges', (event_from_post(get_post(make_event('Test Format', ['et_date' => day('+9 days'), 'et_format' => 'quatsch'])))['format'] ?? '') === 'sonstiges');
+check(
+    'Termine: Jahrestag hat keine Anmeldung',
+    ($by[$ev_annual]['signup'] ?? true) === false &&
+        str_contains($by[$ev_annual]['title'] ?? '', '3. Jahrestag')
+);
+check(
+    'Termine: Jahrestag zeigt immer das Format Jahrestag, auch wenn Sonstiges gewählt war',
+    ($by[$ev_annual]['format'] ?? '') === 'jahrestag' && event_formats()['jahrestag'] === 'Jahrestag'
+);
+check(
+    'Termine: unbekanntes Format wird Sonstiges',
+    (event_from_post(
+        get_post(make_event('Test Format', ['et_date' => day('+9 days'), 'et_format' => 'quatsch']))
+    )['format'] ??
+        '') ===
+        'sonstiges'
+);
 $sorted = array_column($items, 'date');
-$copy = $sorted; sort($copy);
+$copy = $sorted;
+sort($copy);
 check('Termine: nach Datum sortiert', $sorted === $copy);
-check('Termine: Geburtstage stehen nicht in der Terminliste', !array_filter($items, fn($i) => str_starts_with($i['title'], 'Geburtstag')));
+check(
+    'Termine: Geburtstage stehen nicht in der Terminliste',
+    !array_filter($items, fn($i) => str_starts_with($i['title'], 'Geburtstag'))
+);
 
 $m1 = make_user('eintrikot_member', ['birthday' => day('-35 years')], ['eintrikot_activated_at' => time()]);
 $m2 = make_user('eintrikot_member', ['birthday' => day('-28 years')], ['eintrikot_activated_at' => time()]);
-$m_kid = make_user('eintrikot_member', ['birthday' => day('-14 years')], ['eintrikot_activated_at' => time(), 'eintrikot_consent' => 'given', 'eintrikot_consent_record' => ['method' => 'manual']]);
-$m_hidden = make_user('eintrikot_member', ['birthday' => day('-40 years'), 'directory_listing' => 'hide'], ['eintrikot_activated_at' => time()]);
+$m_kid = make_user(
+    'eintrikot_member',
+    ['birthday' => day('-14 years')],
+    [
+        'eintrikot_activated_at' => time(),
+        'eintrikot_consent' => 'given',
+        'eintrikot_consent_record' => ['method' => 'manual']
+    ]
+);
+$m_hidden = make_user(
+    'eintrikot_member',
+    ['birthday' => day('-40 years'), 'directory_listing' => 'hide'],
+    ['eintrikot_activated_at' => time()]
+);
 $outsider = make_user('subscriber');
-check('Anmeldung: Mitglied kann sich anmelden', event_signup($ev_open, $m1) === '' && event_is_signed($ev_open, $m1));
-check('Anmeldung: doppelt zählt einmal', event_signup($ev_open, $m1) === '' && count(event_attendee_ids($ev_open)) === 1);
+check(
+    'Anmeldung: Mitglied kann sich anmelden',
+    event_signup($ev_open, $m1) === '' && event_is_signed($ev_open, $m1)
+);
+check(
+    'Anmeldung: doppelt zählt einmal',
+    event_signup($ev_open, $m1) === '' && count(event_attendee_ids($ev_open)) === 1
+);
 event_signup($ev_open, $m2);
 event_signup($ev_open, $m_kid);
 event_signup($ev_open, $m_hidden);
@@ -284,90 +472,222 @@ check('Liste: ausgeblendete Konten nie mit Namen', !isset($who['names'][$m_hidde
 check('Liste: Verborgene zählen mit', $who['hidden'] === 2);
 event_unsign($ev_open, $m2);
 check('Abmelden entfernt die Anmeldung', !event_is_signed($ev_open, $m2));
-check('Anmeldung: Abgesagtes nicht möglich', event_signup($ev_cancel, $m1) !== '' && !event_is_signed($ev_cancel, $m1));
+check(
+    'Anmeldung: Abgesagtes nicht möglich',
+    event_signup($ev_cancel, $m1) !== '' && !event_is_signed($ev_cancel, $m1)
+);
 check('Anmeldung: Vergangenes nicht möglich', event_signup($ev_past, $m1) !== '');
 check('Anmeldung: nach Anmeldeschluss nicht möglich', event_signup($ev_deadline, $m1) !== '');
 check('Anmeldung: Jahrestag nicht möglich', event_signup($ev_annual, $m1) !== '');
 check('Anmeldung: Termin ohne Anmeldung nicht möglich', event_signup($ev_free, $m1) !== '');
 check('Anmeldung: Entwurf nicht möglich', event_signup($ev_draft, $m1) !== '');
 check('Anmeldung: Technisches Konto nicht möglich', event_signup($ev_open, $outsider) !== '');
-check('Anmeldung: mehrtägig und laufend möglich', event_signup($ev_multi, $m1) === '' && event_signup($ev_running, $m1) === '');
+check(
+    'Anmeldung: mehrtägig und laufend möglich',
+    event_signup($ev_multi, $m1) === '' && event_signup($ev_running, $m1) === ''
+);
 wp_set_current_user($m1);
 $_GET = ['view' => 'aktuelles', 'tab' => 'termine'];
 ob_start();
 render_news();
 $page = ob_get_clean();
-check('Seite Aktuelles: Titel und Reiter', str_contains($page, 'Aktuelles') && str_contains($page, 'news-tabs'));
-check('Seite: Termin mit Ort und Format', str_contains($page, 'Test Treffen Köln') && str_contains($page, 'Test-Ort') && str_contains($page, 'Treffen'));
-check('Seite: Abmelden für Angemeldeten', str_contains($page, 'Du bist angemeldet') && str_contains($page, 'value="leave"'));
+check(
+    'Seite Aktuelles: Titel und Reiter',
+    str_contains($page, 'Aktuelles') && str_contains($page, 'news-tabs')
+);
+check(
+    'Seite: Termin mit Ort und Format',
+    str_contains($page, 'Test Treffen Köln') &&
+        str_contains($page, 'Test-Ort') &&
+        str_contains($page, 'Treffen')
+);
+check(
+    'Seite: Abmelden für Angemeldeten',
+    str_contains($page, 'Du bist angemeldet') && str_contains($page, 'value="leave"')
+);
 wp_set_current_user($m2);
 ob_start();
 render_news();
 $page2 = ob_get_clean();
-check('Seite: Anmelden für Offenen', str_contains($page2, 'Für Veranstaltung anmelden') && str_contains($page2, 'value="join"'));
-check('Seite: Teilnehmerliste mit Namen und Zahl', str_contains($page2, 'Wer ist dabei?') && str_contains($page2, get_user_by('id', $m1)->display_name));
+check(
+    'Seite: Anmelden für Offenen',
+    str_contains($page2, 'Für Veranstaltung anmelden') && str_contains($page2, 'value="join"')
+);
+check(
+    'Seite: Teilnehmerliste mit Namen und Zahl',
+    str_contains($page2, 'Wer ist dabei?') && str_contains($page2, get_user_by('id', $m1)->display_name)
+);
 check('Seite: Namen von Kindern fehlen', !str_contains($page, get_user_by('id', $m_kid)->display_name));
-check('Seite: Entwurf und Vergangenes fehlen', !str_contains($page, 'Test Entwurf') && !str_contains($page, 'Test Vergangen'));
+check(
+    'Seite: Entwurf und Vergangenes fehlen',
+    !str_contains($page, 'Test Entwurf') && !str_contains($page, 'Test Vergangen')
+);
 wp_set_current_user(0);
 $_GET = [];
-check('Navigation: Aktuelles statt Vereinsinfos und Termine', isset(portal_nav_items()['aktuelles']) && !isset(portal_nav_items()['infos']) && !isset(portal_nav_items()['events']));
+check(
+    'Navigation: Aktuelles statt Vereinsinfos und Termine',
+    isset(portal_nav_items()['aktuelles']) &&
+        !isset(portal_nav_items()['infos']) &&
+        !isset(portal_nav_items()['events'])
+);
 check('Navigation: mobil vier Punkte', count(portal_mobile_items()) === 4);
 global $wpdb;
-$wpdb->insert(signup_table(), ['event_id' => $ev_open, 'user_id' => $outsider, 'event_date' => day('-400 days'), 'created_at' => current_time('mysql', true)]);
+$wpdb->insert(signup_table(), [
+    'event_id' => $ev_open,
+    'user_id' => $outsider,
+    'event_date' => day('-400 days'),
+    'created_at' => current_time('mysql', true)
+]);
 $retention = run_retention();
-check('Aufbewahrung: alte Anmeldungen werden gelöscht', $retention['signups'] >= 1 && !event_is_signed($ev_open, $outsider));
+check(
+    'Aufbewahrung: alte Anmeldungen werden gelöscht',
+    $retention['signups'] >= 1 && !event_is_signed($ev_open, $outsider)
+);
 check('Aufbewahrung: aktuelle bleiben', event_is_signed($ev_open, $m1));
-$wpdb->query("DELETE FROM {$wpdb->prefix}eintrikot_event_signups WHERE event_id IN (" . implode(',', array_map('intval', $event_posts)) . ')');
+$wpdb->query(
+    "DELETE FROM {$wpdb->prefix}eintrikot_event_signups WHERE event_id IN (" .
+        implode(',', array_map('intval', $event_posts)) .
+        ')'
+);
 foreach ($event_posts as $pid) {
     wp_delete_post($pid, true);
 }
 
 /* ---------- Import: Zahlen aus Excel, Tore, weitere Ausbildung, Ausschluss ---------- */
 
-check('Excel-Zahl 3.0 wird 3', import_whole_number('3.0') === '3' && import_whole_number('1270.0') === '1270');
-check('Text und Kommazahlen bleiben', import_whole_number('185 (A-Kader)') === '185 (A-Kader)' && import_whole_number('12.5') === '12.5');
-$num_row = import_check([['first_name' => 'A', 'last_name' => 'B', 'email' => 'zahl@example.test', 'number' => '127.0', 'joined' => '2026-01-26', 'birthday' => '', 'donation' => '']]);
+check(
+    'Excel-Zahl 3.0 wird 3',
+    import_whole_number('3.0') === '3' && import_whole_number('1270.0') === '1270'
+);
+check(
+    'Text und Kommazahlen bleiben',
+    import_whole_number('185 (A-Kader)') === '185 (A-Kader)' && import_whole_number('12.5') === '12.5'
+);
+$num_row = import_check([
+    [
+        'first_name' => 'A',
+        'last_name' => 'B',
+        'email' => 'zahl@example.test',
+        'number' => '127.0',
+        'joined' => '2026-01-26',
+        'birthday' => '',
+        'donation' => ''
+    ]
+]);
 check('Import: Mitgliedsnummer 127.0 bleibt 127 (nicht 1270)', $num_row[0]['number'] === '127');
 $notes = [];
-$profile = nda_profile([
-    'anzahlvonnationalspielen' => '185.0',
-    'anzahlvontoren' => '12.0',
-    'interessen' => '',
-    'akademischedaten2abschluss' => 'Master',
-    'akademischedaten2programm' => 'BWL',
-    'akademischedaten2schuleuniversitatinstitut' => 'Uni Test',
-    'akademischedaten2von' => '2008',
-    'akademischedaten2bis' => '2011',
-    'akademischedaten3programm' => 'Jura'
-], $notes);
+$profile = nda_profile(
+    [
+        'anzahlvonnationalspielen' => '185.0',
+        'anzahlvontoren' => '12.0',
+        'interessen' => '',
+        'akademischedaten2abschluss' => 'Master',
+        'akademischedaten2programm' => 'BWL',
+        'akademischedaten2schuleuniversitatinstitut' => 'Uni Test',
+        'akademischedaten2von' => '2008',
+        'akademischedaten2bis' => '2011',
+        'akademischedaten3programm' => 'Jura'
+    ],
+    $notes
+);
 check('Import: Länderspiele ohne .0', ($profile['caps'] ?? '') === '185');
 check('Import: Tore ohne .0', ($profile['goals'] ?? '') === '12');
-check('Import: weitere Ausbildung als Text', str_contains($profile['support'] ?? '', 'Weitere Ausbildung: Master, BWL, Uni Test (2008–2011); Jura'));
-check('Jahr 2003.0 bleibt 2003 (nicht 1905)', nda_year('2003.0') === '2003' && nda_year('1989.0') === '1989' && nda_year('2003') === '2003');
+check(
+    'Import: weitere Ausbildung als Text',
+    str_contains($profile['support'] ?? '', 'Weitere Ausbildung: Master, BWL, Uni Test (2008–2011); Jura')
+);
+check(
+    'Jahr 2003.0 bleibt 2003 (nicht 1905)',
+    nda_year('2003.0') === '2003' && nda_year('1989.0') === '1989' && nda_year('2003') === '2003'
+);
 check('Excel-Datumswert wird zum Jahr', nda_year('46003.0') === '2025');
 $notes_y = [];
-$station_profile = nda_profile(['hockeylebenslauf1mannschaft' => 'A-Kader', 'hockeylebenslauf1position' => 'Sturm', 'hockeylebenslauf1von' => '2003.0', 'hockeylebenslauf1bis' => '2010.0', 'anrede' => 'Herr', 'akademischedaten1abschluss' => 'Master', 'akademischedaten1von' => '2004.0', 'akademischedaten1bis' => '2009.0'], $notes_y);
-check('Import: Station mit Jahren 2003 bis 2010', ($station_profile['stations'][0]['from'] ?? '') === '2003' && ($station_profile['stations'][0]['to'] ?? '') === '2010');
+$station_profile = nda_profile(
+    [
+        'hockeylebenslauf1mannschaft' => 'A-Kader',
+        'hockeylebenslauf1position' => 'Sturm',
+        'hockeylebenslauf1von' => '2003.0',
+        'hockeylebenslauf1bis' => '2010.0',
+        'anrede' => 'Herr',
+        'akademischedaten1abschluss' => 'Master',
+        'akademischedaten1von' => '2004.0',
+        'akademischedaten1bis' => '2009.0'
+    ],
+    $notes_y
+);
+check(
+    'Import: Station mit Jahren 2003 bis 2010',
+    ($station_profile['stations'][0]['from'] ?? '') === '2003' &&
+        ($station_profile['stations'][0]['to'] ?? '') === '2010'
+);
 check('Import: Ausbildungszeitraum 2004–2009', ($station_profile['education_period'] ?? '') === '2004–2009');
 $n_fix = [];
-$fixed = nda_profile(['anrede' => 'Herr', 'mannschaft' => '', 'teamkorrektur' => 'Damen', 'altersklassekorrektur' => 'A-Nationalteam'], $n_fix);
+$fixed = nda_profile(
+    [
+        'anrede' => 'Herr',
+        'mannschaft' => '',
+        'teamkorrektur' => 'Damen',
+        'altersklassekorrektur' => 'A-Nationalteam'
+    ],
+    $n_fix
+);
 check('Korrektur: Team aus der Tabelle statt Anrede', ($fixed['team'] ?? '') === 'Damen');
-check('Kein Team ohne Angabe: die Anrede wird nicht als Team geraten', !isset(nda_profile(['anrede' => 'Frau', 'mannschaft' => ''], $n_fix)['team']) && !isset(nda_profile(['anrede' => 'Herr', 'mannschaft' => 'Staff'], $n_fix)['team']));
-check('Team aus "Mannschaft" bleibt', (nda_profile(['anrede' => 'Herr', 'mannschaft' => 'A-Kader Damen'], $n_fix)['team'] ?? '') === 'Damen');
+check(
+    'Kein Team ohne Angabe: die Anrede wird nicht als Team geraten',
+    !isset(nda_profile(['anrede' => 'Frau', 'mannschaft' => ''], $n_fix)['team']) &&
+        !isset(nda_profile(['anrede' => 'Herr', 'mannschaft' => 'Staff'], $n_fix)['team'])
+);
+check(
+    'Team aus "Mannschaft" bleibt',
+    (nda_profile(['anrede' => 'Herr', 'mannschaft' => 'A-Kader Damen'], $n_fix)['team'] ?? '') === 'Damen'
+);
 check('Korrektur: Altersklasse aus der Tabelle', ($fixed['age_class'] ?? '') === 'A-Nationalteam');
 $both = nda_profile(['anrede' => 'Herr', 'teamkorrektur' => 'beides'], $n_fix);
 check('Korrektur: "beides" lässt das Team leer', !isset($both['team']));
-$stat = nda_profile([
-    'anrede' => 'Herr',
-    'hockeylebenslauf1mannschaft' => 'Staff', 'hockeylebenslauf1position' => 'Trainer', 'hockeylebenslauf1von' => '2010.0', 'hockeylebenslauf1bis' => '2012.0',
-    'hockeylebenslauf1rollekorrektur' => 'Athletiktrainer/in', 'hockeylebenslauf1teamkorrektur' => 'Damen', 'hockeylebenslauf1altersklassekorrektur' => 'U21',
-    'hockeylebenslauf6mannschaft' => 'Staff', 'hockeylebenslauf6position' => 'Trainer', 'hockeylebenslauf6von' => '2013.0', 'hockeylebenslauf6bis' => '2015.0',
-    'hockeylebenslauf6teamkorrektur' => 'Herren', 'hockeylebenslauf6altersklassekorrektur' => 'A-Nationalteam'
-], $n_fix);
+$stat = nda_profile(
+    [
+        'anrede' => 'Herr',
+        'hockeylebenslauf1mannschaft' => 'Staff',
+        'hockeylebenslauf1position' => 'Trainer',
+        'hockeylebenslauf1von' => '2010.0',
+        'hockeylebenslauf1bis' => '2012.0',
+        'hockeylebenslauf1rollekorrektur' => 'Athletiktrainer/in',
+        'hockeylebenslauf1teamkorrektur' => 'Damen',
+        'hockeylebenslauf1altersklassekorrektur' => 'U21',
+        'hockeylebenslauf6mannschaft' => 'Staff',
+        'hockeylebenslauf6position' => 'Trainer',
+        'hockeylebenslauf6von' => '2013.0',
+        'hockeylebenslauf6bis' => '2015.0',
+        'hockeylebenslauf6teamkorrektur' => 'Herren',
+        'hockeylebenslauf6altersklassekorrektur' => 'A-Nationalteam'
+    ],
+    $n_fix
+);
 $st = $stat['stations'] ?? [];
-check('Korrektur: Station mit Rolle, Team und Altersklasse', ($st[0]['role'] ?? '') === 'Athletiktrainer/in' && ($st[0]['organisation'] ?? '') === 'Damen' && ($st[0]['age_class'] ?? '') === 'U21');
-check('Korrektur: sechste Station (für Herren) wird gelesen', count($st) === 2 && ($st[1]['organisation'] ?? '') === 'Herren' && ($st[1]['from'] ?? '') === '2013');
-check('Korrektur: ungültige Rolle wird ignoriert', (nda_profile(['hockeylebenslauf1mannschaft' => 'U16', 'hockeylebenslauf1position' => 'Sturm', 'hockeylebenslauf1rollekorrektur' => 'Zauberer', 'anrede' => 'Frau'], $n_fix)['stations'][0]['role'] ?? '') === 'Spieler/in');
+check(
+    'Korrektur: Station mit Rolle, Team und Altersklasse',
+    ($st[0]['role'] ?? '') === 'Athletiktrainer/in' &&
+        ($st[0]['organisation'] ?? '') === 'Damen' &&
+        ($st[0]['age_class'] ?? '') === 'U21'
+);
+check(
+    'Korrektur: sechste Station (für Herren) wird gelesen',
+    count($st) === 2 && ($st[1]['organisation'] ?? '') === 'Herren' && ($st[1]['from'] ?? '') === '2013'
+);
+check(
+    'Korrektur: ungültige Rolle wird ignoriert',
+    (nda_profile(
+        [
+            'hockeylebenslauf1mannschaft' => 'U16',
+            'hockeylebenslauf1position' => 'Sturm',
+            'hockeylebenslauf1rollekorrektur' => 'Zauberer',
+            'anrede' => 'Frau'
+        ],
+        $n_fix
+    )['stations'][0]['role'] ??
+        '') ===
+        'Spieler/in'
+);
 check('Profil kennt das Feld Tore', isset(profile_fields()['goals']));
 $map = nda_map([
     ['Bevorzugte E-Mail-Adresse', 'Vorname', 'Nachname', 'Gestorben am', 'Gekündigt am'],
@@ -375,103 +695,247 @@ $map = nda_map([
     ['tot@example.test', 'Ccc', 'Ddd', '2024-01-01', ''],
     ['weg@example.test', 'Eee', 'Fff', '', '2025-12-31']
 ]);
-check('Import: Verstorbene und Gekündigte werden ausgeschlossen', count($map['people']) === 1 && ($map['notes']['Gekündigt oder verstorben: nicht übernommen'] ?? 0) === 2);
+check(
+    'Import: Verstorbene und Gekündigte werden ausgeschlossen',
+    count($map['people']) === 1 && ($map['notes']['Gekündigt oder verstorben: nicht übernommen'] ?? 0) === 2
+);
 
 /* ---------- Geburtsdatum nachfragen ---------- */
 
 $bd_none = make_user('eintrikot_member', ['city' => 'Test'], ['eintrikot_member_number' => '9101']);
-$bd_has = make_user('eintrikot_member', ['birthday' => day('-40 years')], ['eintrikot_member_number' => '9102']);
+$bd_has = make_user(
+    'eintrikot_member',
+    ['birthday' => day('-40 years')],
+    ['eintrikot_member_number' => '9102']
+);
 $bd_tech = make_user('administrator');
 check('Geburtsdatum fehlt: Seite nötig', birthday_needed($bd_none));
 check('Geburtsdatum da: Seite nicht nötig', !birthday_needed($bd_has));
 check('Technisches Konto ohne Mitgliedsnummer: nicht nötig', !birthday_needed($bd_tech));
 check('Nicht angemeldet: nicht nötig', !birthday_needed(0));
 foreach (['', 'abc', '2020-02-31', day('+1 day'), '1899-12-31', '17.05.1990'] as $bad_date) {
-    check('Ungültiges Datum abgelehnt: "' . $bad_date . '"', save_member_birthday($bd_none, $bad_date) === 'invalid');
+    check(
+        'Ungültiges Datum abgelehnt: "' . $bad_date . '"',
+        save_member_birthday($bd_none, $bad_date) === 'invalid'
+    );
 }
-check('Unter 18 wird abgelehnt und nicht gespeichert', save_member_birthday($bd_none, day('-15 years')) === 'minor' && birthday_needed($bd_none));
-check('Genau 18 ist erlaubt', save_member_birthday($bd_none, day('-18 years')) === '' && !birthday_needed($bd_none));
+check(
+    'Unter 18 wird abgelehnt und nicht gespeichert',
+    save_member_birthday($bd_none, day('-15 years')) === 'minor' && birthday_needed($bd_none)
+);
+check(
+    'Genau 18 ist erlaubt',
+    save_member_birthday($bd_none, day('-18 years')) === '' && !birthday_needed($bd_none)
+);
 update_user_meta($bd_none, 'eintrikot_profile', ['city' => 'Test']);
 $before_page = save_member_birthday($bd_none, '1990-05-17');
-check('Gültiges Datum wird gespeichert', $before_page === '' && (profile_data($bd_none)['birthday'] ?? '') === '1990-05-17');
+check(
+    'Gültiges Datum wird gespeichert',
+    $before_page === '' && (profile_data($bd_none)['birthday'] ?? '') === '1990-05-17'
+);
 check('Andere Profilangaben bleiben', (profile_data($bd_none)['city'] ?? '') === 'Test');
-check('Ein vorhandenes Geburtsdatum wird nicht überschrieben', save_member_birthday($bd_none, '1985-01-01') === '' && (profile_data($bd_none)['birthday'] ?? '') === '1990-05-17');
+check(
+    'Ein vorhandenes Geburtsdatum wird nicht überschrieben',
+    save_member_birthday($bd_none, '1985-01-01') === '' &&
+        (profile_data($bd_none)['birthday'] ?? '') === '1990-05-17'
+);
 global $wpdb;
-check('Eintrag im Änderungsprotokoll', (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'birthday'", $bd_none)) >= 1);
-$bd_page = (function () { ob_start(); render_birthday_page(); return ob_get_clean(); })();
-check('Seite: Frage, Begründung mit Beitrag und Knopf', str_contains($bd_page, 'name="birthday"') && str_contains($bd_page, 'ab 32 Jahren') && str_contains($bd_page, 'Speichern und weiter'));
+check(
+    'Eintrag im Änderungsprotokoll',
+    (int) $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'birthday'",
+            $bd_none
+        )
+    ) >= 1
+);
+$bd_page = (function () {
+    ob_start();
+    render_birthday_page();
+    return ob_get_clean();
+})();
+check(
+    'Seite: Frage, Begründung mit Beitrag und Knopf',
+    str_contains($bd_page, 'name="birthday"') &&
+        str_contains($bd_page, 'ab 32 Jahren') &&
+        str_contains($bd_page, 'Speichern und weiter')
+);
 $_GET = ['fehler' => 'minor'];
-$bd_err = (function () { ob_start(); render_birthday_page(); return ob_get_clean(); })();
+$bd_err = (function () {
+    ob_start();
+    render_birthday_page();
+    return ob_get_clean();
+})();
 check('Seite: Hinweis bei unter 18', str_contains($bd_err, 'Zustimmung deiner Eltern'));
 $_GET = ['fehler' => '<script>alert(1)</script>'];
-$bd_xss = (function () { ob_start(); render_birthday_page(); return ob_get_clean(); })();
+$bd_xss = (function () {
+    ob_start();
+    render_birthday_page();
+    return ob_get_clean();
+})();
 check('Seite: erfundene Meldung wird nicht angezeigt', !str_contains($bd_xss, '<script>alert'));
-$gate_user = make_user('eintrikot_member', ['city' => 'Test'], ['eintrikot_member_number' => '9103', 'eintrikot_activated_at' => time()]);
+$gate_user = make_user(
+    'eintrikot_member',
+    ['city' => 'Test'],
+    ['eintrikot_member_number' => '9103', 'eintrikot_activated_at' => time()]
+);
 wp_set_current_user($gate_user);
 $_GET = ['view' => 'members'];
 $gated = do_shortcode('[eintrikot_portal]');
-check('Portal: ohne Geburtsdatum nur die Abfrage, auch bei anderer Ansicht', str_contains($gated, 'Noch eine Angabe') && !str_contains($gated, 'class="member-search'));
+check(
+    'Portal: ohne Geburtsdatum nur die Abfrage, auch bei anderer Ansicht',
+    str_contains($gated, 'Noch eine Angabe') && !str_contains($gated, 'class="member-search')
+);
 save_member_birthday($gate_user, '1980-03-04');
 $_GET = ['view' => 'profile'];
 $free = do_shortcode('[eintrikot_portal]');
-check('Portal: mit Geburtsdatum normale Ansicht', !str_contains($free, 'Noch eine Angabe') && str_contains($free, 'Profil bearbeiten'));
+check(
+    'Portal: mit Geburtsdatum normale Ansicht',
+    !str_contains($free, 'Noch eine Angabe') && str_contains($free, 'Profil bearbeiten')
+);
 wp_set_current_user(0);
 $_GET = [];
 
 /* ---------- WordPress löscht ?error aus der Adresse: Meldungen laufen über ?fehler ---------- */
 
 $_SERVER['QUERY_STRING'] = 'error=1';
-check('Der Parameter heißt nicht "error" (reserviert in WordPress)', !str_contains(file_get_contents(dirname(__DIR__) . '/wp-content/plugins/eintrikot-community-core/consent.php') . file_get_contents(dirname(__DIR__) . '/wp-content/plugins/eintrikot-community-core/birthday.php'), "directory_param('error')"));
+check(
+    'Der Parameter heißt nicht "error" (reserviert in WordPress)',
+    !str_contains(
+        file_get_contents(dirname(__DIR__) . '/wp-content/plugins/eintrikot-community-core/consent.php') .
+            file_get_contents(dirname(__DIR__) . '/wp-content/plugins/eintrikot-community-core/birthday.php'),
+        "directory_param('error')"
+    )
+);
 
 /* ---------- Rollenwechsel im Änderungsprotokoll ---------- */
 
 $role_admin = make_user('administrator');
-$role_user = make_user('eintrikot_member', ['city' => 'Test'], ['eintrikot_member_number' => '9301', 'eintrikot_activated_at' => time()]);
-$role_count = fn($target) => (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'role'", $target));
+$role_user = make_user(
+    'eintrikot_member',
+    ['city' => 'Test'],
+    ['eintrikot_member_number' => '9301', 'eintrikot_activated_at' => time()]
+);
+$role_count = fn($target) => (int) $wpdb->get_var(
+    $wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'role'",
+        $target
+    )
+);
 check('Neues Konto: keine Rolle im Protokoll', $role_count($role_user) === 0);
 wp_set_current_user($role_admin);
 (new \WP_User($role_user))->set_role('eintrikot_board');
 check('Rollenwechsel steht im Protokoll', $role_count($role_user) === 1);
-$role_row = $wpdb->get_row($wpdb->prepare("SELECT actor, before_value, after_value FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'role' ORDER BY id DESC LIMIT 1", $role_user));
-check('Protokoll: wer, vorher, nachher', (int) $role_row->actor === $role_admin && str_contains($role_row->before_value, 'EINTRIKOT Mitglied') && str_contains($role_row->after_value, 'EINTRIKOT Vorstand'));
+$role_row = $wpdb->get_row(
+    $wpdb->prepare(
+        "SELECT actor, before_value, after_value FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'role' ORDER BY id DESC LIMIT 1",
+        $role_user
+    )
+);
+check(
+    'Protokoll: wer, vorher, nachher',
+    (int) $role_row->actor === $role_admin &&
+        str_contains($role_row->before_value, 'EINTRIKOT Mitglied') &&
+        str_contains($role_row->after_value, 'EINTRIKOT Vorstand')
+);
 (new \WP_User($role_user))->set_role('eintrikot_board');
 check('Gleiche Rolle noch einmal: kein neuer Eintrag', $role_count($role_user) === 1);
 check('Rolle als Text', user_role_text($role_user) === 'EINTRIKOT Vorstand');
-$role_view = (function ($id) { ob_start(); render_member($id); return ob_get_clean(); });
-check('Verwaltung sieht die Rolle im Profil', str_contains($role_view($role_user), 'Rolle: EINTRIKOT Vorstand'));
+$role_view = function ($id) {
+    ob_start();
+    render_member($id);
+    return ob_get_clean();
+};
+check(
+    'Verwaltung sieht die Rolle im Profil',
+    str_contains($role_view($role_user), 'Rolle: EINTRIKOT Vorstand')
+);
 wp_set_current_user($m1);
 check('Mitglieder sehen die Rolle nicht', !str_contains($role_view($role_user), 'Rolle:'));
 
 /* ---------- Profile außerhalb des Verzeichnisses ---------- */
 
-$pv_hidden = make_user('eintrikot_member', ['birthday' => day('-41 years'), 'directory_listing' => 'hide'], ['eintrikot_activated_at' => time()]);
+$pv_hidden = make_user(
+    'eintrikot_member',
+    ['birthday' => day('-41 years'), 'directory_listing' => 'hide'],
+    ['eintrikot_activated_at' => time()]
+);
 $pv_kid = make_user('eintrikot_member', ['birthday' => day('-13 years')]);
 $pv_name = fn($id) => get_userdata($id)->display_name;
-check('Profil: sichtbares Mitglied für Mitglieder abrufbar', str_contains($role_view($role_user), esc_html($pv_name($role_user))));
-check('Profil: ausgeblendetes Konto per Adresse nicht abrufbar', str_contains($role_view($pv_hidden), 'Profil nicht verfügbar') && !str_contains($role_view($pv_hidden), esc_html($pv_name($pv_hidden))));
-check('Profil: Kind ohne Zustimmung per Adresse nicht abrufbar', str_contains($role_view($pv_kid), 'Profil nicht verfügbar'));
-check('Profil: Admin-Konto per Adresse nicht abrufbar', str_contains($role_view($role_admin), 'Profil nicht verfügbar'));
+check(
+    'Profil: sichtbares Mitglied für Mitglieder abrufbar',
+    str_contains($role_view($role_user), esc_html($pv_name($role_user)))
+);
+check(
+    'Profil: ausgeblendetes Konto per Adresse nicht abrufbar',
+    str_contains($role_view($pv_hidden), 'Profil nicht verfügbar') &&
+        !str_contains($role_view($pv_hidden), esc_html($pv_name($pv_hidden)))
+);
+check(
+    'Profil: Kind ohne Zustimmung per Adresse nicht abrufbar',
+    str_contains($role_view($pv_kid), 'Profil nicht verfügbar')
+);
+check(
+    'Profil: Admin-Konto per Adresse nicht abrufbar',
+    str_contains($role_view($role_admin), 'Profil nicht verfügbar')
+);
 wp_set_current_user($pv_hidden);
-check('Profil: das eigene ausgeblendete Profil bleibt sichtbar', !str_contains($role_view($pv_hidden), 'Profil nicht verfügbar'));
+check(
+    'Profil: das eigene ausgeblendete Profil bleibt sichtbar',
+    !str_contains($role_view($pv_hidden), 'Profil nicht verfügbar')
+);
 wp_set_current_user($role_admin);
-check('Profil: Verwaltung sieht ausgeblendete Konten', !str_contains($role_view($pv_hidden), 'Profil nicht verfügbar') && !str_contains($role_view($pv_kid), 'Profil nicht verfügbar'));
+check(
+    'Profil: Verwaltung sieht ausgeblendete Konten',
+    !str_contains($role_view($pv_hidden), 'Profil nicht verfügbar') &&
+        !str_contains($role_view($pv_kid), 'Profil nicht verfügbar')
+);
 wp_set_current_user(0);
 
 /* ---------- Konto löschen: Anmeldungen verschwinden sofort ---------- */
 
 require_once ABSPATH . 'wp-admin/includes/user.php';
 $del_event = make_event('Test Löschung', ['et_date' => day('+20 days'), 'et_signup' => '1']);
-$del_user = make_user('eintrikot_member', ['birthday' => day('-33 years')], ['eintrikot_activated_at' => time()]);
-$stay_user = make_user('eintrikot_member', ['birthday' => day('-34 years')], ['eintrikot_activated_at' => time()]);
+$del_user = make_user(
+    'eintrikot_member',
+    ['birthday' => day('-33 years')],
+    ['eintrikot_activated_at' => time()]
+);
+$stay_user = make_user(
+    'eintrikot_member',
+    ['birthday' => day('-34 years')],
+    ['eintrikot_activated_at' => time()]
+);
 event_signup($del_event, $del_user);
 event_signup($del_event, $stay_user);
 check('Vor dem Löschen: zwei Anmeldungen', count(event_attendee_ids($del_event)) === 2);
 log_change($del_user, 'city', 'Köln', 'Berlin', 'Umzug gemeldet');
 wp_delete_user($del_user);
-check('Nach dem Löschen: Anmeldung des Kontos ist weg', !in_array($del_user, event_attendee_ids($del_event), true));
-$del_rows = $wpdb->get_results($wpdb->prepare("SELECT field, before_value, after_value, reason FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d", $del_user));
-check('Protokoll: Werte und Gründe der gelöschten Person sind ersetzt', $del_rows && !array_filter($del_rows, fn($r) => $r->field !== 'account' && ($r->before_value !== '"[gelöscht]"' || $r->after_value !== '"[gelöscht]"' || $r->reason !== '[gelöscht]')));
-check('Protokoll: die Löschung selbst steht drin', (bool) array_filter($del_rows, fn($r) => $r->field === 'account' && $r->reason === 'Konto gelöscht'));
+check(
+    'Nach dem Löschen: Anmeldung des Kontos ist weg',
+    !in_array($del_user, event_attendee_ids($del_event), true)
+);
+$del_rows = $wpdb->get_results(
+    $wpdb->prepare(
+        "SELECT field, before_value, after_value, reason FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d",
+        $del_user
+    )
+);
+check(
+    'Protokoll: Werte und Gründe der gelöschten Person sind ersetzt',
+    $del_rows &&
+        !array_filter(
+            $del_rows,
+            fn($r) => $r->field !== 'account' &&
+                ($r->before_value !== '"[gelöscht]"' ||
+                    $r->after_value !== '"[gelöscht]"' ||
+                    $r->reason !== '[gelöscht]')
+        )
+);
+check(
+    'Protokoll: die Löschung selbst steht drin',
+    (bool) array_filter($del_rows, fn($r) => $r->field === 'account' && $r->reason === 'Konto gelöscht')
+);
 check('Anmeldung anderer bleibt', event_is_signed($del_event, $stay_user));
 wp_delete_post($del_event, true);
 $wpdb->delete(signup_table(), ['event_id' => $del_event], ['%d']);
@@ -487,34 +951,66 @@ for ($i = 0; $i < LOGIN_MAX_FAILS; $i++) {
     wp_authenticate($locked_login, 'falsch-' . $i);
 }
 $result = wp_authenticate($locked_login, 'Richtig-Test-Pw-9x!');
-check('Nach 5 Fehlversuchen gesperrt, auch mit richtigem Passwort', is_wp_error($result) && $result->get_error_code() === 'et_locked');
+check(
+    'Nach 5 Fehlversuchen gesperrt, auch mit richtigem Passwort',
+    is_wp_error($result) && $result->get_error_code() === 'et_locked'
+);
 $unknown = wp_authenticate('niemand_' . wp_generate_password(6, false) . '@example.test', 'egal');
-check('Unbekannte Adresse: gleiche Meldung wie falsches Passwort', is_wp_error($unknown) && $unknown->get_error_code() === 'et_failed');
+check(
+    'Unbekannte Adresse: gleiche Meldung wie falsches Passwort',
+    is_wp_error($unknown) && $unknown->get_error_code() === 'et_failed'
+);
 delete_transient(login_throttle_key($locked_login));
 delete_transient(login_ip_key());
 for ($i = 0; $i < LOGIN_IP_MAX_FAILS; $i++) {
     wp_authenticate('raten_' . $i . '@example.test', 'falsch');
 }
 $ip_result = wp_authenticate($locked_login, 'Richtig-Test-Pw-9x!');
-check('Viele Namen von einer Adresse: gesperrt, auch für ein anderes Konto', is_wp_error($ip_result) && $ip_result->get_error_code() === 'et_locked');
+check(
+    'Viele Namen von einer Adresse: gesperrt, auch für ein anderes Konto',
+    is_wp_error($ip_result) && $ip_result->get_error_code() === 'et_locked'
+);
 delete_transient(login_ip_key());
-check('Nach Ablauf der Adress-Sperre funktioniert die Anmeldung wieder', wp_authenticate($locked_login, 'Richtig-Test-Pw-9x!') instanceof \WP_User);
+check(
+    'Nach Ablauf der Adress-Sperre funktioniert die Anmeldung wieder',
+    wp_authenticate($locked_login, 'Richtig-Test-Pw-9x!') instanceof \WP_User
+);
 
 /* ---------- Zweite Anmeldestufe ---------- */
 
 // RFC 6238, Anhang B: Schlüssel "12345678901234567890", Zeit 59 s ergibt 94287082 (hier die letzten 6 Stellen).
 $tf_secret = base32_encode('12345678901234567890');
-check('2FA: Base32 wie in RFC 4648', $tf_secret === 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ' && base32_decode($tf_secret) === '12345678901234567890');
+check(
+    '2FA: Base32 wie in RFC 4648',
+    $tf_secret === 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ' && base32_decode($tf_secret) === '12345678901234567890'
+);
 check('2FA: TOTP-Testvektor aus RFC 6238', totp_code($tf_secret, 1) === '287082');
-check('2FA: Code gilt mit einem Schritt Abweichung', totp_verify($tf_secret, '287082', 59 + 30) === 1 && totp_verify($tf_secret, '287082', 59 + 90) === false);
-check('2FA: falsche oder kurze Codes zählen nicht', totp_verify($tf_secret, '000000', 59) === false && totp_verify($tf_secret, '28708', 59) === false);
+check(
+    '2FA: Code gilt mit einem Schritt Abweichung',
+    totp_verify($tf_secret, '287082', 59 + 30) === 1 && totp_verify($tf_secret, '287082', 59 + 90) === false
+);
+check(
+    '2FA: falsche oder kurze Codes zählen nicht',
+    totp_verify($tf_secret, '000000', 59) === false && totp_verify($tf_secret, '28708', 59) === false
+);
 $tf_admin = make_user('administrator');
 $tf_member = make_user('eintrikot_member');
-check('2FA: Pflicht für Admins, nicht für Mitglieder', twofa_required($tf_admin) && !twofa_required($tf_member));
+check(
+    '2FA: Pflicht für Admins, nicht für Mitglieder',
+    twofa_required($tf_admin) && !twofa_required($tf_member)
+);
 $tf_codes = twofa_new_recovery_codes($tf_admin);
 check('2FA: zehn Wiederherstellungscodes', count($tf_codes) === TWOFA_RECOVERY_CODES);
-check('2FA: Wiederherstellungscode gilt genau einmal', twofa_use_recovery_code($tf_admin, $tf_codes[0]) && !twofa_use_recovery_code($tf_admin, $tf_codes[0]) && !twofa_use_recovery_code($tf_admin, 'falsch-code'));
-check('2FA: wp_authenticate außerhalb der Anmeldeseite unverändert', wp_authenticate(get_user_by('id', $tf_admin)->user_login, 'falsch') instanceof \WP_Error);
+check(
+    '2FA: Wiederherstellungscode gilt genau einmal',
+    twofa_use_recovery_code($tf_admin, $tf_codes[0]) &&
+        !twofa_use_recovery_code($tf_admin, $tf_codes[0]) &&
+        !twofa_use_recovery_code($tf_admin, 'falsch-code')
+);
+check(
+    '2FA: wp_authenticate außerhalb der Anmeldeseite unverändert',
+    wp_authenticate(get_user_by('id', $tf_admin)->user_login, 'falsch') instanceof \WP_Error
+);
 delete_transient(login_ip_key());
 
 /* ---------- Ansicht wechseln (Vorschau für Administratoren) ---------- */
@@ -522,7 +1018,10 @@ delete_transient(login_ip_key());
 $pv_admin = make_user('administrator');
 $pv_member = make_user('eintrikot_member');
 wp_set_current_user($pv_admin);
-check('Vorschau: ohne Auswahl die eigene Ansicht', preview_role() === '' && view_admin() && view_manager() && view_can_edit_infos());
+check(
+    'Vorschau: ohne Auswahl die eigene Ansicht',
+    preview_role() === '' && view_admin() && view_manager() && view_can_edit_infos()
+);
 $expect = [
     'member' => [false, false, false],
     'editor' => [true, false, false],
@@ -536,14 +1035,20 @@ foreach ($expect as $role => $want) {
     );
     check("Vorschau $role: echte Rechte bleiben", manager_access() && current_user_can('manage_options'));
     check("Vorschau $role: Leiste sichtbar", str_contains(preview_bar(), 'Zurück zu Administrator'));
-    check("Vorschau $role: Verwaltung nicht im Menü", $role === 'board' ? isset(portal_nav_items()['admin']) : !isset(portal_nav_items()['admin']));
+    check(
+        "Vorschau $role: Verwaltung nicht im Menü",
+        $role === 'board' ? isset(portal_nav_items()['admin']) : !isset(portal_nav_items()['admin'])
+    );
 }
 update_user_meta($pv_admin, PREVIEW_META, 'unsinn');
 check('Vorschau: unbekannter Wert = eigene Ansicht', preview_role() === '' && preview_bar() === '');
 delete_user_meta($pv_admin, PREVIEW_META);
 wp_set_current_user($pv_member);
 update_user_meta($pv_member, PREVIEW_META, 'board');
-check('Vorschau: Mitglied kann sich keine Rechte geben', preview_role() === '' && !view_manager() && !view_can_edit_infos() && preview_bar() === '');
+check(
+    'Vorschau: Mitglied kann sich keine Rechte geben',
+    preview_role() === '' && !view_manager() && !view_can_edit_infos() && preview_bar() === ''
+);
 ob_start();
 render_preview_page();
 check('Vorschau: Auswahlseite für Mitglied gesperrt', str_contains(ob_get_clean(), 'Kein Zugriff'));
@@ -555,63 +1060,170 @@ wp_set_current_user(0);
 
 /* ---------- Testphase: Mails aus, Testdaten anlegen und restlos entfernen ---------- */
 
-$tp_mail = ['to' => 'a@example.test', 'subject' => 's', 'message' => 'm', 'headers' => [], 'attachments' => []];
+$tp_mail = [
+    'to' => 'a@example.test',
+    'subject' => 's',
+    'message' => 'm',
+    'headers' => [],
+    'attachments' => []
+];
 check('Testphase: lokal nicht aktiv', !testphase_active() && testphase_bar() === '');
 add_filter('eintrikot_testphase', '__return_true');
-check('Testphase: aktiv per Filter, Banner da', testphase_active() && str_contains(testphase_bar(), 'Rückmeldung geben'));
+check(
+    'Testphase: aktiv per Filter, Banner da',
+    testphase_active() && str_contains(testphase_bar(), 'Rückmeldung geben')
+);
 check('Testphase: keine E-Mail wird verschickt', apply_filters('pre_wp_mail', null, $tp_mail) === false);
 remove_filter('eintrikot_testphase', '__return_true');
 check('Testphase: Mailsperre nur während der Phase', apply_filters('pre_wp_mail', null, $tp_mail) !== false);
 
 $tp_users_before = count(get_users(['fields' => 'ID']));
-check('Testphase: Demo-Daten', testphase_create_demo() === 18 && count(testphase_user_ids()) === 18 && count(testphase_post_ids()) === 5);
-check('Testphase: Demo-Daten nicht doppelt', testphase_create_demo() === 0 && count(testphase_user_ids()) === 18);
+check(
+    'Testphase: Demo-Daten',
+    testphase_create_demo() === 18 && count(testphase_user_ids()) === 18 && count(testphase_post_ids()) === 5
+);
+check(
+    'Testphase: Demo-Daten nicht doppelt',
+    testphase_create_demo() === 0 && count(testphase_user_ids()) === 18
+);
 $demo_user = get_user_by('login', 'testmitglied1');
-check('Testphase: Demo-Mitglied im Verzeichnis, mit Geburtstag, kein Gate', $demo_user && directory_listed($demo_user) && !birthday_needed($demo_user->ID) && str_ends_with($demo_user->user_email, '@example.test'));
-$tp_rows = testphase_create_testers([['name' => 'Erika Teststein', 'email' => 'erika.teststein@example.test'], ['name' => '', 'email' => 'x@example.test'], ['name' => 'Ohne Mail', 'email' => 'keine-mail']]);
-check('Testphase: nur gültige Zeilen werden Konten', count($tp_rows) === 1 && $tp_rows[0][1] === 'erika.teststein' && strlen($tp_rows[0][2]) === 14);
+check(
+    'Testphase: Demo-Mitglied im Verzeichnis, mit Geburtstag, kein Gate',
+    $demo_user &&
+        directory_listed($demo_user) &&
+        !birthday_needed($demo_user->ID) &&
+        str_ends_with($demo_user->user_email, '@example.test')
+);
+$tp_rows = testphase_create_testers([
+    ['name' => 'Erika Teststein', 'email' => 'erika.teststein@example.test'],
+    ['name' => '', 'email' => 'x@example.test'],
+    ['name' => 'Ohne Mail', 'email' => 'keine-mail']
+]);
+check(
+    'Testphase: nur gültige Zeilen werden Konten',
+    count($tp_rows) === 1 && $tp_rows[0][1] === 'erika.teststein' && strlen($tp_rows[0][2]) === 14
+);
 $tp_tester = get_user_by('login', 'erika.teststein');
-check('Testphase: Beiratskonto ist Mitglied und hat die Geburtstagsseite vor sich', $tp_tester && in_array('eintrikot_member', $tp_tester->roles, true) && birthday_needed($tp_tester->ID));
-$tp_event = array_values(array_filter(testphase_post_ids(), fn($id) => get_post_type($id) === 'et_calendar'))[0];
+check(
+    'Testphase: Beiratskonto ist Mitglied und hat die Geburtstagsseite vor sich',
+    $tp_tester && in_array('eintrikot_member', $tp_tester->roles, true) && birthday_needed($tp_tester->ID)
+);
+$tp_event = array_values(
+    array_filter(testphase_post_ids(), fn($id) => get_post_type($id) === 'et_calendar')
+)[0];
 event_signup($tp_event, $tp_tester->ID);
-$tp_request = wp_insert_post(['post_type' => 'et_request', 'post_status' => 'publish', 'post_title' => 'Testanfrage', 'post_author' => $tp_tester->ID]);
-$tp_feedback = wp_insert_post(['post_type' => 'et_feedback', 'post_status' => 'publish', 'post_author' => 0, 'post_title' => 'Beispiel', 'post_content' => 'Das war unklar.']);
+$tp_request = wp_insert_post([
+    'post_type' => 'et_request',
+    'post_status' => 'publish',
+    'post_title' => 'Testanfrage',
+    'post_author' => $tp_tester->ID
+]);
+$tp_feedback = wp_insert_post([
+    'post_type' => 'et_feedback',
+    'post_status' => 'publish',
+    'post_author' => 0,
+    'post_title' => 'Beispiel',
+    'post_content' => 'Das war unklar.'
+]);
 update_post_meta($tp_feedback, 'et_fb_status', 'new');
 check('Testphase: Rückmeldung als Text', str_contains(feedback_as_text(), 'Das war unklar.'));
 $left = testphase_end();
-check('Testphase beenden: nichts bleibt übrig', $left['users'] === 0 && $left['posts'] === 0 && count(get_users(['fields' => 'ID'])) === $tp_users_before);
+check(
+    'Testphase beenden: nichts bleibt übrig',
+    $left['users'] === 0 && $left['posts'] === 0 && count(get_users(['fields' => 'ID'])) === $tp_users_before
+);
 check('Testphase beenden: Anfrage des Testkontos ist weg', get_post($tp_request) === null);
-check('Testphase beenden: Anmeldungen sind weg', !in_array($tp_tester->ID, event_attendee_ids($tp_event), true));
+check(
+    'Testphase beenden: Anmeldungen sind weg',
+    !in_array($tp_tester->ID, event_attendee_ids($tp_event), true)
+);
 check('Testphase beenden: Rückmeldungen bleiben', get_post($tp_feedback) !== null);
 wp_delete_post($tp_feedback, true);
 
 /* ---------- News wird Stories ---------- */
 
-$st_page = wp_insert_post(['post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'News', 'post_content' => '<h1>News.</h1><a href="/community-news/">Alle News →</a> Newsletter und "label": "News"']);
-$st_nav = wp_insert_post(['post_type' => 'wp_navigation', 'post_status' => 'publish', 'post_title' => 'Test', 'post_content' => '<!-- wp:navigation-link {"label": "News", "url": "/community-news/"} /-->']);
+$st_page = wp_insert_post([
+    'post_type' => 'page',
+    'post_status' => 'draft',
+    'post_title' => 'News',
+    'post_content' =>
+        '<h1>News.</h1><a href="/community-news/">Alle News →</a> Newsletter und "label": "News"'
+]);
+$st_nav = wp_insert_post([
+    'post_type' => 'wp_navigation',
+    'post_status' => 'publish',
+    'post_title' => 'Test',
+    'post_content' => '<!-- wp:navigation-link {"label": "News", "url": "/community-news/"} /-->'
+]);
 $st_msg = update_news_to_stories();
 $st_after = get_post($st_page);
-check('Stories: Titel, Überschrift, Link, Menüpunkt ersetzt', $st_after->post_title === 'Stories' && str_contains($st_after->post_content, '<h1>Stories.</h1>') && str_contains($st_after->post_content, 'Alle Stories') && str_contains(get_post($st_nav)->post_content, 'Stories') && !str_contains(get_post($st_nav)->post_content, '"News"'));
-check('Stories: Newsletter und Adresse bleiben', str_contains($st_after->post_content, 'Newsletter') && str_contains($st_after->post_content, '/community-news/'));
+check(
+    'Stories: Titel, Überschrift, Link, Menüpunkt ersetzt',
+    $st_after->post_title === 'Stories' &&
+        str_contains($st_after->post_content, '<h1>Stories.</h1>') &&
+        str_contains($st_after->post_content, 'Alle Stories') &&
+        str_contains(get_post($st_nav)->post_content, 'Stories') &&
+        !str_contains(get_post($st_nav)->post_content, '"News"')
+);
+check(
+    'Stories: Newsletter und Adresse bleiben',
+    str_contains($st_after->post_content, 'Newsletter') &&
+        str_contains($st_after->post_content, '/community-news/')
+);
 check('Stories: zweiter Lauf ändert nichts', str_contains(update_news_to_stories(), 'Nichts zu ändern'));
 wp_delete_post($st_page, true);
 wp_delete_post($st_nav, true);
 
 /* ---------- Menschen-Seite prüfen ---------- */
 
-$pp_page = wp_insert_post(['post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'Menschen Test', 'post_name' => PEOPLE_PAGE, 'post_content' => '<h3>Pia Prüfstein</h3><h3>Doppel Name</h3><h3>Nora Ohnebild</h3><h3>Unbekannt Niemand</h3>']);
+$pp_page = wp_insert_post([
+    'post_type' => 'page',
+    'post_status' => 'publish',
+    'post_title' => 'Menschen Test',
+    'post_name' => PEOPLE_PAGE,
+    'post_content' =>
+        '<h3>Pia Prüfstein</h3><h3>Doppel Name</h3><h3>Nora Ohnebild</h3><h3>Unbekannt Niemand</h3>'
+]);
 delete_transient('eintrikot_people_names');
 $pp_img = 'data:image/jpeg;base64,/9j/4AAQ';
-$pp_ok = wp_insert_user(['user_login' => 'zz_pia', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_pia@example.test', 'role' => 'eintrikot_member', 'display_name' => 'Pia Prüfstein']);
+$pp_ok = wp_insert_user([
+    'user_login' => 'zz_pia',
+    'user_pass' => wp_generate_password(),
+    'user_email' => 'zz_pia@example.test',
+    'role' => 'eintrikot_member',
+    'display_name' => 'Pia Prüfstein'
+]);
 update_user_meta($pp_ok, 'eintrikot_avatar', $pp_img);
 update_user_meta($pp_ok, 'eintrikot_profile', ['public_photo' => '1']);
-$pp_d1 = wp_insert_user(['user_login' => 'zz_dop1', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_d1@example.test', 'role' => 'eintrikot_member', 'display_name' => 'Doppel Name']);
-$pp_d2 = wp_insert_user(['user_login' => 'zz_dop2', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_d2@example.test', 'role' => 'administrator', 'display_name' => 'Doppel Name']);
-$pp_no = wp_insert_user(['user_login' => 'zz_nora', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_nora@example.test', 'role' => 'eintrikot_member', 'display_name' => 'Nora Ohnebild']);
+$pp_d1 = wp_insert_user([
+    'user_login' => 'zz_dop1',
+    'user_pass' => wp_generate_password(),
+    'user_email' => 'zz_d1@example.test',
+    'role' => 'eintrikot_member',
+    'display_name' => 'Doppel Name'
+]);
+$pp_d2 = wp_insert_user([
+    'user_login' => 'zz_dop2',
+    'user_pass' => wp_generate_password(),
+    'user_email' => 'zz_d2@example.test',
+    'role' => 'administrator',
+    'display_name' => 'Doppel Name'
+]);
+$pp_no = wp_insert_user([
+    'user_login' => 'zz_nora',
+    'user_pass' => wp_generate_password(),
+    'user_email' => 'zz_nora@example.test',
+    'role' => 'eintrikot_member',
+    'display_name' => 'Nora Ohnebild'
+]);
 update_user_meta($pp_no, 'eintrikot_profile', ['public_photo' => '1']);
 $pp = array_column(people_diagnosis(), null, 'name');
 check('Menschen prüfen: alles in Ordnung', str_contains($pp['Pia Prüfstein']['reason'], 'Alles in Ordnung'));
-check('Menschen prüfen: doppelter Name erkannt', count($pp['Doppel Name']['accounts']) === 2 && str_contains($pp['Doppel Name']['reason'], 'Mehrere Konten'));
+check(
+    'Menschen prüfen: doppelter Name erkannt',
+    count($pp['Doppel Name']['accounts']) === 2 &&
+        str_contains($pp['Doppel Name']['reason'], 'Mehrere Konten')
+);
 check('Menschen prüfen: Bild fehlt', str_contains($pp['Nora Ohnebild']['reason'], 'kein Profilbild'));
 check('Menschen prüfen: kein Konto', str_contains($pp['Unbekannt Niemand']['reason'], 'Kein Konto'));
 wp_delete_post($pp_page, true);
@@ -623,17 +1235,45 @@ foreach ([$pp_ok, $pp_d1, $pp_d2, $pp_no] as $uid) {
 
 /* ---------- Mitglieder: Sortierung und Buchstaben ---------- */
 
-$ab_a = wp_insert_user(['user_login' => 'zz_ab1', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_ab1@example.test', 'role' => 'eintrikot_member', 'display_name' => 'Zora Älbrecht', 'first_name' => 'Zora', 'last_name' => 'Älbrecht']);
-$ab_b = wp_insert_user(['user_login' => 'zz_ab2', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_ab2@example.test', 'role' => 'eintrikot_member', 'display_name' => 'Anton van der Berg']);
-$ab_c = wp_insert_user(['user_login' => 'zz_ab3', 'user_pass' => wp_generate_password(), 'user_email' => 'zz_ab3@example.test', 'role' => 'eintrikot_member', 'display_name' => 'Cher']);
+$ab_a = wp_insert_user([
+    'user_login' => 'zz_ab1',
+    'user_pass' => wp_generate_password(),
+    'user_email' => 'zz_ab1@example.test',
+    'role' => 'eintrikot_member',
+    'display_name' => 'Zora Älbrecht',
+    'first_name' => 'Zora',
+    'last_name' => 'Älbrecht'
+]);
+$ab_b = wp_insert_user([
+    'user_login' => 'zz_ab2',
+    'user_pass' => wp_generate_password(),
+    'user_email' => 'zz_ab2@example.test',
+    'role' => 'eintrikot_member',
+    'display_name' => 'Anton van der Berg'
+]);
+$ab_c = wp_insert_user([
+    'user_login' => 'zz_ab3',
+    'user_pass' => wp_generate_password(),
+    'user_email' => 'zz_ab3@example.test',
+    'role' => 'eintrikot_member',
+    'display_name' => 'Cher'
+]);
 [$f1, $l1] = directory_name_parts(get_user_by('id', $ab_a));
 [$f2, $l2] = directory_name_parts(get_user_by('id', $ab_b));
 [$f3, $l3] = directory_name_parts(get_user_by('id', $ab_c));
 check('Namen: gespeicherter Nachname', $f1 === 'Zora' && $l1 === 'Älbrecht');
 check('Namen: ohne Nachname zählt das letzte Wort', $f2 === 'Anton van der' && $l2 === 'Berg');
 check('Namen: ein Wort ist der Vorname', $f3 === 'Cher' && $l3 === '');
-check('Buchstabe: Umlaut zählt zu A', directory_letter('Älbrecht') === 'A' && directory_letter('Östlund') === 'O' && directory_letter('éric') === 'E');
-check('Buchstabe: Zahl und Sonderzeichen unter #', directory_letter('1. FC') === '#' && directory_letter('"x') === '#' && directory_letter('') === '#');
+check(
+    'Buchstabe: Umlaut zählt zu A',
+    directory_letter('Älbrecht') === 'A' &&
+        directory_letter('Östlund') === 'O' &&
+        directory_letter('éric') === 'E'
+);
+check(
+    'Buchstabe: Zahl und Sonderzeichen unter #',
+    directory_letter('1. FC') === '#' && directory_letter('"x') === '#' && directory_letter('') === '#'
+);
 foreach ([$ab_a, $ab_b, $ab_c] as $uid) {
     require_once ABSPATH . 'wp-admin/includes/user.php';
     wp_delete_user($uid);
@@ -644,20 +1284,52 @@ foreach ([$ab_a, $ab_b, $ab_c] as $uid) {
 ob_start();
 include WP_PLUGIN_DIR . '/../themes/eintrikot-community/patterns/mvp-news.php';
 $st_pattern = ob_get_clean();
-$st_group = '<!-- wp:group {"tagName":"section","className":"section page-intro","layout":{"type":"default"}} --><section class="wp-block-group section page-intro"><!-- wp:paragraph --><p>Aus dem Netzwerk</p><!-- /wp:paragraph --><!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Stories.</h1><!-- /wp:heading --></section><!-- /wp:group --><!-- wp:group {"className":"rest"} --><div class="wp-block-group rest"><p>Rest</p></div><!-- /wp:group -->';
-check('Stories: Muster nutzt einen Cover-Block', str_contains($st_pattern, 'wp:cover') && str_contains($st_pattern, 'et-mvp-page-hero') && !str_contains($st_pattern, 'wp:group {"tagName":"section","className":"section page-intro"'));
+$st_group =
+    '<!-- wp:group {"tagName":"section","className":"section page-intro","layout":{"type":"default"}} --><section class="wp-block-group section page-intro"><!-- wp:paragraph --><p>Aus dem Netzwerk</p><!-- /wp:paragraph --><!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Stories.</h1><!-- /wp:heading --></section><!-- /wp:group --><!-- wp:group {"className":"rest"} --><div class="wp-block-group rest"><p>Rest</p></div><!-- /wp:group -->';
+check(
+    'Stories: Muster nutzt einen Cover-Block',
+    str_contains($st_pattern, 'wp:cover') &&
+        str_contains($st_pattern, 'et-mvp-page-hero') &&
+        !str_contains($st_pattern, 'wp:group {"tagName":"section","className":"section page-intro"')
+);
 $st_existing = get_page_by_path('community-news');
-$st_new = !$st_existing ? wp_insert_post(['post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Stories', 'post_name' => 'community-news', 'post_content' => $st_group]) : 0;
+$st_new = !$st_existing
+    ? wp_insert_post([
+        'post_type' => 'page',
+        'post_status' => 'draft',
+        'post_title' => 'Stories',
+        'post_name' => 'community-news',
+        'post_content' => $st_group
+    ])
+    : 0;
 if ($st_new) {
-    check('Stories-Kopf: wird Cover, Inhalt und Rest bleiben', str_contains(update_stories_hero(), 'Cover-Block') && str_contains(get_post($st_new)->post_content, 'wp:cover') && str_contains(get_post($st_new)->post_content, '<h1 class="wp-block-heading">Stories.</h1>') && str_contains(get_post($st_new)->post_content, '<p>Rest</p>') && !str_contains(get_post($st_new)->post_content, 'wp:group {"tagName":"section"'));
-    check('Stories-Kopf: zweiter Lauf ändert nichts', str_contains(update_stories_hero(), 'Nichts zu ändern'));
+    check(
+        'Stories-Kopf: wird Cover, Inhalt und Rest bleiben',
+        str_contains(update_stories_hero(), 'Cover-Block') &&
+            str_contains(get_post($st_new)->post_content, 'wp:cover') &&
+            str_contains(get_post($st_new)->post_content, '<h1 class="wp-block-heading">Stories.</h1>') &&
+            str_contains(get_post($st_new)->post_content, '<p>Rest</p>') &&
+            !str_contains(get_post($st_new)->post_content, 'wp:group {"tagName":"section"')
+    );
+    check(
+        'Stories-Kopf: zweiter Lauf ändert nichts',
+        str_contains(update_stories_hero(), 'Nichts zu ändern')
+    );
     wp_delete_post($st_new, true);
 }
 
 /* ---------- Startseite: im Hero nur „Mitglied werden“ ---------- */
 
 $hh_pattern = pattern_markup('mvp-startseite');
-check('Startseiten-Muster: Hero ohne „Anmelden“, „Mitglied werden“ schwarz', !is_wp_error($hh_pattern) && !str_contains(explode('<!-- /wp:cover -->', $hh_pattern)[0], '/community-portal/') && str_contains($hh_pattern, '"backgroundColor":"black","textColor":"white"} --><div class="wp-block-button button solid"><a class="wp-block-button__link has-white-color has-black-background-color'));
+check(
+    'Startseiten-Muster: Hero ohne „Anmelden“, „Mitglied werden“ schwarz',
+    !is_wp_error($hh_pattern) &&
+        !str_contains(explode('<!-- /wp:cover -->', $hh_pattern)[0], '/community-portal/') &&
+        str_contains(
+            $hh_pattern,
+            '"backgroundColor":"black","textColor":"white"} --><div class="wp-block-button button solid"><a class="wp-block-button__link has-white-color has-black-background-color'
+        )
+);
 $hh_old = '<!-- wp:cover {"overlayColor":"blue","dimRatio":100,"isUserOverlayColor":true,"className":"hero et-mvp-hero"} --><div class="wp-block-cover hero et-mvp-hero"><div class="wp-block-cover__inner-container"><!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Das Netzwerk<br>der Nationalteams.</h1><!-- /wp:heading -->
 <!-- wp:group {"className":"actions","tagName":"div","layout":{"type":"default"}} --><div class="wp-block-group actions"><!-- wp:button {"className":"button white","backgroundColor":"white","textColor":"black"} --><div class="wp-block-button button white"><a class="wp-block-button__link has-black-color has-white-background-color has-text-color has-background wp-element-button" href="/mitglied-werden/">Mitglied werden</a></div><!-- /wp:button -->
 <!-- wp:button {"className":"button ","backgroundColor":"white","textColor":"black"} --><div class="wp-block-button button "><a class="wp-block-button__link has-black-color has-white-background-color has-text-color has-background wp-element-button" href="/community-portal/">Anmelden</a></div><!-- /wp:button -->
@@ -665,12 +1337,28 @@ $hh_old = '<!-- wp:cover {"overlayColor":"blue","dimRatio":100,"isUserOverlayCol
 </div></div><!-- /wp:cover -->
 <!-- wp:paragraph --><p><a href="/community-portal/">Anmelden</a></p><!-- /wp:paragraph -->';
 $hh_front_before = get_option('page_on_front');
-$hh_page = wp_insert_post(['post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Start-Test', 'post_content' => $hh_old]);
+$hh_page = wp_insert_post([
+    'post_type' => 'page',
+    'post_status' => 'draft',
+    'post_title' => 'Start-Test',
+    'post_content' => $hh_old
+]);
 update_option('page_on_front', $hh_page);
 $hh_msg = update_home_hero_button();
 $hh_new = get_post($hh_page)->post_content;
-check('Hero-Button: „Anmelden“ im Hero entfernt, „Mitglied werden“ schwarz', is_string($hh_msg) && str_contains($hh_msg, 'entfernt') && !str_contains(explode('<!-- /wp:cover -->', $hh_new)[0], '/community-portal/') && str_contains($hh_new, 'has-white-color has-black-background-color') && str_contains($hh_new, '"backgroundColor":"black","textColor":"white"'));
-check('Hero-Button: Inhalt außerhalb des Hero bleibt', str_contains($hh_new, '<p><a href="/community-portal/">Anmelden</a></p>') && str_contains($hh_new, 'Das Netzwerk<br>der Nationalteams.'));
+check(
+    'Hero-Button: „Anmelden“ im Hero entfernt, „Mitglied werden“ schwarz',
+    is_string($hh_msg) &&
+        str_contains($hh_msg, 'entfernt') &&
+        !str_contains(explode('<!-- /wp:cover -->', $hh_new)[0], '/community-portal/') &&
+        str_contains($hh_new, 'has-white-color has-black-background-color') &&
+        str_contains($hh_new, '"backgroundColor":"black","textColor":"white"')
+);
+check(
+    'Hero-Button: Inhalt außerhalb des Hero bleibt',
+    str_contains($hh_new, '<p><a href="/community-portal/">Anmelden</a></p>') &&
+        str_contains($hh_new, 'Das Netzwerk<br>der Nationalteams.')
+);
 check('Hero-Button: zweiter Lauf ändert nichts', str_contains(update_home_hero_button(), 'Nichts zu ändern'));
 update_option('page_on_front', $hh_front_before);
 wp_delete_post($hh_page, true);
@@ -680,48 +1368,124 @@ wp_delete_post($hh_page, true);
 ob_start();
 include WP_PLUGIN_DIR . '/../themes/eintrikot-community/patterns/mvp-news.php';
 $ht_pattern = ob_get_clean();
-check('Stories-Hinweis: Muster endet mit dem Hinweis', str_contains($ht_pattern, 'story-tip') && str_contains($ht_pattern, 'mailto:info@eintrikot.de'));
-$ht_page = get_page_by_path('community-news') ? 0 : wp_insert_post(['post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Stories', 'post_name' => 'community-news', 'post_content' => '<!-- wp:paragraph --><p>Liste</p><!-- /wp:paragraph -->']);
+check(
+    'Stories-Hinweis: Muster endet mit dem Hinweis',
+    str_contains($ht_pattern, 'story-tip') && str_contains($ht_pattern, 'mailto:info@eintrikot.de')
+);
+$ht_page = get_page_by_path('community-news')
+    ? 0
+    : wp_insert_post([
+        'post_type' => 'page',
+        'post_status' => 'draft',
+        'post_title' => 'Stories',
+        'post_name' => 'community-news',
+        'post_content' => '<!-- wp:paragraph --><p>Liste</p><!-- /wp:paragraph -->'
+    ]);
 if ($ht_page) {
-    check('Stories-Hinweis: wird unten angehängt', str_contains(update_stories_hint(), 'eingefügt') && str_ends_with(trim(get_post($ht_page)->post_content), '<!-- /wp:group -->') && str_contains(get_post($ht_page)->post_content, 'berichte uns doch davon'));
-    check('Stories-Hinweis: zweiter Lauf ändert nichts', str_contains(update_stories_hint(), 'Nichts zu ändern') && substr_count(get_post($ht_page)->post_content, 'story-tip') === 2);
+    check(
+        'Stories-Hinweis: wird unten angehängt',
+        str_contains(update_stories_hint(), 'eingefügt') &&
+            str_ends_with(trim(get_post($ht_page)->post_content), '<!-- /wp:group -->') &&
+            str_contains(get_post($ht_page)->post_content, 'berichte uns doch davon')
+    );
+    check(
+        'Stories-Hinweis: zweiter Lauf ändert nichts',
+        str_contains(update_stories_hint(), 'Nichts zu ändern') &&
+            substr_count(get_post($ht_page)->post_content, 'story-tip') === 2
+    );
     wp_delete_post($ht_page, true);
 }
 
 /* ---------- Stories: Rubriken, Filter, Platzhalter, Layout-Umbau ---------- */
 
-check('Stories: fünf Rubriken in fester Reihenfolge', array_keys(story_categories()) === ['menschen', 'teams', 'treffen', 'verein', 'hockeywelt']);
+check(
+    'Stories: fünf Rubriken in fester Reihenfolge',
+    array_keys(story_categories()) === ['menschen', 'teams', 'treffen', 'verein', 'hockeywelt']
+);
 $sc_term = wp_insert_term('Treffen', 'category', ['slug' => 'treffen']);
-$sc_term_id = is_wp_error($sc_term) ? (int) get_term_by('slug', 'treffen', 'category')->term_id : (int) $sc_term['term_id'];
-$sc_post = wp_insert_post(['post_type' => 'post', 'post_status' => 'publish', 'post_title' => 'Rubrik-Test', 'post_content' => 'Text', 'post_category' => [$sc_term_id]]);
+$sc_term_id = is_wp_error($sc_term)
+    ? (int) get_term_by('slug', 'treffen', 'category')->term_id
+    : (int) $sc_term['term_id'];
+$sc_post = wp_insert_post([
+    'post_type' => 'post',
+    'post_status' => 'publish',
+    'post_title' => 'Rubrik-Test',
+    'post_content' => 'Text',
+    'post_category' => [$sc_term_id]
+]);
 $_GET['rubrik'] = 'treffen';
 $sc_html = do_shortcode('[eintrikot_stories_filter]');
-check('Stories-Filter: Rubrik mit Beitrag erscheint, aktive ist markiert', (bool) preg_match('/class="chip on" href="[^"]*rubrik=treffen"[^>]*aria-current="true">Treffen</', $sc_html));
+check(
+    'Stories-Filter: Rubrik mit Beitrag erscheint, aktive ist markiert',
+    (bool) preg_match(
+        '/class="chip on" href="[^"]*rubrik=treffen"[^>]*aria-current="true">Treffen</',
+        $sc_html
+    )
+);
 $_GET['rubrik'] = 'treffen';
 $sc_list = new \WP_Block(['blockName' => 'core/post-template', 'attrs' => ['className' => 'story-list']]);
-check('Stories-Liste: Rubrik aus der Adresse filtert', (apply_filters('query_loop_block_query_vars', [], $sc_list, 1)['category_name'] ?? '') === 'treffen');
+check(
+    'Stories-Liste: Rubrik aus der Adresse filtert',
+    (apply_filters('query_loop_block_query_vars', [], $sc_list, 1)['category_name'] ?? '') === 'treffen'
+);
 $_GET['rubrik'] = 'gibt-es-nicht';
-check('Stories-Liste: unbekannte Rubrik wird ignoriert', !isset(apply_filters('query_loop_block_query_vars', [], $sc_list, 1)['category_name']));
+check(
+    'Stories-Liste: unbekannte Rubrik wird ignoriert',
+    !isset(apply_filters('query_loop_block_query_vars', [], $sc_list, 1)['category_name'])
+);
 unset($_GET['rubrik']);
 $sc_other = new \WP_Block(['blockName' => 'core/post-template', 'attrs' => ['className' => 'andere']]);
 $_GET['rubrik'] = 'treffen';
-check('Andere Listen (Startseite, Archiv) bleiben unberührt', !isset(apply_filters('query_loop_block_query_vars', [], $sc_other, 1)['category_name']));
+check(
+    'Andere Listen (Startseite, Archiv) bleiben unberührt',
+    !isset(apply_filters('query_loop_block_query_vars', [], $sc_other, 1)['category_name'])
+);
 unset($_GET['rubrik']);
 $sc_more = new \WP_Block(['blockName' => 'core/post-template', 'attrs' => ['className' => 'story-more']]);
-check('Mehr Stories: schließt die offene Story aus', array_key_exists('post__not_in', apply_filters('query_loop_block_query_vars', [], $sc_more, 1)));
+check(
+    'Mehr Stories: schließt die offene Story aus',
+    array_key_exists('post__not_in', apply_filters('query_loop_block_query_vars', [], $sc_more, 1))
+);
 $sc_img = new \WP_Block(['blockName' => 'core/post-featured-image'], ['postId' => $sc_post]);
 $sc_filled = apply_filters('render_block_core/post-featured-image', '', [], $sc_img);
-check('Stories: ohne Bild eine Markenfläche in der Rubrikfarbe', str_contains($sc_filled, 'et-story-noimg') && str_contains($sc_filled, 'tone-gold'));
-check('Stories: mit Bild bleibt das Bild', apply_filters('render_block_core/post-featured-image', '<figure>x</figure>', [], $sc_img) === '<figure>x</figure>');
+check(
+    'Stories: ohne Bild eine Markenfläche in der Rubrikfarbe',
+    str_contains($sc_filled, 'et-story-noimg') && str_contains($sc_filled, 'tone-gold')
+);
+check(
+    'Stories: mit Bild bleibt das Bild',
+    apply_filters('render_block_core/post-featured-image', '<figure>x</figure>', [], $sc_img) ===
+        '<figure>x</figure>'
+);
 wp_delete_post($sc_post, true);
 
-$sl_old = '<!-- wp:group {"tagName":"section","className":"section page-intro"} --><section>Kopf</section><!-- /wp:group --><!-- wp:group {"tagName":"section","className":"section news-archive","layout":{"type":"default"}} --><section class="wp-block-group section news-archive"><!-- wp:query {"queryId":23} --><div>alte Liste</div><!-- /wp:query --></section><!-- /wp:group --><!-- wp:group {"className":"rest"} --><div>Hinweis</div><!-- /wp:group -->';
-$sl_page = get_page_by_path('community-news') ? 0 : wp_insert_post(['post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Stories', 'post_name' => 'community-news', 'post_content' => $sl_old]);
+$sl_old =
+    '<!-- wp:group {"tagName":"section","className":"section page-intro"} --><section>Kopf</section><!-- /wp:group --><!-- wp:group {"tagName":"section","className":"section news-archive","layout":{"type":"default"}} --><section class="wp-block-group section news-archive"><!-- wp:query {"queryId":23} --><div>alte Liste</div><!-- /wp:query --></section><!-- /wp:group --><!-- wp:group {"className":"rest"} --><div>Hinweis</div><!-- /wp:group -->';
+$sl_page = get_page_by_path('community-news')
+    ? 0
+    : wp_insert_post([
+        'post_type' => 'page',
+        'post_status' => 'draft',
+        'post_title' => 'Stories',
+        'post_name' => 'community-news',
+        'post_content' => $sl_old
+    ]);
 if ($sl_page) {
     $sl_msg = update_stories_layout();
     $sl_new = get_post($sl_page)->post_content;
-    check('Stories-Layout: Liste ersetzt, Kopf und Hinweis bleiben', str_contains($sl_msg, 'Karten') && str_contains($sl_new, 'story-list') && str_contains($sl_new, 'eintrikot_stories_filter') && str_contains($sl_new, 'Kopf') && str_contains($sl_new, 'Hinweis') && !str_contains($sl_new, 'alte Liste'));
-    check('Stories-Layout: zweiter Lauf ändert nichts', str_contains(update_stories_layout(), 'Nichts zu ändern'));
+    check(
+        'Stories-Layout: Liste ersetzt, Kopf und Hinweis bleiben',
+        str_contains($sl_msg, 'Karten') &&
+            str_contains($sl_new, 'story-list') &&
+            str_contains($sl_new, 'eintrikot_stories_filter') &&
+            str_contains($sl_new, 'Kopf') &&
+            str_contains($sl_new, 'Hinweis') &&
+            !str_contains($sl_new, 'alte Liste')
+    );
+    check(
+        'Stories-Layout: zweiter Lauf ändert nichts',
+        str_contains(update_stories_layout(), 'Nichts zu ändern')
+    );
     wp_delete_post($sl_page, true);
 }
 /* ---------- Engagement: Förderprojekte ---------- */
@@ -730,48 +1494,167 @@ $fp_section = pattern_markup('mvp-foerderprojekte');
 ob_start();
 include WP_PLUGIN_DIR . '/../themes/eintrikot-community/patterns/mvp-engagement.php';
 $fp_engagement = ob_get_clean();
-check('Förderprojekte: Engagement-Muster enthält den Abschnitt, ohne Fotos in den Bereichen, neuer Text', !is_wp_error($fp_section) && str_contains($fp_engagement, $fp_section) && !str_contains($fp_engagement, 'et-optional-image') && str_contains($fp_engagement, ENGAGEMENT_FUNDING_NEW));
-check('Förderprojekte: keine projektbezogenen Spendenaufrufe', !str_contains($fp_section, 'spenden ↗') && !str_contains($fp_section, 'In Förderung'));
-preg_match_all('#src="/wp-content/themes/eintrikot-community/(assets/foerderprojekte/[a-z-]+\.jpg)"#', $fp_section, $fp_imgs);
-check('Förderprojekte: zehn Bilder, alle im Theme vorhanden', count($fp_imgs[1]) === 10 && count(array_filter($fp_imgs[1], fn($f) => is_readable(get_theme_file_path($f)))) === 10);
-check('Förderprojekte: Blöcke sauber geschachtelt', substr_count($fp_section, '<!-- wp:group') === substr_count($fp_section, '<!-- /wp:group -->') && substr_count($fp_section, '<!-- wp:image') === substr_count($fp_section, '<!-- /wp:image -->'));
-$fp_old = '<!-- wp:cover {"className":"section page-intro et-mvp-page-hero"} --><div>Kopfbild</div><!-- /wp:cover -->'
-    . '<!-- wp:group {"tagName":"section","className":"section info-grid engagement-topics"} --><section><!-- wp:group {"tagName":"article"} --><article><!-- wp:image {"sizeSlug":"full","className":"et-icon"} --><figure class="et-icon"><img src="icon-1.svg"/></figure><!-- /wp:image -->'
-    . "\n\n" . '<!-- wp:image {"id":169,"sizeSlug":"large","className":"et-optional-image"} --><figure class="et-optional-image"><img src="foto.jpg"/></figure><!-- /wp:image -->' . "\n\n"
-    . '<!-- wp:paragraph --><p>Eigener Text</p><!-- /wp:paragraph --></article><!-- /wp:group --></section><!-- /wp:group -->'
-    . '<!-- wp:group {"className":"section","tagName":"section"} --><section><!-- wp:heading --><h2>Aus der Community.<br>Für die Zukunft.</h2><!-- /wp:heading --><!-- wp:paragraph --><p>' . ENGAGEMENT_FUNDING_OLD . '</p><!-- /wp:paragraph --></section><!-- /wp:group -->';
-$fp_page = get_page_by_path('community-engagement') ? 0 : wp_insert_post(['post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'Engagement', 'post_name' => 'community-engagement', 'post_content' => $fp_old]);
+check(
+    'Förderprojekte: Engagement-Muster enthält den Abschnitt, ohne Fotos in den Bereichen, neuer Text',
+    !is_wp_error($fp_section) &&
+        str_contains($fp_engagement, $fp_section) &&
+        !str_contains($fp_engagement, 'et-optional-image') &&
+        str_contains($fp_engagement, ENGAGEMENT_FUNDING_NEW)
+);
+check(
+    'Förderprojekte: keine projektbezogenen Spendenaufrufe',
+    !str_contains($fp_section, 'spenden ↗') && !str_contains($fp_section, 'In Förderung')
+);
+preg_match_all(
+    '#src="/wp-content/themes/eintrikot-community/(assets/foerderprojekte/[a-z-]+\.jpg)"#',
+    $fp_section,
+    $fp_imgs
+);
+check(
+    'Förderprojekte: zehn Bilder, alle im Theme vorhanden',
+    count($fp_imgs[1]) === 10 &&
+        count(array_filter($fp_imgs[1], fn($f) => is_readable(get_theme_file_path($f)))) === 10
+);
+check(
+    'Förderprojekte: Blöcke sauber geschachtelt',
+    substr_count($fp_section, '<!-- wp:group') === substr_count($fp_section, '<!-- /wp:group -->') &&
+        substr_count($fp_section, '<!-- wp:image') === substr_count($fp_section, '<!-- /wp:image -->')
+);
+$fp_old =
+    '<!-- wp:cover {"className":"section page-intro et-mvp-page-hero"} --><div>Kopfbild</div><!-- /wp:cover -->' .
+    '<!-- wp:group {"tagName":"section","className":"section info-grid engagement-topics"} --><section><!-- wp:group {"tagName":"article"} --><article><!-- wp:image {"sizeSlug":"full","className":"et-icon"} --><figure class="et-icon"><img src="icon-1.svg"/></figure><!-- /wp:image -->' .
+    "\n\n" .
+    '<!-- wp:image {"id":169,"sizeSlug":"large","className":"et-optional-image"} --><figure class="et-optional-image"><img src="foto.jpg"/></figure><!-- /wp:image -->' .
+    "\n\n" .
+    '<!-- wp:paragraph --><p>Eigener Text</p><!-- /wp:paragraph --></article><!-- /wp:group --></section><!-- /wp:group -->' .
+    '<!-- wp:group {"className":"section","tagName":"section"} --><section><!-- wp:heading --><h2>Aus der Community.<br>Für die Zukunft.</h2><!-- /wp:heading --><!-- wp:paragraph --><p>' .
+    ENGAGEMENT_FUNDING_OLD .
+    '</p><!-- /wp:paragraph --></section><!-- /wp:group -->';
+$fp_page = get_page_by_path('community-engagement')
+    ? 0
+    : wp_insert_post([
+        'post_type' => 'page',
+        'post_status' => 'draft',
+        'post_title' => 'Engagement',
+        'post_name' => 'community-engagement',
+        'post_content' => $fp_old
+    ]);
 if ($fp_page) {
     $fp_msg = update_engagement_projects();
     $fp_new = get_post($fp_page)->post_content;
-    check('Förderprojekte: eingefügt vor „Aus der Community“', is_string($fp_msg) && strpos($fp_new, 'et-foerderprojekte') < strpos($fp_new, 'Aus der Community.') && strpos($fp_new, 'engagement-topics') < strpos($fp_new, 'et-foerderprojekte'));
-    check('Förderprojekte: Fotos raus, Icons, Kopfbild und eigener Text bleiben', !str_contains($fp_new, 'foto.jpg') && str_contains($fp_new, 'icon-1.svg') && str_contains($fp_new, 'Kopfbild') && str_contains($fp_new, 'Eigener Text'));
-    check('Förderprojekte: Abschlusstext ersetzt', str_contains($fp_new, ENGAGEMENT_FUNDING_NEW) && !str_contains($fp_new, ENGAGEMENT_FUNDING_OLD));
-    check('Förderprojekte: zweiter Lauf ändert nichts', str_contains(update_engagement_projects(), 'Nichts zu ändern') && substr_count(get_post($fp_page)->post_content, 'et-foerderprojekte') === substr_count($fp_section, 'et-foerderprojekte'));
+    check(
+        'Förderprojekte: eingefügt vor „Aus der Community“',
+        is_string($fp_msg) &&
+            strpos($fp_new, 'et-foerderprojekte') < strpos($fp_new, 'Aus der Community.') &&
+            strpos($fp_new, 'engagement-topics') < strpos($fp_new, 'et-foerderprojekte')
+    );
+    check(
+        'Förderprojekte: Fotos raus, Icons, Kopfbild und eigener Text bleiben',
+        !str_contains($fp_new, 'foto.jpg') &&
+            str_contains($fp_new, 'icon-1.svg') &&
+            str_contains($fp_new, 'Kopfbild') &&
+            str_contains($fp_new, 'Eigener Text')
+    );
+    check(
+        'Förderprojekte: Abschlusstext ersetzt',
+        str_contains($fp_new, ENGAGEMENT_FUNDING_NEW) && !str_contains($fp_new, ENGAGEMENT_FUNDING_OLD)
+    );
+    check(
+        'Förderprojekte: zweiter Lauf ändert nichts',
+        str_contains(update_engagement_projects(), 'Nichts zu ändern') &&
+            substr_count(get_post($fp_page)->post_content, 'et-foerderprojekte') ===
+                substr_count($fp_section, 'et-foerderprojekte')
+    );
     wp_delete_post($fp_page, true);
 }
 
 foreach (['single', 'index', 'search'] as $tpl) {
     $tpl_html = file_get_contents(get_theme_file_path('templates/' . $tpl . '.html'));
-    check("Vorlage $tpl: Karten mit Rubrik und Datum", str_contains($tpl_html, 'story-meta') && str_contains($tpl_html, 'post-terms'));
+    check(
+        "Vorlage $tpl: Karten mit Rubrik und Datum",
+        str_contains($tpl_html, 'story-meta') && str_contains($tpl_html, 'post-terms')
+    );
 }
-check('Vorlage single: Mehr Stories und Hinweis', str_contains(file_get_contents(get_theme_file_path('templates/single.html')), 'story-more') && str_contains(file_get_contents(get_theme_file_path('templates/single.html')), 'story-tip'));
+check(
+    'Vorlage single: Mehr Stories und Hinweis',
+    str_contains(file_get_contents(get_theme_file_path('templates/single.html')), 'story-more') &&
+        str_contains(file_get_contents(get_theme_file_path('templates/single.html')), 'story-tip')
+);
 
 /* ---------- Stories-Import: Aufbereitung, Paket, Import, Zurücknehmen ---------- */
 
 require_once dirname(__DIR__) . '/tools/stories-lib.php';
 require_once ABSPATH . 'wp-admin/includes/file.php';
-check('Titel: Reihenfolge-Präfix und doppelte Leerzeichen', stories_clean_title('(M)EinTrikot – Was macht eigentlich…  Heike Wedekind?') === 'Was macht eigentlich… Heike Wedekind?');
-check('Titel: Punkte, Leerzeichen nach dem Auslassungszeichen', stories_clean_title('Was macht eigentlich...Lisa Altenburg?') === 'Was macht eigentlich… Lisa Altenburg?');
-check('Titel: Apostroph, Anführungszeichen, kaufmännisches Und, Newsletter', stories_clean_title('Axel ´ s Favourites') === 'Axel’s Favourites' && stories_clean_title('"Unser Spiel." Meetup') === '„Unser Spiel.“ Meetup' && stories_clean_title('Podium& hier vorab') === 'Podium – hier vorab' && stories_clean_title('News - Juli 2026') === 'Newsletter Juli 2026');
+check(
+    'Titel: Reihenfolge-Präfix und doppelte Leerzeichen',
+    stories_clean_title('(M)EinTrikot – Was macht eigentlich…  Heike Wedekind?') ===
+        'Was macht eigentlich… Heike Wedekind?'
+);
+check(
+    'Titel: Punkte, Leerzeichen nach dem Auslassungszeichen',
+    stories_clean_title('Was macht eigentlich...Lisa Altenburg?') === 'Was macht eigentlich… Lisa Altenburg?'
+);
+check(
+    'Titel: Apostroph, Anführungszeichen, kaufmännisches Und, Newsletter',
+    stories_clean_title('Axel ´ s Favourites') === 'Axel’s Favourites' &&
+        stories_clean_title('"Unser Spiel." Meetup') === '„Unser Spiel.“ Meetup' &&
+        stories_clean_title('Podium& hier vorab') === 'Podium – hier vorab' &&
+        stories_clean_title('News - Juli 2026') === 'Newsletter Juli 2026'
+);
 $st_used = [];
-check('Adresse: Umlaute, Länge, eindeutig', stories_slug('Müde Beine waren gestern… U21 happy!', $st_used) === 'muede-beine-waren-gestern-u21-happy' && stories_slug('Müde Beine waren gestern… U21 happy!', $st_used) === 'muede-beine-waren-gestern-u21-happy-2' && strlen(stories_slug(str_repeat('Langer Titel ', 20), $st_used)) <= 70);
-check('Rubriken: Menschen, Teams, Treffen, Hockeywelt, Verein', [stories_rubric('Was macht eigentlich… X?'), stories_rubric('Der Alumni Beirat. Teil 4'), stories_rubric('Hallen-Europameisterschaften der Damen 2026'), stories_rubric('Einladung zum Bridge-Turnier'), stories_rubric('Ausgewählte Bundesliga-Spiele live'), stories_rubric('Besondere Ehrungen für Alumni')] === ['menschen', 'menschen', 'teams', 'treffen', 'hockeywelt', 'verein']);
-[$st_blocks, $st_images, $st_warn] = stories_html_to_blocks('<p><img src="media/a/x.png" data-eintrikot-media="media/a/x.png" class="align_center">Text <strong>fett</strong><br> neu <a href="https://x.de/a">Link</a></p><h3>Zwischentitel</h3><ul><li>Eins</li></ul><p><a class="btn btn-inverse" href="https://y.de">Knopf</a></p><p>Hallo {usersFirstname},<br> liebe Familie,</p><p><a href="javascript:alert(1)">böse</a> <span onclick="x()">Text</span></p>', 'Alt');
-check('Blöcke: Bild zuerst mit Platzhaltern und Alternativtext', $st_images === ['media/a/x.png'] && str_starts_with($st_blocks, '<!-- wp:image {"id":{{id:media/a/x.png}}') && str_contains($st_blocks, 'alt="Alt"') && !str_contains($st_blocks, 'align_center') && !str_contains($st_blocks, 'data-eintrikot'));
-check('Blöcke: Absatz, Fett, Zeilenumbruch, externer Link', str_contains($st_blocks, '<p>Text <strong>fett</strong><br>neu <a href="https://x.de/a" rel="noopener noreferrer">Link</a></p>'));
-check('Blöcke: Überschrift, Liste, Knopf', str_contains($st_blocks, '"level":3') && str_contains($st_blocks, '<!-- wp:list-item -->') && str_contains($st_blocks, 'wp:buttons') && str_contains($st_blocks, 'wp-block-button__link'));
-check('Blöcke: Serienbrief-Anrede weg, gefährlicher Link und Handler weg', !str_contains($st_blocks, 'usersFirstname') && str_contains($st_blocks, '<p>Liebe Familie,</p>') && !str_contains($st_blocks, 'javascript:') && !str_contains($st_blocks, 'onclick') && in_array('Serienbrief-Anrede entfernt', $st_warn, true));
+check(
+    'Adresse: Umlaute, Länge, eindeutig',
+    stories_slug('Müde Beine waren gestern… U21 happy!', $st_used) ===
+        'muede-beine-waren-gestern-u21-happy' &&
+        stories_slug('Müde Beine waren gestern… U21 happy!', $st_used) ===
+            'muede-beine-waren-gestern-u21-happy-2' &&
+        strlen(stories_slug(str_repeat('Langer Titel ', 20), $st_used)) <= 70
+);
+check(
+    'Rubriken: Menschen, Teams, Treffen, Hockeywelt, Verein',
+    [
+        stories_rubric('Was macht eigentlich… X?'),
+        stories_rubric('Der Alumni Beirat. Teil 4'),
+        stories_rubric('Hallen-Europameisterschaften der Damen 2026'),
+        stories_rubric('Einladung zum Bridge-Turnier'),
+        stories_rubric('Ausgewählte Bundesliga-Spiele live'),
+        stories_rubric('Besondere Ehrungen für Alumni')
+    ] === ['menschen', 'menschen', 'teams', 'treffen', 'hockeywelt', 'verein']
+);
+[$st_blocks, $st_images, $st_warn] = stories_html_to_blocks(
+    '<p><img src="media/a/x.png" data-eintrikot-media="media/a/x.png" class="align_center">Text <strong>fett</strong><br> neu <a href="https://x.de/a">Link</a></p><h3>Zwischentitel</h3><ul><li>Eins</li></ul><p><a class="btn btn-inverse" href="https://y.de">Knopf</a></p><p>Hallo {usersFirstname},<br> liebe Familie,</p><p><a href="javascript:alert(1)">böse</a> <span onclick="x()">Text</span></p>',
+    'Alt'
+);
+check(
+    'Blöcke: Bild zuerst mit Platzhaltern und Alternativtext',
+    $st_images === ['media/a/x.png'] &&
+        str_starts_with($st_blocks, '<!-- wp:image {"id":{{id:media/a/x.png}}') &&
+        str_contains($st_blocks, 'alt="Alt"') &&
+        !str_contains($st_blocks, 'align_center') &&
+        !str_contains($st_blocks, 'data-eintrikot')
+);
+check(
+    'Blöcke: Absatz, Fett, Zeilenumbruch, externer Link',
+    str_contains(
+        $st_blocks,
+        '<p>Text <strong>fett</strong><br>neu <a href="https://x.de/a" rel="noopener noreferrer">Link</a></p>'
+    )
+);
+check(
+    'Blöcke: Überschrift, Liste, Knopf',
+    str_contains($st_blocks, '"level":3') &&
+        str_contains($st_blocks, '<!-- wp:list-item -->') &&
+        str_contains($st_blocks, 'wp:buttons') &&
+        str_contains($st_blocks, 'wp-block-button__link')
+);
+check(
+    'Blöcke: Serienbrief-Anrede weg, gefährlicher Link und Handler weg',
+    !str_contains($st_blocks, 'usersFirstname') &&
+        str_contains($st_blocks, '<p>Liebe Familie,</p>') &&
+        !str_contains($st_blocks, 'javascript:') &&
+        !str_contains($st_blocks, 'onclick') &&
+        in_array('Serienbrief-Anrede entfernt', $st_warn, true)
+);
 
 $im_admin = make_user('administrator');
 wp_set_current_user($im_admin);
@@ -782,25 +1665,79 @@ $im_bytes = ob_get_clean();
 $im_zip_file = \wp_tempnam('stories-test') . '.zip';
 $im_zip = new \ZipArchive();
 $im_zip->open($im_zip_file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
-$im_content = stories_image_block('media/test/bild.png', 'Bildtext') . "\n\n<!-- wp:paragraph -->\n<p>Hallo Welt</p>\n<!-- /wp:paragraph -->";
-$im_zip->addFromString('stories.json', wp_json_encode(['schema' => 1, 'posts' => [['title' => 'Importtest Story', 'slug' => 'importtest-story', 'date' => '2025-05-02 10:00:00', 'rubric' => 'menschen', 'content' => $im_content, 'excerpt' => 'Vorschau', 'source_url' => 'https://example.test/alt/importtest', 'featured' => 'media/test/bild.png', 'images' => [['path' => 'media/test/bild.png', 'alt' => 'Bildtext']]]]]));
+$im_content =
+    stories_image_block('media/test/bild.png', 'Bildtext') .
+    "\n\n<!-- wp:paragraph -->\n<p>Hallo Welt</p>\n<!-- /wp:paragraph -->";
+$im_zip->addFromString(
+    'stories.json',
+    wp_json_encode([
+        'schema' => 1,
+        'posts' => [
+            [
+                'title' => 'Importtest Story',
+                'slug' => 'importtest-story',
+                'date' => '2025-05-02 10:00:00',
+                'rubric' => 'menschen',
+                'content' => $im_content,
+                'excerpt' => 'Vorschau',
+                'source_url' => 'https://example.test/alt/importtest',
+                'featured' => 'media/test/bild.png',
+                'images' => [['path' => 'media/test/bild.png', 'alt' => 'Bildtext']]
+            ]
+        ]
+    ])
+);
 $im_zip->addFromString('media/test/bild.png', $im_bytes);
 $im_zip->close();
 [$im_state, $im_err] = stories_import_stage($im_zip_file);
-check('Import: Paket wird angenommen und geprüft', is_array($im_state) && $im_err === '' && $im_state['count'] === 1);
+check(
+    'Import: Paket wird angenommen und geprüft',
+    is_array($im_state) && $im_err === '' && $im_state['count'] === 1
+);
 $im_posts = stories_import_posts($im_state);
-check('Import: Probelauf legt nichts an', !stories_import_existing('https://example.test/alt/importtest') && count($im_posts) === 1);
+check(
+    'Import: Probelauf legt nichts an',
+    !stories_import_existing('https://example.test/alt/importtest') && count($im_posts) === 1
+);
 check('Import: Story wird angelegt', stories_import_one($im_state, $im_posts[0]) === 'created');
 $im_id = stories_import_existing('https://example.test/alt/importtest');
 $im_post = get_post($im_id);
-check('Import: Entwurf mit Datum, Adresse, Vorschau, Rubrik', $im_post->post_status === 'draft' && substr($im_post->post_date, 0, 10) === '2025-05-02' && $im_post->post_name === 'importtest-story' && $im_post->post_excerpt === 'Vorschau' && has_term('menschen', 'category', $im_post));
-check('Import: Bild in Mediathek, Titelbild gesetzt, Platzhalter ersetzt', (int) get_post_thumbnail_id($im_id) > 0 && !str_contains($im_post->post_content, '{{') && str_contains($im_post->post_content, 'wp-image-' . get_post_thumbnail_id($im_id)) && get_post_meta(get_post_thumbnail_id($im_id), '_wp_attachment_image_alt', true) === 'Bildtext');
-check('Import: Bildadresse im Text ist relativ (Umzug auf andere Domain)', (bool) preg_match('#<img src="/[^"]*uploads/#', $im_post->post_content));
-check('Import: zweiter Lauf legt nichts doppelt an', stories_import_one($im_state, $im_posts[0]) === 'skipped');
+check(
+    'Import: Entwurf mit Datum, Adresse, Vorschau, Rubrik',
+    $im_post->post_status === 'draft' &&
+        substr($im_post->post_date, 0, 10) === '2025-05-02' &&
+        $im_post->post_name === 'importtest-story' &&
+        $im_post->post_excerpt === 'Vorschau' &&
+        has_term('menschen', 'category', $im_post)
+);
+check(
+    'Import: Bild in Mediathek, Titelbild gesetzt, Platzhalter ersetzt',
+    (int) get_post_thumbnail_id($im_id) > 0 &&
+        !str_contains($im_post->post_content, '{{') &&
+        str_contains($im_post->post_content, 'wp-image-' . get_post_thumbnail_id($im_id)) &&
+        get_post_meta(get_post_thumbnail_id($im_id), '_wp_attachment_image_alt', true) === 'Bildtext'
+);
+check(
+    'Import: Bildadresse im Text ist relativ (Umzug auf andere Domain)',
+    (bool) preg_match('#<img src="/[^"]*uploads/#', $im_post->post_content)
+);
+check(
+    'Import: zweiter Lauf legt nichts doppelt an',
+    stories_import_one($im_state, $im_posts[0]) === 'skipped'
+);
 stories_import_remove_dir(stories_import_base_dir() . '/' . $im_state['token']);
-check('Import: temporärer Ordner wird gelöscht', !is_dir(stories_import_base_dir() . '/' . $im_state['token']));
+check(
+    'Import: temporärer Ordner wird gelöscht',
+    !is_dir(stories_import_base_dir() . '/' . $im_state['token'])
+);
 [$im_removed, $im_pics] = stories_import_rollback();
-check('Zurücknehmen: Story und Bild sind weg', $im_removed >= 1 && $im_pics >= 1 && !stories_import_existing('https://example.test/alt/importtest') && get_post($im_id) === null);
+check(
+    'Zurücknehmen: Story und Bild sind weg',
+    $im_removed >= 1 &&
+        $im_pics >= 1 &&
+        !stories_import_existing('https://example.test/alt/importtest') &&
+        get_post($im_id) === null
+);
 $im_bad = \wp_tempnam('stories-bad') . '.zip';
 $im_bad_zip = new \ZipArchive();
 $im_bad_zip->open($im_bad, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
@@ -811,7 +1748,22 @@ check('Import: Paket mit unerlaubter Datei wird abgelehnt', stories_import_stage
 $im_bad2 = \wp_tempnam('stories-bad2') . '.zip';
 $im_bad_zip = new \ZipArchive();
 $im_bad_zip->open($im_bad2, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
-$im_bad_zip->addFromString('stories.json', wp_json_encode(['schema' => 1, 'posts' => [['title' => 'x', 'slug' => 'x', 'date' => '2025-05-02 10:00:00', 'rubric' => 'gibt-es-nicht', 'content' => 'x', 'source_url' => 'https://example.test/x']]]));
+$im_bad_zip->addFromString(
+    'stories.json',
+    wp_json_encode([
+        'schema' => 1,
+        'posts' => [
+            [
+                'title' => 'x',
+                'slug' => 'x',
+                'date' => '2025-05-02 10:00:00',
+                'rubric' => 'gibt-es-nicht',
+                'content' => 'x',
+                'source_url' => 'https://example.test/x'
+            ]
+        ]
+    ])
+);
 $im_bad_zip->close();
 check('Import: unbekannte Rubrik wird abgelehnt', stories_import_stage($im_bad2)[0] === null);
 foreach ([$im_zip_file, $im_bad, $im_bad2] as $im_f) {
@@ -823,14 +1775,22 @@ wp_set_current_user(0);
 
 $kb_admin = make_user('administrator');
 wp_set_current_user($kb_admin);
-$kb_post = wp_insert_post(['post_type' => 'post', 'post_status' => 'publish', 'post_title' => 'Kopfbild-Test', 'post_content' => 'Text']);
+$kb_post = wp_insert_post([
+    'post_type' => 'post',
+    'post_status' => 'publish',
+    'post_title' => 'Kopfbild-Test',
+    'post_content' => 'Text'
+]);
 function kb_attachment($w, $h) {
     require_once ABSPATH . 'wp-admin/includes/image.php';
     $im = imagecreatetruecolor($w, $h);
     $dir = wp_upload_dir();
     $file = $dir['path'] . '/kopfbild-' . $w . 'x' . $h . '.png';
     imagepng($im, $file);
-    $id = wp_insert_attachment(['post_mime_type' => 'image/png', 'post_title' => 'kb', 'post_status' => 'inherit'], $file);
+    $id = wp_insert_attachment(
+        ['post_mime_type' => 'image/png', 'post_title' => 'kb', 'post_status' => 'inherit'],
+        $file
+    );
     wp_update_attachment_metadata($id, wp_generate_attachment_metadata($id, $file));
     return $id;
 }
@@ -839,28 +1799,67 @@ $kb_small = kb_attachment(800, 600);
 $kb_block = new \WP_Block(['blockName' => 'core/post-featured-image'], ['postId' => $kb_post]);
 $kb_head = ['attrs' => ['className' => 'story-banner']];
 $kb_card = ['attrs' => []];
-$kb_run = fn($html, $parsed) => apply_filters('render_block_core/post-featured-image', $html, $parsed, $kb_block);
-check('Kopfbild: ohne Bild die Markenfläche als Band', str_contains($kb_run('', $kb_head), 'et-story-noimg story-banner is-wide'));
+$kb_run = fn($html, $parsed) => apply_filters(
+    'render_block_core/post-featured-image',
+    $html,
+    $parsed,
+    $kb_block
+);
+check(
+    'Kopfbild: ohne Bild die Markenfläche als Band',
+    str_contains($kb_run('', $kb_head), 'et-story-noimg story-banner is-wide')
+);
 update_post_meta($kb_post, '_et_head_image', $kb_wide);
-$kb_out = $kb_run('<figure class="wp-block-post-featured-image story-banner"><img src="x"></figure>', $kb_head);
-check('Kopfbild: eigenes breites Bild ersetzt das Beitragsbild und wird Banner', str_contains($kb_out, '<img') && !str_contains($kb_out, 'src="x"') && str_contains($kb_out, 'is-wide') && str_contains($kb_out, 'kopfbild-2400x900'));
+$kb_out = $kb_run(
+    '<figure class="wp-block-post-featured-image story-banner"><img src="x"></figure>',
+    $kb_head
+);
+check(
+    'Kopfbild: eigenes breites Bild ersetzt das Beitragsbild und wird Banner',
+    str_contains($kb_out, '<img') &&
+        !str_contains($kb_out, 'src="x"') &&
+        str_contains($kb_out, 'is-wide') &&
+        str_contains($kb_out, 'kopfbild-2400x900')
+);
 update_post_meta($kb_post, '_et_head_image', $kb_small);
 check('Kopfbild: kleines Bild steht in der Textspalte', str_contains($kb_run('', $kb_head), 'is-column'));
-check('Kopfbild: die Kachel bleibt beim Beitragsbild', $kb_run('<figure>Kachel</figure>', $kb_card) === '<figure>Kachel</figure>');
+check(
+    'Kopfbild: die Kachel bleibt beim Beitragsbild',
+    $kb_run('<figure>Kachel</figure>', $kb_card) === '<figure>Kachel</figure>'
+);
 update_post_meta($kb_post, '_et_head_hide', '1');
-check('Kopfbild: Haken „Oben kein Bild“ blendet es aus (auch ohne Markenfläche)', $kb_run('<figure>x</figure>', $kb_head) === '' && $kb_run('', $kb_head) === '');
-check('Kopfbild: Haken wirkt nicht auf die Kachel', $kb_run('<figure>Kachel</figure>', $kb_card) === '<figure>Kachel</figure>');
+check(
+    'Kopfbild: Haken „Oben kein Bild“ blendet es aus (auch ohne Markenfläche)',
+    $kb_run('<figure>x</figure>', $kb_head) === '' && $kb_run('', $kb_head) === ''
+);
+check(
+    'Kopfbild: Haken wirkt nicht auf die Kachel',
+    $kb_run('<figure>Kachel</figure>', $kb_card) === '<figure>Kachel</figure>'
+);
 delete_post_meta($kb_post, '_et_head_hide');
 delete_post_meta($kb_post, '_et_head_image');
-$_POST = ['et_story_head_nonce' => wp_create_nonce('et_story_head'), 'et_head_image' => (string) $kb_wide, 'et_head_hide' => '1'];
+$_POST = [
+    'et_story_head_nonce' => wp_create_nonce('et_story_head'),
+    'et_head_image' => (string) $kb_wide,
+    'et_head_hide' => '1'
+];
 do_action('save_post_post', $kb_post);
-check('Kopfbild: Speichern merkt Bild und Haken', story_head_state($kb_post) === ['hide' => true, 'id' => $kb_wide]);
+check(
+    'Kopfbild: Speichern merkt Bild und Haken',
+    story_head_state($kb_post) === ['hide' => true, 'id' => $kb_wide]
+);
 $_POST = ['et_story_head_nonce' => wp_create_nonce('et_story_head'), 'et_head_image' => '999999'];
 do_action('save_post_post', $kb_post);
-check('Kopfbild: unbekanntes Bild und fehlender Haken werden entfernt', story_head_state($kb_post) === ['hide' => false, 'id' => 0]);
+check(
+    'Kopfbild: unbekanntes Bild und fehlender Haken werden entfernt',
+    story_head_state($kb_post) === ['hide' => false, 'id' => 0]
+);
 $_POST = ['et_head_image' => (string) $kb_wide, 'et_head_hide' => '1'];
 do_action('save_post_post', $kb_post);
-check('Kopfbild: ohne Sicherheitsschlüssel wird nichts gespeichert', story_head_state($kb_post) === ['hide' => false, 'id' => 0]);
+check(
+    'Kopfbild: ohne Sicherheitsschlüssel wird nichts gespeichert',
+    story_head_state($kb_post) === ['hide' => false, 'id' => 0]
+);
 $_POST = [];
 wp_delete_post($kb_post, true);
 wp_delete_attachment($kb_wide, true);
@@ -879,14 +1878,33 @@ check('client_ip', client_ip() === '203.0.113.7');
 
 /* ---------- Härtung ---------- */
 
-check('Härtung: kein Generator-Hinweis', apply_filters('the_generator', '<meta name="generator" content="WordPress">', 'html') === '' && !has_action('wp_head', 'wp_generator'));
+check(
+    'Härtung: kein Generator-Hinweis',
+    apply_filters('the_generator', '<meta name="generator" content="WordPress">', 'html') === '' &&
+        !has_action('wp_head', 'wp_generator')
+);
 $hd_headers = apply_filters('wp_headers', []);
 check('Härtung: nosniff-Header', ($hd_headers['X-Content-Type-Options'] ?? '') === 'nosniff');
 check('Härtung: Permissions-Policy', str_contains($hd_headers['Permissions-Policy'] ?? '', 'camera=()'));
-check('Härtung: kein Einbetten in fremde Seiten', ($hd_headers['X-Frame-Options'] ?? '') === 'SAMEORIGIN' && str_contains($hd_headers['Content-Security-Policy'] ?? '', "frame-ancestors 'self'"));
-check('Härtung: CSP lädt nur von dieser Seite', str_contains($hd_headers['Content-Security-Policy'] ?? '', "default-src 'self'") && str_contains($hd_headers['Content-Security-Policy'] ?? '', "object-src 'none'") && str_contains($hd_headers['Content-Security-Policy'] ?? '', "form-action 'self'"));
-check('Härtung: Referrer-Policy', ($hd_headers['Referrer-Policy'] ?? '') === 'strict-origin-when-cross-origin');
-check('Härtung: XML-RPC ohne Methoden', apply_filters('xmlrpc_methods', ['pingback.ping' => 'x', 'system.multicall' => 'y']) === []);
+check(
+    'Härtung: kein Einbetten in fremde Seiten',
+    ($hd_headers['X-Frame-Options'] ?? '') === 'SAMEORIGIN' &&
+        str_contains($hd_headers['Content-Security-Policy'] ?? '', "frame-ancestors 'self'")
+);
+check(
+    'Härtung: CSP lädt nur von dieser Seite',
+    str_contains($hd_headers['Content-Security-Policy'] ?? '', "default-src 'self'") &&
+        str_contains($hd_headers['Content-Security-Policy'] ?? '', "object-src 'none'") &&
+        str_contains($hd_headers['Content-Security-Policy'] ?? '', "form-action 'self'")
+);
+check(
+    'Härtung: Referrer-Policy',
+    ($hd_headers['Referrer-Policy'] ?? '') === 'strict-origin-when-cross-origin'
+);
+check(
+    'Härtung: XML-RPC ohne Methoden',
+    apply_filters('xmlrpc_methods', ['pingback.ping' => 'x', 'system.multicall' => 'y']) === []
+);
 check('Härtung: keine Anwendungspasswörter', !wp_is_application_passwords_available());
 check('Härtung: keine Emoji-Skripte von s.w.org', !has_action('wp_head', 'print_emoji_detection_script'));
 $hd_user = get_current_user_id();
@@ -896,13 +1914,28 @@ wp_set_current_user(0);
 $hd_server = $_SERVER;
 $_SERVER['HTTP_HOST'] = 'example.test';
 $_SERVER['REQUEST_URI'] = '/';
-check('Anmeldung: E-Mail-Tastatur im Adressfeld', str_contains(do_shortcode('[eintrikot_portal]'), 'name="log" inputmode="email"'));
-check('Anmeldung: „Angemeldet bleiben“ nicht vorab angehakt', !preg_match('/name="rememberme"[^>]*checked/', do_shortcode('[eintrikot_portal]')));
+check(
+    'Anmeldung: E-Mail-Tastatur im Adressfeld',
+    str_contains(do_shortcode('[eintrikot_portal]'), 'name="log" inputmode="email"')
+);
+check(
+    'Anmeldung: „Angemeldet bleiben“ nicht vorab angehakt',
+    !preg_match('/name="rememberme"[^>]*checked/', do_shortcode('[eintrikot_portal]'))
+);
 $_SERVER = $hd_server;
 wp_set_current_user($hd_user);
 check('Härtung: HSTS nur über https', isset($hd_headers['Strict-Transport-Security']) === is_ssl());
-$hd_embed = apply_filters('oembed_response_data', ['author_name' => 'X', 'author_url' => 'https://x.test/author/x/', 'title' => 'T'], get_post(get_option('eintrikot_portal_page')), 600, 338);
-check('Härtung: oEmbed ohne Autor', !isset($hd_embed['author_name']) && !isset($hd_embed['author_url']) && $hd_embed['title'] === 'T');
+$hd_embed = apply_filters(
+    'oembed_response_data',
+    ['author_name' => 'X', 'author_url' => 'https://x.test/author/x/', 'title' => 'T'],
+    get_post(get_option('eintrikot_portal_page')),
+    600,
+    338
+);
+check(
+    'Härtung: oEmbed ohne Autor',
+    !isset($hd_embed['author_name']) && !isset($hd_embed['author_url']) && $hd_embed['title'] === 'T'
+);
 wp_set_current_user(0);
 $_GET['author'] = '1';
 $GLOBALS['wp_query'] = new \WP_Query();
@@ -913,28 +1946,52 @@ unset($_GET['author']);
 $ml_member = make_user('eintrikot_member');
 $ml_sample = strtolower(get_userdata($ml_member)->user_email);
 $ml_mail = 'verteiler-' . $ml_member . '@mail-test.invalid';
-check('E-Mail-Verteiler: Beispieladressen der Testphase fehlen', !in_array($ml_sample, mail_list_addresses(), true));
+check(
+    'E-Mail-Verteiler: Beispieladressen der Testphase fehlen',
+    !in_array($ml_sample, mail_list_addresses(), true)
+);
 wp_update_user(['ID' => $ml_member, 'user_email' => $ml_mail]);
 $ml_list = mail_list_addresses();
-check('E-Mail-Verteiler: Mitglied steht drin, ohne Doppelte, sortiert', in_array($ml_mail, $ml_list, true) && $ml_list === array_values(array_unique($ml_list)) && $ml_list === (function ($l) { sort($l); return $l; })($ml_list));
+check(
+    'E-Mail-Verteiler: Mitglied steht drin, ohne Doppelte, sortiert',
+    in_array($ml_mail, $ml_list, true) &&
+        $ml_list === array_values(array_unique($ml_list)) &&
+        $ml_list ===
+            (function ($l) {
+                sort($l);
+                return $l;
+            })($ml_list)
+);
 wp_set_current_user($ml_member);
 $_GET['view'] = 'maillist';
 ob_start();
 render_mail_list();
 $ml_page = ob_get_clean();
-check('E-Mail-Verteiler: Mitglied sieht ihn nicht', str_contains($ml_page, 'Kein Zugriff') && !str_contains($ml_page, $ml_mail));
+check(
+    'E-Mail-Verteiler: Mitglied sieht ihn nicht',
+    str_contains($ml_page, 'Kein Zugriff') && !str_contains($ml_page, $ml_mail)
+);
 wp_set_current_user(1);
 ob_start();
 render_mail_list();
 $ml_page = ob_get_clean();
-check('E-Mail-Verteiler: Administrator sieht Liste und Kopierknopf', str_contains($ml_page, $ml_mail) && str_contains($ml_page, 'data-copy-target="mail-list"'));
+check(
+    'E-Mail-Verteiler: Administrator sieht Liste und Kopierknopf',
+    str_contains($ml_page, $ml_mail) && str_contains($ml_page, 'data-copy-target="mail-list"')
+);
 unset($_GET['view']);
 wp_set_current_user(0);
 
 $bk_member = make_user('eintrikot_member');
 wp_set_current_user($bk_member);
-check('Backend: Mitglied wird umgeleitet', member_backend_blocked('index.php') && member_backend_blocked('profile.php'));
-check('Backend: admin-post und admin-ajax bleiben offen', !member_backend_blocked('admin-post.php') && !member_backend_blocked('admin-ajax.php'));
+check(
+    'Backend: Mitglied wird umgeleitet',
+    member_backend_blocked('index.php') && member_backend_blocked('profile.php')
+);
+check(
+    'Backend: admin-post und admin-ajax bleiben offen',
+    !member_backend_blocked('admin-post.php') && !member_backend_blocked('admin-ajax.php')
+);
 wp_set_current_user(1);
 check('Backend: Administrator bleibt drin', !member_backend_blocked('index.php'));
 wp_set_current_user(0);
@@ -947,79 +2004,239 @@ wp_set_current_user($nl_member);
 check('Newsletter: neues Konto ist nicht beantwortet', newsletter_consent($nl_member)['state'] === '');
 check('Newsletter: nicht beantwortet bekommt nichts', !in_array($nl_mail, newsletter_recipients(), true));
 check('Newsletter: Frage ist fällig', newsletter_prompt_due($nl_member));
-check('Newsletter: Hinweis zeigt Ja, Nein und Später', str_contains(newsletter_prompt_bar(), 'value="yes"') && str_contains(newsletter_prompt_bar(), 'value="no"') && str_contains(newsletter_prompt_bar(), 'value="later"'));
-check('Newsletter: ungültige Antwort wird abgelehnt', !newsletter_set_consent($nl_member, 'vielleicht') && newsletter_consent($nl_member)['state'] === '');
-check('Newsletter: Später blendet die Frage aus', newsletter_postpone($nl_member) && !newsletter_prompt_due($nl_member) && newsletter_prompt_bar() === '');
+check(
+    'Newsletter: Hinweis zeigt Ja, Nein und Später',
+    str_contains(newsletter_prompt_bar(), 'value="yes"') &&
+        str_contains(newsletter_prompt_bar(), 'value="no"') &&
+        str_contains(newsletter_prompt_bar(), 'value="later"')
+);
+check(
+    'Newsletter: ungültige Antwort wird abgelehnt',
+    !newsletter_set_consent($nl_member, 'vielleicht') && newsletter_consent($nl_member)['state'] === ''
+);
+check(
+    'Newsletter: Später blendet die Frage aus',
+    newsletter_postpone($nl_member) && !newsletter_prompt_due($nl_member) && newsletter_prompt_bar() === ''
+);
 $nl_c = newsletter_consent($nl_member);
 $nl_c['snooze_until'] = time() - 5;
 update_user_meta($nl_member, 'eintrikot_newsletter', $nl_c);
 check('Newsletter: nach der Pause kommt die Frage wieder', newsletter_prompt_due($nl_member));
-check('Newsletter: Ja wird gespeichert', newsletter_set_consent($nl_member, 'yes') && newsletter_consent($nl_member)['state'] === 'yes' && newsletter_consent($nl_member)['version'] === NEWSLETTER_TEXT_VERSION);
+check(
+    'Newsletter: Ja wird gespeichert',
+    newsletter_set_consent($nl_member, 'yes') &&
+        newsletter_consent($nl_member)['state'] === 'yes' &&
+        newsletter_consent($nl_member)['version'] === NEWSLETTER_TEXT_VERSION
+);
 check('Newsletter: Ja steht in der Empfängerliste', in_array($nl_mail, newsletter_recipients(), true));
-check('Newsletter: nach Ja wird nicht mehr gefragt', !newsletter_prompt_due($nl_member) && !newsletter_postpone($nl_member));
+check(
+    'Newsletter: nach Ja wird nicht mehr gefragt',
+    !newsletter_prompt_due($nl_member) && !newsletter_postpone($nl_member)
+);
 global $wpdb;
-check('Newsletter: Änderung steht im Verlauf', (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'newsletter'", $nl_member)) === 1);
-check('Newsletter: gleiche Antwort schreibt nichts mehr', newsletter_set_consent($nl_member, 'yes') && (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'newsletter'", $nl_member)) === 1);
-check('Newsletter: Nein nimmt die Adresse aus der Liste', newsletter_set_consent($nl_member, 'no') && !in_array($nl_mail, newsletter_recipients(), true));
+check(
+    'Newsletter: Änderung steht im Verlauf',
+    (int) $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'newsletter'",
+            $nl_member
+        )
+    ) === 1
+);
+check(
+    'Newsletter: gleiche Antwort schreibt nichts mehr',
+    newsletter_set_consent($nl_member, 'yes') &&
+        (int) $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'newsletter'",
+                $nl_member
+            )
+        ) === 1
+);
+check(
+    'Newsletter: Nein nimmt die Adresse aus der Liste',
+    newsletter_set_consent($nl_member, 'no') && !in_array($nl_mail, newsletter_recipients(), true)
+);
 check('Newsletter: nach Nein wird nicht sofort wieder gefragt', !newsletter_prompt_due($nl_member));
 $nl_c = newsletter_consent($nl_member);
 $nl_c['at'] = time() - 366 * DAY_IN_SECONDS;
 update_user_meta($nl_member, 'eintrikot_newsletter', $nl_c);
-check('Newsletter: nach 12 Monaten wird nach einem Nein neu gefragt', newsletter_prompt_due($nl_member) && str_contains(newsletter_prompt_bar(), 'doch bekommen'));
-check('Newsletter: Später nach Nein pausiert lange', newsletter_postpone($nl_member) && !newsletter_prompt_due($nl_member) && newsletter_consent($nl_member)['snooze_until'] > time() + 300 * DAY_IN_SECONDS);
+check(
+    'Newsletter: nach 12 Monaten wird nach einem Nein neu gefragt',
+    newsletter_prompt_due($nl_member) && str_contains(newsletter_prompt_bar(), 'doch bekommen')
+);
+check(
+    'Newsletter: Später nach Nein pausiert lange',
+    newsletter_postpone($nl_member) &&
+        !newsletter_prompt_due($nl_member) &&
+        newsletter_consent($nl_member)['snooze_until'] > time() + 300 * DAY_IN_SECONDS
+);
 $nl_kid = make_user('eintrikot_member', ['birthday' => day('-12 years')]);
-check('Newsletter: unter 18 keine Frage, keine Einwilligung', !newsletter_prompt_due($nl_kid) && !newsletter_set_consent($nl_kid, 'yes') && newsletter_consent($nl_kid)['state'] === '');
+check(
+    'Newsletter: unter 18 keine Frage, keine Einwilligung',
+    !newsletter_prompt_due($nl_kid) &&
+        !newsletter_set_consent($nl_kid, 'yes') &&
+        newsletter_consent($nl_kid)['state'] === ''
+);
 $nl_own = newsletter_profile_section($nl_member);
 check('Newsletter: eigenes Profil bietet die Auswahl an', str_contains($nl_own, 'name="newsletter_consent"'));
 $nl_other = make_user('eintrikot_member');
 wp_set_current_user(1);
-check('Newsletter: die Verwaltung sieht nur den Zustand', !str_contains(newsletter_profile_section($nl_member), 'name="newsletter_consent"') && str_contains(newsletter_profile_section($nl_member), 'Nein'));
+check(
+    'Newsletter: die Verwaltung sieht nur den Zustand',
+    !str_contains(newsletter_profile_section($nl_member), 'name="newsletter_consent"') &&
+        str_contains(newsletter_profile_section($nl_member), 'Nein')
+);
 wp_set_current_user($nl_other);
-check('Newsletter: kein Zugriff auf die Auswahl eines anderen', !str_contains(newsletter_profile_section($nl_member), 'name="newsletter_consent"'));
+check(
+    'Newsletter: kein Zugriff auf die Auswahl eines anderen',
+    !str_contains(newsletter_profile_section($nl_member), 'name="newsletter_consent"')
+);
 wp_set_current_user(0);
 check('Newsletter: ohne Anmeldung kein Hinweis', newsletter_prompt_bar() === '');
+
+/* ---------- Datenschutz: Absatz Geburtstagsgruß ---------- */
+$ds_pattern = pattern_markup('mvp-datenschutz');
+check(
+    'Datenschutz-Muster: Absatz zum Geburtstagsgruß mit Widerspruch, Stand November',
+    !is_wp_error($ds_pattern) &&
+        str_contains($ds_pattern, 'Zu Ihrem Geburtstag schicken wir') &&
+        str_contains($ds_pattern, 'widersprechen') &&
+        str_contains($ds_pattern, 'Stand: November 2026')
+);
+$ds_old =
+    "<!-- wp:paragraph --><p>Vorher.</p><!-- /wp:paragraph -->\n<!-- wp:paragraph --><p>Unseren Newsletter … jede Ausgabe enthält außerdem einen Abmeldelink. Rechtsgrundlage ist Ihre Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO.</p><!-- /wp:paragraph -->\n<!-- wp:heading --><h2 class=\"wp-block-heading\">8. Kontakt</h2><!-- /wp:heading -->\n<!-- wp:paragraph --><p>Eigene Änderung im Editor.</p><!-- /wp:paragraph -->\n<!-- wp:paragraph --><p><em>Stand: Oktober 2026</em></p><!-- /wp:paragraph -->";
+$ds_existing = get_page_by_path('datenschutz');
+if ($ds_existing) {
+    wp_update_post(['ID' => $ds_existing->ID, 'post_name' => 'datenschutz-alt']);
+}
+$ds_page = wp_insert_post([
+    'post_type' => 'page',
+    'post_status' => 'publish',
+    'post_title' => 'Datenschutz',
+    'post_name' => 'datenschutz',
+    'post_content' => $ds_old
+]);
+$ds_msg = update_privacy_birthday();
+$ds_new = get_post($ds_page)->post_content;
+$ds_pos_nl = strpos($ds_new, 'Abmeldelink');
+$ds_pos_bd = strpos($ds_new, 'Zu Ihrem Geburtstag schicken wir');
+$ds_pos_k = strpos($ds_new, '8. Kontakt');
+check(
+    'Datenschutz: Absatz nach dem Newsletter, vor „8. Kontakt“',
+    is_string($ds_msg) && $ds_pos_bd !== false && $ds_pos_nl < $ds_pos_bd && $ds_pos_bd < $ds_pos_k
+);
+check(
+    'Datenschutz: Rest bleibt, Stand November',
+    str_contains($ds_new, 'Eigene Änderung im Editor.') &&
+        str_contains($ds_new, '<p>Vorher.</p>') &&
+        str_contains($ds_new, 'Stand: November 2026') &&
+        !str_contains($ds_new, 'Oktober 2026')
+);
+check(
+    'Datenschutz: zweiter Lauf ändert nichts',
+    str_contains(update_privacy_birthday(), 'Nichts zu ändern') &&
+        substr_count(get_post($ds_page)->post_content, 'Zu Ihrem Geburtstag') === 1
+);
+wp_update_post([
+    'ID' => $ds_page,
+    'post_content' => '<!-- wp:paragraph --><p>Ganz anders.</p><!-- /wp:paragraph -->'
+]);
+check(
+    'Datenschutz: ohne Newsletter-Absatz keine Änderung',
+    is_wp_error(update_privacy_birthday()) &&
+        get_post($ds_page)->post_content === '<!-- wp:paragraph --><p>Ganz anders.</p><!-- /wp:paragraph -->'
+);
+wp_delete_post($ds_page, true);
+if ($ds_existing) {
+    wp_update_post(['ID' => $ds_existing->ID, 'post_name' => 'datenschutz']);
+}
 
 /* ---------- Geburtstagsgruß ---------- */
 
 $gr_tz = wp_timezone();
 $gr_at = fn($date, $time = '09:00') => new \DateTimeImmutable($date . ' ' . $time, $gr_tz);
 check('Gruß: Geburtstag heute', greeting_is_birthday($gr_at('1990-05-17'), $gr_at('2027-05-17')));
-check('Gruß: nicht am Tag davor oder danach', !greeting_is_birthday($gr_at('1990-05-17'), $gr_at('2027-05-16')) && !greeting_is_birthday($gr_at('1990-05-17'), $gr_at('2027-05-18')));
-check('Gruß: 29. Februar im Schaltjahr am 29.', greeting_is_birthday($gr_at('1992-02-29'), $gr_at('2028-02-29')) && !greeting_is_birthday($gr_at('1992-02-29'), $gr_at('2028-02-28')));
-check('Gruß: 29. Februar sonst am 28.', greeting_is_birthday($gr_at('1992-02-29'), $gr_at('2027-02-28')) && !greeting_is_birthday($gr_at('1992-02-29'), $gr_at('2027-03-01')));
+check(
+    'Gruß: nicht am Tag davor oder danach',
+    !greeting_is_birthday($gr_at('1990-05-17'), $gr_at('2027-05-16')) &&
+        !greeting_is_birthday($gr_at('1990-05-17'), $gr_at('2027-05-18'))
+);
+check(
+    'Gruß: 29. Februar im Schaltjahr am 29.',
+    greeting_is_birthday($gr_at('1992-02-29'), $gr_at('2028-02-29')) &&
+        !greeting_is_birthday($gr_at('1992-02-29'), $gr_at('2028-02-28'))
+);
+check(
+    'Gruß: 29. Februar sonst am 28.',
+    greeting_is_birthday($gr_at('1992-02-29'), $gr_at('2027-02-28')) &&
+        !greeting_is_birthday($gr_at('1992-02-29'), $gr_at('2027-03-01'))
+);
 
 $gr_mails = [];
 $gr_fail = false;
-add_filter('pre_wp_mail', function ($short, $args) use (&$gr_mails, &$gr_fail) {
-    if ($gr_fail) {
-        return false;
-    }
-    $gr_mails[] = $args;
-    return true;
-}, 99, 2); // nach dem Mail-Abfänger der lokalen Seite, damit ein Fehlschlag durchkommt
+add_filter(
+    'pre_wp_mail',
+    function ($short, $args) use (&$gr_mails, &$gr_fail) {
+        if ($gr_fail) {
+            return false;
+        }
+        $gr_mails[] = $args;
+        return true;
+    },
+    99,
+    2
+); // nach dem Mail-Abfänger der lokalen Seite, damit ein Fehlschlag durchkommt
 $gr_real = function ($id) {
-    wp_update_user(['ID' => $id, 'user_email' => 'gruss' . $id . '@example.net', 'display_name' => 'Anna Beispiel' . $id]);
+    wp_update_user([
+        'ID' => $id,
+        'user_email' => 'gruss' . $id . '@example.net',
+        'display_name' => 'Anna Beispiel' . $id
+    ]);
     return $id;
 };
 $gr_today = new \DateTimeImmutable('today', $gr_tz);
 $gr_bday = fn($years) => $gr_today->modify('-' . $years . ' years')->format('Y-m-d');
 $gr_member = ['eintrikot_member_number' => '8801', 'eintrikot_activated_at' => time()];
 $gr_yes = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(35)], $gr_member));
-$gr_other_day = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_today->modify('-35 years +1 day')->format('Y-m-d')], $gr_member));
-$gr_inactive = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(36)], ['eintrikot_member_number' => '8802']));
-$gr_no_number = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(37)], ['eintrikot_activated_at' => time()]));
+$gr_other_day = $gr_real(
+    make_user(
+        'eintrikot_member',
+        ['birthday' => $gr_today->modify('-35 years +1 day')->format('Y-m-d')],
+        $gr_member
+    )
+);
+$gr_inactive = $gr_real(
+    make_user('eintrikot_member', ['birthday' => $gr_bday(36)], ['eintrikot_member_number' => '8802'])
+);
+$gr_no_number = $gr_real(
+    make_user('eintrikot_member', ['birthday' => $gr_bday(37)], ['eintrikot_activated_at' => time()])
+);
 $gr_sample = make_user('eintrikot_member', ['birthday' => $gr_bday(38)], $gr_member); // @example.test
-$gr_off = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(39)], $gr_member + ['eintrikot_no_greeting' => 1]));
+$gr_off = $gr_real(
+    make_user('eintrikot_member', ['birthday' => $gr_bday(39)], $gr_member + ['eintrikot_no_greeting' => 1])
+);
 $gr_bad_date = $gr_real(make_user('eintrikot_member', ['birthday' => '1990-02-31'], $gr_member));
 $gr_kid = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(15)], $gr_member));
-$gr_kid_ok = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(16)], $gr_member + ['eintrikot_consent' => 'given']));
+$gr_kid_ok = $gr_real(
+    make_user('eintrikot_member', ['birthday' => $gr_bday(16)], $gr_member + ['eintrikot_consent' => 'given'])
+);
 $gr_mails = []; // Mails beim Anlegen der Konten (Adressänderung) zählen nicht.
 $gr_due = greeting_due();
 check('Gruß: aktiviertes Mitglied mit Geburtstag heute', in_array($gr_yes, $gr_due, true));
 check('Gruß: Geburtstag morgen nicht heute', !in_array($gr_other_day, $gr_due, true));
-check('Gruß: nicht aktiviert, ohne Mitgliedsnummer, Beispieladresse → keiner', !array_intersect([$gr_inactive, $gr_no_number, $gr_sample], $gr_due));
-check('Gruß: von der Verwaltung ausgeschaltet, ungültiges Datum → keiner', !array_intersect([$gr_off, $gr_bad_date], $gr_due));
-check('Gruß: unter 18 nur mit Zustimmung der Eltern', !in_array($gr_kid, $gr_due, true) && in_array($gr_kid_ok, $gr_due, true));
+check(
+    'Gruß: nicht aktiviert, ohne Mitgliedsnummer, Beispieladresse → keiner',
+    !array_intersect([$gr_inactive, $gr_no_number, $gr_sample], $gr_due)
+);
+check(
+    'Gruß: von der Verwaltung ausgeschaltet, ungültiges Datum → keiner',
+    !array_intersect([$gr_off, $gr_bad_date], $gr_due)
+);
+check(
+    'Gruß: unter 18 nur mit Zustimmung der Eltern',
+    !in_array($gr_kid, $gr_due, true) && in_array($gr_kid_ok, $gr_due, true)
+);
 
 $gr_settings = get_option('eintrikot_greeting');
 $gr_date = $gr_today->format('Y-m-d');
@@ -1029,64 +2246,153 @@ update_option('eintrikot_greeting', ['enabled' => true]);
 check('Gruß: vor 8 Uhr → nichts', run_greetings($gr_at($gr_date, '07:59')) === [0, 0] && !$gr_mails);
 [$gr_sent] = run_greetings($gr_at($gr_date, '08:00'));
 $gr_to = array_map(fn($m) => is_array($m['to']) ? $m['to'][0] : $m['to'], $gr_mails);
-check('Gruß: ab 8 Uhr an alle mit Geburtstag', $gr_sent === count($gr_due) && in_array('gruss' . $gr_yes . '@example.net', $gr_to, true));
-check('Gruß: Jahr wird vermerkt', get_user_meta($gr_yes, 'eintrikot_greeted_year', true) === $gr_today->format('Y'));
+check(
+    'Gruß: ab 8 Uhr an alle mit Geburtstag',
+    $gr_sent === count($gr_due) && in_array('gruss' . $gr_yes . '@example.net', $gr_to, true)
+);
+check(
+    'Gruß: Jahr wird vermerkt',
+    get_user_meta($gr_yes, 'eintrikot_greeted_year', true) === $gr_today->format('Y')
+);
 $gr_count = count($gr_mails);
-check('Gruß: zweiter Lauf am selben Tag schickt nichts doppelt', run_greetings($gr_at($gr_date, '15:00')) === [0, 0] && count($gr_mails) === $gr_count);
+check(
+    'Gruß: zweiter Lauf am selben Tag schickt nichts doppelt',
+    run_greetings($gr_at($gr_date, '15:00')) === [0, 0] && count($gr_mails) === $gr_count
+);
 $gr_first = $gr_mails[array_search('gruss' . $gr_yes . '@example.net', $gr_to, true)];
 check('Gruß: Betreff mit Vorname', $gr_first['subject'] === 'Alles Gute zum Geburtstag, Anna!');
-check('Gruß: Text, Unterschrift, kein Hinweis zum Abschalten, kein Alter', str_contains($gr_first['message'], 'heute hast du Geburtstag') && str_contains($gr_first['message'], 'dein EINTRIKOT-Vorstand') && !str_contains($gr_first['message'], 'abschalten') && !str_contains($gr_first['message'], 'Profil') && !str_contains($gr_first['message'], 'wirst 35'));
-check('Gruß: Kopf statt Farbband', str_contains($gr_first['message'], 'Alles Gute,<br>Anna!') && !str_contains($gr_first['message'], 'height:10px;background:#c8e2ee'));
+check(
+    'Gruß: Text, Unterschrift, kein Hinweis zum Abschalten, kein Alter',
+    str_contains($gr_first['message'], 'heute hast du Geburtstag') &&
+        str_contains($gr_first['message'], 'dein EINTRIKOT-Vorstand') &&
+        !str_contains($gr_first['message'], 'abschalten') &&
+        !str_contains($gr_first['message'], 'Profil') &&
+        !str_contains($gr_first['message'], 'wirst 35')
+);
+check(
+    'Gruß: Kopf statt Farbband',
+    str_contains($gr_first['message'], 'Alles Gute,<br>Anna!') &&
+        !str_contains($gr_first['message'], 'height:10px;background:#c8e2ee')
+);
 
 // Fehler beim Versand: höchstens dreimal am Tag, danach Ruhe; am nächsten Tag kein Nachholen.
 $gr_retry = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(41)], $gr_member));
 $gr_fail = true;
 wp_clear_scheduled_hook('eintrikot_greetings_retry');
 [, $gr_failed] = run_greetings($gr_at($gr_date, '08:00'));
-check('Gruß: Fehler wird gezählt und später erneut versucht', $gr_failed === 1 && wp_next_scheduled('eintrikot_greetings_retry'));
+check(
+    'Gruß: Fehler wird gezählt und später erneut versucht',
+    $gr_failed === 1 && wp_next_scheduled('eintrikot_greetings_retry')
+);
 wp_clear_scheduled_hook('eintrikot_greetings_retry');
 run_greetings($gr_at($gr_date, '09:00'));
 wp_clear_scheduled_hook('eintrikot_greetings_retry');
 run_greetings($gr_at($gr_date, '10:00'));
-check('Gruß: nach drei Versuchen kein weiterer Versuch geplant', !wp_next_scheduled('eintrikot_greetings_retry'));
+check(
+    'Gruß: nach drei Versuchen kein weiterer Versuch geplant',
+    !wp_next_scheduled('eintrikot_greetings_retry')
+);
 $gr_fail = false;
-check('Gruß: nach drei Fehlversuchen am selben Tag nichts mehr', run_greetings($gr_at($gr_date, '11:00')) === [0, 0]);
-check('Gruß: am nächsten Tag kein Nachholen', !in_array($gr_retry, greeting_due($gr_today->modify('+1 day')), true));
+check(
+    'Gruß: nach drei Fehlversuchen am selben Tag nichts mehr',
+    run_greetings($gr_at($gr_date, '11:00')) === [0, 0]
+);
+check(
+    'Gruß: am nächsten Tag kein Nachholen',
+    !in_array($gr_retry, greeting_due($gr_today->modify('+1 day')), true)
+);
 wp_clear_scheduled_hook('eintrikot_greetings_retry');
-check('Gruß: kein Wiederholungsversuch nach Mitternacht', (function () use ($gr_at, $gr_date, $gr_real, $gr_bday, $gr_member, &$gr_fail) {
-    $id = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(42)], $gr_member));
-    $gr_fail = true;
-    run_greetings($gr_at($gr_date, '23:30'));
-    $gr_fail = false;
-    return !wp_next_scheduled('eintrikot_greetings_retry');
-})());
+check(
+    'Gruß: kein Wiederholungsversuch nach Mitternacht',
+    (function () use ($gr_at, $gr_date, $gr_real, $gr_bday, $gr_member, &$gr_fail) {
+        $id = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(42)], $gr_member));
+        $gr_fail = true;
+        run_greetings($gr_at($gr_date, '23:30'));
+        $gr_fail = false;
+        return !wp_next_scheduled('eintrikot_greetings_retry');
+    })()
+);
 
 // Testmail: nur an die angegebene Adresse, mit [TEST], ohne Vermerk.
 $gr_mails = [];
 send_greeting($gr_other_day, 'pruef@example.net');
-check('Gruß: Testmail mit [TEST] an die eigene Adresse', count($gr_mails) === 1 && $gr_mails[0]['to'] === 'pruef@example.net' && str_starts_with($gr_mails[0]['subject'], '[TEST] '));
+check(
+    'Gruß: Testmail mit [TEST] an die eigene Adresse',
+    count($gr_mails) === 1 &&
+        $gr_mails[0]['to'] === 'pruef@example.net' &&
+        str_starts_with($gr_mails[0]['subject'], '[TEST] ')
+);
 check('Gruß: Testmail vermerkt nichts', get_user_meta($gr_other_day, 'eintrikot_greeted_year', true) === '');
 
 // Verwaltung: Vorschau ohne Namen, Häkchen nur für die Verwaltung, Änderung im Protokoll.
 $gr_outlook = greeting_outlook();
-check('Gruß: Vorschau zählt heute und morgen', count($gr_outlook) === 7 && $gr_outlook[0]['count'] >= 1 && $gr_outlook[1]['count'] >= 1);
+check(
+    'Gruß: Vorschau zählt heute und morgen',
+    count($gr_outlook) === 7 && $gr_outlook[0]['count'] >= 1 && $gr_outlook[1]['count'] >= 1
+);
 wp_set_current_user(1);
-$gr_page = (function () { ob_start(); render_greetings(); return ob_get_clean(); })();
-check('Gruß: Verwaltungsseite mit Schalter, Testmail, ohne Namen', str_contains($gr_page, 'et_greeting_switch') && str_contains($gr_page, 'et_greeting_test') && !str_contains($gr_page, 'Anna Beispiel'));
-check('Gruß: Häkchen im Verwaltungsteil des Profils', str_contains((function () use ($gr_yes) { ob_start(); render_profile($gr_yes); return ob_get_clean(); })(), 'name="no_greeting"'));
+$gr_page = (function () {
+    ob_start();
+    render_greetings();
+    return ob_get_clean();
+})();
+check(
+    'Gruß: Verwaltungsseite mit Schalter, Testmail, ohne Namen',
+    str_contains($gr_page, 'et_greeting_switch') &&
+        str_contains($gr_page, 'et_greeting_test') &&
+        !str_contains($gr_page, 'Anna Beispiel')
+);
+check(
+    'Gruß: Häkchen im Verwaltungsteil des Profils',
+    str_contains(
+        (function () use ($gr_yes) {
+            ob_start();
+            render_profile($gr_yes);
+            return ob_get_clean();
+        })(),
+        'name="no_greeting"'
+    )
+);
 $_POST['no_greeting'] = '1';
 greeting_profile_save($gr_yes, '');
 unset($_POST['no_greeting']);
-check('Gruß: Verwaltung schaltet für ein Konto ab', (bool) get_user_meta($gr_yes, 'eintrikot_no_greeting', true) && !greeting_eligible($gr_yes));
-check('Gruß: Änderung im Protokoll', (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'birthday_greeting'", $gr_yes)) === 1);
+check(
+    'Gruß: Verwaltung schaltet für ein Konto ab',
+    (bool) get_user_meta($gr_yes, 'eintrikot_no_greeting', true) && !greeting_eligible($gr_yes)
+);
+check(
+    'Gruß: Änderung im Protokoll',
+    (int) $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'birthday_greeting'",
+            $gr_yes
+        )
+    ) === 1
+);
 greeting_profile_save($gr_yes, '');
 check('Gruß: Verwaltung schaltet wieder ein', !get_user_meta($gr_yes, 'eintrikot_no_greeting', true));
 wp_set_current_user($gr_other_day);
-check('Gruß: das Mitglied sieht das Häkchen im eigenen Profil nicht', !str_contains((function () use ($gr_other_day) { ob_start(); render_profile($gr_other_day); return ob_get_clean(); })(), 'name="no_greeting"'));
-$gr_denied = (function () { ob_start(); render_greetings(); return ob_get_clean(); })();
+check(
+    'Gruß: das Mitglied sieht das Häkchen im eigenen Profil nicht',
+    !str_contains(
+        (function () use ($gr_other_day) {
+            ob_start();
+            render_profile($gr_other_day);
+            return ob_get_clean();
+        })(),
+        'name="no_greeting"'
+    )
+);
+$gr_denied = (function () {
+    ob_start();
+    render_greetings();
+    return ob_get_clean();
+})();
 check('Gruß: Mitglieder kommen nicht auf die Verwaltungsseite', str_contains($gr_denied, 'Kein Zugriff'));
 wp_set_current_user(0);
-$gr_settings === false ? delete_option('eintrikot_greeting') : update_option('eintrikot_greeting', $gr_settings);
+$gr_settings === false
+    ? delete_option('eintrikot_greeting')
+    : update_option('eintrikot_greeting', $gr_settings);
 wp_clear_scheduled_hook('eintrikot_greetings_retry');
 
 foreach ($created as $id) {
