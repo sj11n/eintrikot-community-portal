@@ -206,7 +206,11 @@ add_action('lostpassword_form', function () {
  * a white logo. Clients that invert colours themselves (Gmail) still show a readable button,
  * because it is light blue with black text rather than black.
  */
-function mail_wrap($inner) {
+/**
+ * $hero (optional): a full-width block right under the logo instead of the coloured band at the top,
+ * used by the birthday greeting. Its own colours stay as they are in dark mode.
+ */
+function mail_wrap($inner, $hero = '') {
     return '<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark"><style>' .
         ':root{color-scheme:light dark;supported-color-schemes:light dark}' .
         '@media (prefers-color-scheme:dark){' .
@@ -217,9 +221,16 @@ function mail_wrap($inner) {
         '[data-ogsc] .et-logo-light{display:none!important}[data-ogsc] .et-logo-dark{display:block!important;max-height:none!important}' .
         '[data-ogsc] .et-text,[data-ogsc] .et-text p,[data-ogsc] .et-text h2,[data-ogsc] .et-text td{color:#f2f2f2!important}' .
         '</style></head><body class="et-bg" style="margin:0;padding:0;background:#edf5f8">' .
-        '<div class="et-bg" style="background:#edf5f8;padding:24px 12px;font-family:Montserrat,Arial,sans-serif;color:#000"><div class="et-card" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden"><div style="height:10px;background:#c8e2ee;background:linear-gradient(90deg,#f1d1dd,#c8e2ee)"></div><div class="et-text" style="padding:28px 28px 8px;color:#000">' .
+        '<div class="et-bg" style="background:#edf5f8;padding:24px 12px;font-family:Montserrat,Arial,sans-serif;color:#000"><div class="et-card" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden">' .
+        ($hero === ''
+            ? '<div style="height:10px;background:#c8e2ee;background:linear-gradient(90deg,#f1d1dd,#c8e2ee)"></div>'
+            : '') .
+        '<div class="et-text" style="padding:28px 28px 8px;color:#000">' .
         '<div style="margin:0 0 28px"><img class="et-logo-light" src="cid:eintrikot-logo" width="165" height="42" alt="EINTRIKOT" style="display:block;border:0;width:165px;height:42px">' .
         '<div class="et-logo-dark" style="display:none;max-height:0;overflow:hidden;mso-hide:all"><img src="cid:eintrikot-logo-dark" width="165" height="42" alt="EINTRIKOT" style="display:block;border:0;width:165px;height:42px"></div></div>' .
+        ($hero === ''
+            ? ''
+            : '</div>' . $hero . '<div class="et-text" style="padding:28px 28px 8px;color:#000">') .
         $inner .
         '</div></div></div></body></html>';
 }

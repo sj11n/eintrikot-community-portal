@@ -10,7 +10,7 @@ Stand: 04.11.2026, Plugin `eintrikot-newsletter` 0.1.1 (braucht Core ab 0.38.0).
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
 | 1. Nach dem Merge spielt **Einspielen** das Plugin mit ein. Es ist danach **nicht aktiv**: Backend → Plugins → „EINTRIKOT Newsletter“ → Aktivieren.                  | A    |
 | 2. Versandweg: SMTP-Plugin mit dem Google-Workspace-Konto des Vereins (App-Passwort oder OAuth, kein persönliches Passwort). Alias `newsletter@eintrikot.de` anlegen. | B    |
-| 3. Echter Cronjob im STRATO-Kundenbereich: jede Minute `https://www.eintrikot.de/wp-cron.php?doing_wp_cron` aufrufen. Ohne ihn kommt der Versand nur bei Seitenaufrufen voran. | B    |
+| 3. Zeitgeber: Das STRATO-Paket hat keine Cronjobs. Stattdessen ruft ein Google-Apps-Script im Vereinskonto jede Minute `wp-cron.php` auf (Abschnitt C). | B    |
 | 4. SPF, DKIM und DMARC prüfen (`docs/12`). Testmails an Gmail, Outlook, web.de und GMX schicken, Spam-Ordner ansehen.                                                 | B, A |
 | 5. Probelauf mit Vorstand und Redaktion als Empfängern (nur sie haben dann „Ja“), danach erste echte Ausgabe.                                                         | B, V |
 
@@ -36,11 +36,28 @@ Zum Abhaken, in dieser Reihenfolge. Werte und Kennwörter nie in Chat, Issue ode
 - [ ] Testmail aus WP Mail SMTP an ein eigenes Gmail-Postfach: kommt an, nicht im Spam.
 - [ ] Grenze im Blick: Google erlaubt pro Postfach etwa 2.000 Mails am Tag. Bei vier Ausgaben an 200 bis 300 Empfänger reicht das deutlich.
 
-**C. Cronjob bei STRATO**
+**C. Zeitgeber für WP-Cron** (Stand 24.11.2026)
 
-- [ ] STRATO-Kundenbereich → Paket → Cronjobs (je nach Paket unter „Hosting“). Neuer Cronjob, jede Minute: `https://www.eintrikot.de/wp-cron.php?doing_wp_cron`.
-- [ ] Wenn das Paket keine Cronjobs kennt: Ohne Cronjob läuft der Versand nur bei Seitenaufrufen. Jeder Seitenaufruf stößt WP-Cron an, und die Fortschrittsseite lädt sich alle 20 Sekunden neu; dann während des Versands diese Seite offen lassen.
-- [ ] Prüfen: Nach der Freigabe einer Probeausgabe steigt „… von … gesendet“ jede Minute, ohne dass jemand die Seite neu lädt.
+WordPress führt geplante Aufgaben (Newsletter-Versand, Geburtstagsgruß, Erinnerungen, Speicherfristen) nur aus, wenn jemand die Seite aufruft. Das STRATO-Paket des Vereins hat **keine Cronjobs** (laut STRATO-FAQ nur ältere Pakete ab „Hosting Plus“ und Premium, dort zudem nur täglich). Deshalb übernimmt ein kleines **Google-Apps-Script** im Google-Workspace-Konto des Vereins den Anstoß: Es ruft jede Minute die Adresse `wp-cron.php` auf. Es überträgt keine Daten und braucht keine Zugangsdaten. Kosten: keine.
+
+- [ ] Mit dem Vereinskonto (nicht privat) auf script.google.com → **Neues Projekt**, Name „EINTRIKOT WP-Cron“.
+- [ ] Den Inhalt ersetzen durch:
+
+  ```js
+  function wpCron() {
+    UrlFetchApp.fetch('https://www.eintrikot.de/wp-cron.php?doing_wp_cron', {
+      muteHttpExceptions: true,
+      followRedirects: true
+    });
+  }
+  ```
+
+  Bis zum Umzug steht dort die Adresse der Testseite (`https://eintrikot.com/wp-cron.php?doing_wp_cron`), danach auf `www.eintrikot.de` ändern.
+- [ ] Speichern, oben `wpCron` auswählen, einmal **Ausführen** und die Berechtigung für „externe Dienste aufrufen“ bestätigen.
+- [ ] Links **Trigger** (Wecker-Symbol) → **Trigger hinzufügen**: Funktion `wpCron`, Ereignisquelle **Zeitgesteuert**, Typ **Minutentimer**, **Jede Minute**. Bei Fehlern Benachrichtigung **täglich**. Speichern.
+- [ ] Prüfen: Unter **Ausführungen** erscheint jede Minute ein Lauf mit Status „Abgeschlossen“. Nach der Freigabe einer Probeausgabe steigt „… von … gesendet“, ohne dass die Seite offen ist.
+- [ ] Grenzen: Google erlaubt im Workspace-Konto 100.000 Aufrufe am Tag; jede Minute sind es 1.440. Fällt Google einmal aus, läuft der Newsletter-Versand weiter, sobald die Fortschrittsseite offen ist (sie lädt sich alle 20 Sekunden neu).
+- [ ] Rückweg: Trigger löschen. Dann läuft WP-Cron wieder nur bei Seitenaufrufen.
 
 **D. DNS (Werte in `docs/12`)**
 

@@ -695,7 +695,9 @@ function render_profile($id) {
             field_error_attrs('donation') .
             '>' .
             field_error_text('donation') .
-            '<small>Wie in MeinVerein. Wird bei einer übernommenen Spenden-Anfrage automatisch aktualisiert.</small></label></div></section>';
+            '<small>Wie in MeinVerein. Wird bei einer übernommenen Spenden-Anfrage automatisch aktualisiert.</small></label></div><div class="field">' .
+            greeting_profile_field($id) . // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the field escapes its own output
+            '</div></section>';
     }
     if ($id !== get_current_user_id()) {
         echo '<label class="field">Grund der Änderung<textarea name="reason" required minlength="5" maxlength="500"' .
@@ -1146,6 +1148,10 @@ add_action('admin_post_et_profile', function () {
     }
     if (is_wp_error($result)) {
         profile_error($id, $data, $result->get_error_message(), $result->get_error_code() === 'conflict');
+    }
+    // Birthday greeting off for this account: only the administration decides, on the member's explicit wish.
+    if (manager_access() && isset($_POST['directory_listing'])) {
+        greeting_profile_save($id, $reason);
     }
     // The newsletter answer belongs to the member alone; the administration never sets it.
     $newsletter = post_choice('newsletter_consent', ['yes', 'no']);

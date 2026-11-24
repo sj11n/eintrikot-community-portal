@@ -979,6 +979,116 @@ check('Newsletter: kein Zugriff auf die Auswahl eines anderen', !str_contains(ne
 wp_set_current_user(0);
 check('Newsletter: ohne Anmeldung kein Hinweis', newsletter_prompt_bar() === '');
 
+/* ---------- Geburtstagsgruß ---------- */
+
+$gr_tz = wp_timezone();
+$gr_at = fn($date, $time = '09:00') => new \DateTimeImmutable($date . ' ' . $time, $gr_tz);
+check('Gruß: Geburtstag heute', greeting_is_birthday($gr_at('1990-05-17'), $gr_at('2027-05-17')));
+check('Gruß: nicht am Tag davor oder danach', !greeting_is_birthday($gr_at('1990-05-17'), $gr_at('2027-05-16')) && !greeting_is_birthday($gr_at('1990-05-17'), $gr_at('2027-05-18')));
+check('Gruß: 29. Februar im Schaltjahr am 29.', greeting_is_birthday($gr_at('1992-02-29'), $gr_at('2028-02-29')) && !greeting_is_birthday($gr_at('1992-02-29'), $gr_at('2028-02-28')));
+check('Gruß: 29. Februar sonst am 28.', greeting_is_birthday($gr_at('1992-02-29'), $gr_at('2027-02-28')) && !greeting_is_birthday($gr_at('1992-02-29'), $gr_at('2027-03-01')));
+
+$gr_mails = [];
+$gr_fail = false;
+add_filter('pre_wp_mail', function ($short, $args) use (&$gr_mails, &$gr_fail) {
+    if ($gr_fail) {
+        return false;
+    }
+    $gr_mails[] = $args;
+    return true;
+}, 99, 2); // nach dem Mail-Abfänger der lokalen Seite, damit ein Fehlschlag durchkommt
+$gr_real = function ($id) {
+    wp_update_user(['ID' => $id, 'user_email' => 'gruss' . $id . '@example.net', 'display_name' => 'Anna Beispiel' . $id]);
+    return $id;
+};
+$gr_today = new \DateTimeImmutable('today', $gr_tz);
+$gr_bday = fn($years) => $gr_today->modify('-' . $years . ' years')->format('Y-m-d');
+$gr_member = ['eintrikot_member_number' => '8801', 'eintrikot_activated_at' => time()];
+$gr_yes = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(35)], $gr_member));
+$gr_other_day = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_today->modify('-35 years +1 day')->format('Y-m-d')], $gr_member));
+$gr_inactive = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(36)], ['eintrikot_member_number' => '8802']));
+$gr_no_number = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(37)], ['eintrikot_activated_at' => time()]));
+$gr_sample = make_user('eintrikot_member', ['birthday' => $gr_bday(38)], $gr_member); // @example.test
+$gr_off = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(39)], $gr_member + ['eintrikot_no_greeting' => 1]));
+$gr_bad_date = $gr_real(make_user('eintrikot_member', ['birthday' => '1990-02-31'], $gr_member));
+$gr_kid = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(15)], $gr_member));
+$gr_kid_ok = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(16)], $gr_member + ['eintrikot_consent' => 'given']));
+$gr_mails = []; // Mails beim Anlegen der Konten (Adressänderung) zählen nicht.
+$gr_due = greeting_due();
+check('Gruß: aktiviertes Mitglied mit Geburtstag heute', in_array($gr_yes, $gr_due, true));
+check('Gruß: Geburtstag morgen nicht heute', !in_array($gr_other_day, $gr_due, true));
+check('Gruß: nicht aktiviert, ohne Mitgliedsnummer, Beispieladresse → keiner', !array_intersect([$gr_inactive, $gr_no_number, $gr_sample], $gr_due));
+check('Gruß: von der Verwaltung ausgeschaltet, ungültiges Datum → keiner', !array_intersect([$gr_off, $gr_bad_date], $gr_due));
+check('Gruß: unter 18 nur mit Zustimmung der Eltern', !in_array($gr_kid, $gr_due, true) && in_array($gr_kid_ok, $gr_due, true));
+
+$gr_settings = get_option('eintrikot_greeting');
+$gr_date = $gr_today->format('Y-m-d');
+update_option('eintrikot_greeting', ['enabled' => false]);
+check('Gruß: Hauptschalter aus → nichts', run_greetings($gr_at($gr_date, '09:00')) === [0, 0] && !$gr_mails);
+update_option('eintrikot_greeting', ['enabled' => true]);
+check('Gruß: vor 8 Uhr → nichts', run_greetings($gr_at($gr_date, '07:59')) === [0, 0] && !$gr_mails);
+[$gr_sent] = run_greetings($gr_at($gr_date, '08:00'));
+$gr_to = array_map(fn($m) => is_array($m['to']) ? $m['to'][0] : $m['to'], $gr_mails);
+check('Gruß: ab 8 Uhr an alle mit Geburtstag', $gr_sent === count($gr_due) && in_array('gruss' . $gr_yes . '@example.net', $gr_to, true));
+check('Gruß: Jahr wird vermerkt', get_user_meta($gr_yes, 'eintrikot_greeted_year', true) === $gr_today->format('Y'));
+$gr_count = count($gr_mails);
+check('Gruß: zweiter Lauf am selben Tag schickt nichts doppelt', run_greetings($gr_at($gr_date, '15:00')) === [0, 0] && count($gr_mails) === $gr_count);
+$gr_first = $gr_mails[array_search('gruss' . $gr_yes . '@example.net', $gr_to, true)];
+check('Gruß: Betreff mit Vorname', $gr_first['subject'] === 'Alles Gute zum Geburtstag, Anna!');
+check('Gruß: Text, Unterschrift, kein Hinweis zum Abschalten, kein Alter', str_contains($gr_first['message'], 'heute hast du Geburtstag') && str_contains($gr_first['message'], 'dein EINTRIKOT-Vorstand') && !str_contains($gr_first['message'], 'abschalten') && !str_contains($gr_first['message'], 'Profil') && !str_contains($gr_first['message'], 'wirst 35'));
+check('Gruß: Kopf statt Farbband', str_contains($gr_first['message'], 'Alles Gute,<br>Anna!') && !str_contains($gr_first['message'], 'height:10px;background:#c8e2ee'));
+
+// Fehler beim Versand: höchstens dreimal am Tag, danach Ruhe; am nächsten Tag kein Nachholen.
+$gr_retry = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(41)], $gr_member));
+$gr_fail = true;
+wp_clear_scheduled_hook('eintrikot_greetings_retry');
+[, $gr_failed] = run_greetings($gr_at($gr_date, '08:00'));
+check('Gruß: Fehler wird gezählt und später erneut versucht', $gr_failed === 1 && wp_next_scheduled('eintrikot_greetings_retry'));
+wp_clear_scheduled_hook('eintrikot_greetings_retry');
+run_greetings($gr_at($gr_date, '09:00'));
+wp_clear_scheduled_hook('eintrikot_greetings_retry');
+run_greetings($gr_at($gr_date, '10:00'));
+check('Gruß: nach drei Versuchen kein weiterer Versuch geplant', !wp_next_scheduled('eintrikot_greetings_retry'));
+$gr_fail = false;
+check('Gruß: nach drei Fehlversuchen am selben Tag nichts mehr', run_greetings($gr_at($gr_date, '11:00')) === [0, 0]);
+check('Gruß: am nächsten Tag kein Nachholen', !in_array($gr_retry, greeting_due($gr_today->modify('+1 day')), true));
+wp_clear_scheduled_hook('eintrikot_greetings_retry');
+check('Gruß: kein Wiederholungsversuch nach Mitternacht', (function () use ($gr_at, $gr_date, $gr_real, $gr_bday, $gr_member, &$gr_fail) {
+    $id = $gr_real(make_user('eintrikot_member', ['birthday' => $gr_bday(42)], $gr_member));
+    $gr_fail = true;
+    run_greetings($gr_at($gr_date, '23:30'));
+    $gr_fail = false;
+    return !wp_next_scheduled('eintrikot_greetings_retry');
+})());
+
+// Testmail: nur an die angegebene Adresse, mit [TEST], ohne Vermerk.
+$gr_mails = [];
+send_greeting($gr_other_day, 'pruef@example.net');
+check('Gruß: Testmail mit [TEST] an die eigene Adresse', count($gr_mails) === 1 && $gr_mails[0]['to'] === 'pruef@example.net' && str_starts_with($gr_mails[0]['subject'], '[TEST] '));
+check('Gruß: Testmail vermerkt nichts', get_user_meta($gr_other_day, 'eintrikot_greeted_year', true) === '');
+
+// Verwaltung: Vorschau ohne Namen, Häkchen nur für die Verwaltung, Änderung im Protokoll.
+$gr_outlook = greeting_outlook();
+check('Gruß: Vorschau zählt heute und morgen', count($gr_outlook) === 7 && $gr_outlook[0]['count'] >= 1 && $gr_outlook[1]['count'] >= 1);
+wp_set_current_user(1);
+$gr_page = (function () { ob_start(); render_greetings(); return ob_get_clean(); })();
+check('Gruß: Verwaltungsseite mit Schalter, Testmail, ohne Namen', str_contains($gr_page, 'et_greeting_switch') && str_contains($gr_page, 'et_greeting_test') && !str_contains($gr_page, 'Anna Beispiel'));
+check('Gruß: Häkchen im Verwaltungsteil des Profils', str_contains((function () use ($gr_yes) { ob_start(); render_profile($gr_yes); return ob_get_clean(); })(), 'name="no_greeting"'));
+$_POST['no_greeting'] = '1';
+greeting_profile_save($gr_yes, '');
+unset($_POST['no_greeting']);
+check('Gruß: Verwaltung schaltet für ein Konto ab', (bool) get_user_meta($gr_yes, 'eintrikot_no_greeting', true) && !greeting_eligible($gr_yes));
+check('Gruß: Änderung im Protokoll', (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target = %d AND field = 'birthday_greeting'", $gr_yes)) === 1);
+greeting_profile_save($gr_yes, '');
+check('Gruß: Verwaltung schaltet wieder ein', !get_user_meta($gr_yes, 'eintrikot_no_greeting', true));
+wp_set_current_user($gr_other_day);
+check('Gruß: das Mitglied sieht das Häkchen im eigenen Profil nicht', !str_contains((function () use ($gr_other_day) { ob_start(); render_profile($gr_other_day); return ob_get_clean(); })(), 'name="no_greeting"'));
+$gr_denied = (function () { ob_start(); render_greetings(); return ob_get_clean(); })();
+check('Gruß: Mitglieder kommen nicht auf die Verwaltungsseite', str_contains($gr_denied, 'Kein Zugriff'));
+wp_set_current_user(0);
+$gr_settings === false ? delete_option('eintrikot_greeting') : update_option('eintrikot_greeting', $gr_settings);
+wp_clear_scheduled_hook('eintrikot_greetings_retry');
+
 foreach ($created as $id) {
     require_once ABSPATH . 'wp-admin/includes/user.php';
     wp_delete_user($id);
