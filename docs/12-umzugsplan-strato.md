@@ -1,6 +1,6 @@
 # Umzugsplan: eintrikot.de auf eigenen STRATO-Webspace
 
-Stand: 03.11.2026. Ergänzt `docs/06` (Ablauf der Adressumstellung) und `docs/09` (Checkliste mit Import). Dieses Dokument beantwortet, **wie die Seite auf den neuen Webspace kommt** und in welcher Reihenfolge Domain, Webspace und DNS umgestellt werden. Hauptadresse: `https://www.eintrikot.de`.
+Stand: 25.11.2026 (Umzug abgeschlossen). Ergänzt `docs/06` (Ablauf der Adressumstellung) und `docs/09` (Checkliste mit Import). Dieses Dokument beantwortet, **wie die Seite auf den neuen Webspace kommt** und in welcher Reihenfolge Domain, Webspace und DNS umgestellt werden. Hauptadresse: `https://www.eintrikot.de`.
 
 **Wer macht was:** B = Björn, V = Vorstand, C = Claude.
 
@@ -71,6 +71,15 @@ Der alte Provider (der Dienstleister, der das DNS bei Hetzner verwaltet) muss am
 
 ## Phase 5: Transfer und Umstellung (Umzugstag)
 
+**Erledigt am 24./25.11.2026.** Transfer abgeschlossen am 25.11.2026, 00:43 Uhr; STRATO hat dabei sofort eigene Standard-Einträge gesetzt (MX auf STRATO-Mail, DMARC `p=reject`, kein SPF/DKIM). Mail war deshalb bis zur Korrektur am Vormittag gestört. Lehre: Der .de-Transfer mit Auth-Code ist nach wenigen Stunden durch, die Zone muss vorher stehen.
+
+- DNS bei STRATO: MX `smtp.google.com` (Priorität „hoch“, im DNS 10), TXT SPF `v=spf1 a mx include:_spf.google.com -all`, Google-Verifizierung, `_dmarc` (eigener Wert, „Keine STRATO DMARC-Regel“), `google._domainkey`. SES- und Inxmail-Einträge, `*`, `mail`, SRV und `default2512._domainkey` entfallen. Sicherung der alten Zone: `docs/entwuerfe/dns-zone-eintrikot-de-2026-11-24.txt`.
+- Webserver: `eintrikot.de` intern auf `/Eintrikot_App`; SSL „STRATO SSL Basic“ zugewiesen (Sectigo, `eintrikot.de` und `www`).
+- WordPress: Datenbank gesichert (phpMyAdmin), Better Search Replace `https://eintrikot.com` und `http://eintrikot.myemmel.com` → `https://www.eintrikot.de`, Adressen und Permalinks gespeichert, `noindex` aus. `SITE_URL` in `Production` = `https://www.eintrikot.de`.
+- Geprüft: alle Varianten von `.de` und `.com` leiten per 301 auf `https://www.eintrikot.de/`, Mail-Test an info@ erfolgreich.
+- `eintrikot.myemmel.com` bleibt Testseite (Phase 7).
+- **Mailversand der Seite (25.11.2026):** Vorher ging WordPress über den STRATO-Mailserver, der den Absender durch `postmaster+…@post.webmailer.de` ersetzt. Jetzt: eigenes Workspace-Konto `service@eintrikot.de` (nur für die Website, 2-Faktor-Authentifizierung, App-Passwort, Weiterleitung an `info@`), WP Mail SMTP „Anderer SMTP“ `smtp.gmail.com:587` TLS, Absender `service@eintrikot.de`, „Absender erzwingen“ aus. Administrator-E-Mail = `service@eintrikot.de` (das Portal nimmt sie als Absender). DKIM in der Admin Console gestartet. Testmail: SPF, DKIM (`eintrikot.de`) und DMARC PASS. `info@` bleibt ohne 2-Faktor-Authentifizierung für den Vorstand nutzbar.
+
 1. **Sicherung** der neuen Seite, Screenshot der alten Zone.
 2. **Auth-Code prüfen** (Gültigkeit), Transfer bei STRATO beauftragen, Zone wie in Phase 4 vorbereitet lassen.
 3. Der alte Provider gibt den Transfer frei und **kündigt die Domain nicht vor dem Abschluss**.
@@ -96,7 +105,7 @@ Der alte Provider (der Dienstleister, der das DNS bei Hetzner verwaltet) muss am
 
 ## Phase 7: Nach dem Umzug
 
-- **Staging behalten:** Die Entwicklungsseite auf `myemmel.com` kann als Testseite bleiben (`noindex`, Testbalken, keine Mails). Neue Fassungen zuerst dort prüfen, dann nach Produktion einspielen.
+- **Staging behalten (entschieden am 25.11.2026):** Die Entwicklungsseite auf `eintrikot.myemmel.com` bleibt Testseite (Testbalken, keine Mails, `noindex` seit Core 0.42.2 per Code). Neue Fassungen zuerst dort prüfen, dann nach Produktion einspielen. Sie läuft nur über `http`.
 - STRATO-Sicherung einmal testweise zurückspielen (nicht auf der Live-Seite).
 - Nach zwei Wochen: DMARC von `quarantine`/`pct=50` auf 100 % anheben, HSTS auf ein Jahr, Kündigungsfrist des alten Anbieters prüfen.
 
@@ -106,6 +115,6 @@ Der alte Provider (der Dienstleister, der das DNS bei Hetzner verwaltet) muss am
 - Welcher Auth-Code gilt bis wann? (B)
 - Läuft auf dem alten Server (188.40.29.79) noch etwas, das erhalten bleiben muss? Er antwortet derzeit mit 403. Vor dem Abschalten Dateien sichern (Frage an den Dienstleister). (B)
 - Lässt STRATO die DNS-Zone vor dem Abschluss des Transfers bearbeiten? Screenshot der Maske vor dem Auftrag. (B)
-- Wer nutzt **Amazon SES** und **Inxmail** (Newsletter, Vereinsmails)? Davon hängt ab, welche Einträge in die neue Zone und in den SPF-Eintrag kommen. Im Zweifel beim Dienstleister und im Vorstand nachfragen. (V, B)
+- ~~Wer nutzt **Amazon SES** und **Inxmail**?~~ Geklärt am 25.11.2026: NDAlumni verschickt nichts mehr für eintrikot.de. SES- und Inxmail-Einträge (einschließlich `newsmail`) entfallen, SPF ohne `include:amazonses.com`.
 - Zweite Domain beim Paket: Kann `eintrikot.de` an denselben Ordner wie `eintrikot.com` angebunden werden, und was kostet das? Die inklusive Domain ist mit `eintrikot.com` belegt. (B)
 - Wurden vor dem Duplicator-Backup alle Test- und Beiratsdaten gelöscht (`docs/10`)? Sonst liegen sie auch auf `.com`. (B)

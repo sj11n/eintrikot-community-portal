@@ -17,6 +17,12 @@ add_filter('pre_wp_mail', function ($short_circuit) {
     return testphase_active() ? false : $short_circuit;
 });
 
+// Keep the test site out of search engines whatever "Settings → Reading" says, so a fresh database copy from
+// production cannot make it indexable. WordPress then sends noindex and a robots.txt that disallows everything.
+add_filter('pre_option_blog_public', function ($value) {
+    return testphase_active() ? '0' : $value;
+});
+
 const FEEDBACK_STATES = [
     'new' => 'Neu',
     'discuss' => 'Besprechen',
