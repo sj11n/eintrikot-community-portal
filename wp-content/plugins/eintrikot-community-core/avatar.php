@@ -27,13 +27,13 @@ function member_avatar_tone($id) {
     return $team === 'Damen' ? 'rose' : ($team === 'Herren' ? 'blue' : 'neutral');
 }
 
-function member_avatar($id, $name) {
+function member_avatar($id, $name, $tone = null) {
     $data = get_user_meta($id, 'eintrikot_avatar', true);
     if (is_string($data) && str_starts_with($data, 'data:image/jpeg;base64,')) {
         return '<img class="et-avatar" src="' . esc_attr($data) . '" alt="" width="64" height="64">';
     }
     return '<span class="et-avatar tone-' .
-        member_avatar_tone((int) $id) .
+        esc_attr($tone ?? member_avatar_tone((int) $id)) .
         '" aria-hidden="true">' .
         esc_html(member_initials($name)) .
         '</span>';

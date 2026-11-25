@@ -2414,33 +2414,58 @@ $sm_user = make_user('eintrikot_member', $sm_profile);
 wp_set_current_user($sm_user);
 $sm_card = $sm_html();
 check(
-    'Zeig dich: Karte mit Vorschau der eigenen Angaben, solange „Über dich“ privat ist',
+    'Zeig dich: zwei getrennte Fragen auf einer Karte (Freigabe und Newsletter)',
     showme_due($sm_user) &&
-        str_contains($sm_card, 'Zeig dich den anderen.') &&
-        str_contains($sm_card, 'Noch keine Angaben geteilt') &&
-        str_contains($sm_card, 'Hamburg · Hamburg · Club an der Alster') &&
-        str_contains($sm_card, 'value="share"')
+        newsletter_prompt_due($sm_user) &&
+        str_contains($sm_card, 'Zwei kurze Fragen zum Start.') &&
+        str_contains($sm_card, 'value="share"') &&
+        str_contains($sm_card, 'value="et_newsletter"') &&
+        str_contains($sm_card, 'value="yes"') &&
+        str_contains($sm_card, esc_html(newsletter_wording())) &&
+        !str_contains($sm_card, 'checked')
 );
 check(
-    'Zeig dich: eine Frage nach der anderen, die Newsletter-Frage wartet',
+    'Zeig dich: Vorschau sind echte Verzeichniskarten, so wie andere sie sehen',
+    str_contains($sm_card, 'Noch keine Angaben geteilt') &&
+        str_contains($sm_card, '<b>Hamburg</b>') &&
+        str_contains($sm_card, 'class="et-avatar tone-neutral"') && // Team privat: keine Farbe
+        str_contains($sm_card, 'class="member-arrow"')
+);
+check(
+    'Zeig dich: keine zweite Newsletter-Leiste neben der Karte',
     !str_contains(portal_shell('', 'portal'), 'newsletter-bar')
 );
 check('Zeig dich: nur auf „Start“', !str_contains(portal_shell('', 'members'), 'showme'));
 check('Zeig dich: Freigeben gelingt', showme_share($sm_user) === true);
 $sm_after = profile_data($sm_user);
 check(
-    'Zeig dich: nur „Über dich“ wird geteilt, der Hockey-Abschnitt bleibt privat',
+    'Zeig dich: nur „Über dich“ wird geteilt, Hockey und Newsletter bleiben unberührt',
     visible_value($sm_after, 'city') === 'Hamburg' &&
         visible_value($sm_after, 'club') === 'Club an der Alster' &&
         visible_value($sm_after, 'team') === '' &&
-        $sm_after['birthday'] === $sm_profile['birthday']
+        $sm_after['birthday'] === $sm_profile['birthday'] &&
+        newsletter_consent($sm_user)['state'] === ''
 );
-check('Zeig dich: danach keine Karte mehr', !showme_due($sm_user));
+check('Zeig dich: Freigabe danach nicht mehr gefragt', !showme_due($sm_user));
+update_user_meta($sm_user, 'eintrikot_showme_done', 1);
+$sm_rest = $sm_html();
+check(
+    'Zeig dich: nach der Freigabe bleibt die Newsletter-Frage auf der Karte',
+    str_contains($sm_rest, 'Noch eine kurze Frage.') &&
+        str_contains($sm_rest, 'Freigegeben.') &&
+        str_contains($sm_rest, 'Newsletter per E-Mail?') &&
+        !str_contains($sm_rest, 'value="share"')
+);
+check(
+    'Zeig dich: beim nächsten Besuch übernimmt die Newsletter-Leiste',
+    $sm_html() === '' && str_contains(portal_shell('', 'portal'), 'newsletter-bar')
+);
+newsletter_set_consent($sm_user, 'no', 'Test');
 update_user_meta($sm_user, 'eintrikot_showme_done', 1);
 $sm_done = $sm_html();
 check(
-    'Zeig dich: Bestätigung genau einmal',
-    str_contains($sm_done, 'Freigegeben.') && str_contains($sm_done, 'abschnitt-hockey') && $sm_html() === ''
+    'Zeig dich: ist alles beantwortet, kommt die grüne Bestätigung genau einmal',
+    str_contains($sm_done, 'showme-done') && str_contains($sm_done, 'abschnitt-hockey') && $sm_html() === ''
 );
 global $wpdb;
 check(
@@ -2454,24 +2479,54 @@ check(
     ) > 0
 );
 
+$sm_nl = make_user('eintrikot_member', $sm_profile);
+newsletter_set_consent($sm_nl, 'yes', 'Test');
+wp_set_current_user($sm_nl);
+$sm_nl_card = $sm_html();
+check(
+    'Zeig dich: Newsletter schon beantwortet, dann nur die Freigabe',
+    str_contains($sm_nl_card, 'Zeig dich den anderen.') && !str_contains($sm_nl_card, 'Newsletter per E-Mail?')
+);
+
 $sm_later = make_user('eintrikot_member', $sm_profile);
 wp_set_current_user($sm_later);
 update_user_meta($sm_later, 'eintrikot_showme_later', time() + SHOWME_LATER_DAYS * DAY_IN_SECONDS);
-check('Zeig dich: „Später“ pausiert die Karte', !showme_due($sm_later) && $sm_html() === '');
+newsletter_postpone($sm_later);
+check(
+    'Zeig dich: „Später erinnern“ pausiert beide Fragen',
+    !showme_due($sm_later) && $sm_html() === '' && !str_contains(portal_shell('', 'portal'), 'newsletter-bar')
+);
 update_user_meta($sm_later, 'eintrikot_showme_later', time() - 1);
-check('Zeig dich: nach der Pause kommt sie wieder', showme_due($sm_later));
+check('Zeig dich: nach der Pause kommt die Freigabe wieder', showme_due($sm_later));
 
 $sm_empty = make_user('eintrikot_member', ['birthday' => day('-40 years')]);
 wp_set_current_user($sm_empty);
 $sm_empty_card = $sm_html();
 check(
-    'Zeig dich: ohne Angaben „Jetzt ergänzen“ statt Freigeben',
-    str_contains($sm_empty_card, 'Jetzt ergänzen') && !str_contains($sm_empty_card, 'value="share"')
+    'Zeig dich: ohne Angaben „Jetzt ergänzen“ statt Freigeben, ohne Vorschau',
+    str_contains($sm_empty_card, 'Jetzt ergänzen') &&
+        !str_contains($sm_empty_card, 'value="share"') &&
+        !str_contains($sm_empty_card, 'showme-preview')
 );
 
 $sm_minor = make_user('eintrikot_member', array_merge($sm_profile, ['birthday' => day('-15 years')]));
 wp_set_current_user($sm_minor);
-check('Zeig dich: nicht für Mitglieder unter 18', !showme_due($sm_minor) && $sm_html() === '');
+$sm_minor_card = $sm_html();
+check(
+    'Zeig dich: unter 18 die Region freigeben, ohne Newsletter',
+    showme_due($sm_minor) &&
+        str_contains($sm_minor_card, 'Gib deine Region frei') &&
+        !str_contains($sm_minor_card, 'Newsletter') &&
+        !str_contains($sm_minor_card, 'Club an der Alster')
+);
+showme_share($sm_minor);
+$sm_minor_after = profile_data($sm_minor);
+check(
+    'Zeig dich: unter 18 bleiben Wohnort und Verein trotzdem verborgen',
+    visible_value($sm_minor_after, 'region') === 'Hamburg' &&
+        visible_value($sm_minor_after, 'city') === '' &&
+        visible_value($sm_minor_after, 'club') === ''
+);
 
 wp_set_current_user($sm_later);
 $_GET['fokus'] = 'about';
