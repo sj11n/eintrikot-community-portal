@@ -83,6 +83,17 @@ function directory_letter($name) {
     return preg_match('/^[A-Z]$/', $first) ? $first : '#';
 }
 
+/** The small line under a name in the directory: team, age class, phase and (bold) place of residence. */
+function member_line_html($shared) {
+    $line = esc_html(
+        implode(' · ', array_filter([$shared['team'] ?? '', $shared['age_class'] ?? '', $shared['phase'] ?? '']))
+    );
+    if (($shared['city'] ?? '') !== '') {
+        $line .= ($line !== '' ? ' · ' : '') . '<b>' . esc_html($shared['city']) . '</b>';
+    }
+    return $line;
+}
+
 function directory_projection($user) {
     $data = profile_data($user->ID);
     $shared = [];
@@ -321,12 +332,7 @@ function render_directory() {
                 esc_html($heading) .
                 '</h2>';
         }
-        $data = $row['shared'];
-        $meta = array_filter([$data['team'], $data['age_class'], $data['phase']]);
-        $line = esc_html(implode(' · ', $meta));
-        if ($data['city'] !== '') {
-            $line .= ($line !== '' ? ' · ' : '') . '<b>' . esc_html($data['city']) . '</b>';
-        }
+        $line = member_line_html($row['shared']);
         echo '<a class="et-member" id="m-' .
             (int) $u->ID .
             '" href="' .

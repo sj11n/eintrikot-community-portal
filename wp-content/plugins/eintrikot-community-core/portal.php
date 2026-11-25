@@ -139,6 +139,7 @@ require_once __DIR__ . '/requests.php';
 require_once __DIR__ . '/audit.php';
 
 require_once __DIR__ . '/home.php';
+require_once __DIR__ . '/showme.php';
 
 require_once __DIR__ . '/certificate.php';
 

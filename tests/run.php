@@ -2395,6 +2395,103 @@ $gr_settings === false
     : update_option('eintrikot_greeting', $gr_settings);
 wp_clear_scheduled_hook('eintrikot_greetings_retry');
 
+/* ---------- „Zeig dich“: erste Karte auf „Start“, bis „Über dich“ freigegeben ist ---------- */
+
+$sm_profile = [
+    'birthday' => day('-40 years'),
+    'city' => 'Hamburg',
+    'region' => 'Hamburg',
+    'club' => 'Club an der Alster',
+    'team' => 'Damen',
+    'visibility' => ['city' => 'private', 'region' => 'private', 'club' => 'private', 'team' => 'private']
+];
+$sm_html = function () {
+    ob_start();
+    echo showme_card();
+    return ob_get_clean();
+};
+$sm_user = make_user('eintrikot_member', $sm_profile);
+wp_set_current_user($sm_user);
+$sm_card = $sm_html();
+check(
+    'Zeig dich: Karte mit Vorschau der eigenen Angaben, solange „Über dich“ privat ist',
+    showme_due($sm_user) &&
+        str_contains($sm_card, 'Zeig dich den anderen.') &&
+        str_contains($sm_card, 'Noch keine Angaben geteilt') &&
+        str_contains($sm_card, 'Hamburg · Hamburg · Club an der Alster') &&
+        str_contains($sm_card, 'value="share"')
+);
+check(
+    'Zeig dich: eine Frage nach der anderen, die Newsletter-Frage wartet',
+    !str_contains(portal_shell('', 'portal'), 'newsletter-bar')
+);
+check('Zeig dich: nur auf „Start“', !str_contains(portal_shell('', 'members'), 'showme'));
+check('Zeig dich: Freigeben gelingt', showme_share($sm_user) === true);
+$sm_after = profile_data($sm_user);
+check(
+    'Zeig dich: nur „Über dich“ wird geteilt, der Hockey-Abschnitt bleibt privat',
+    visible_value($sm_after, 'city') === 'Hamburg' &&
+        visible_value($sm_after, 'club') === 'Club an der Alster' &&
+        visible_value($sm_after, 'team') === '' &&
+        $sm_after['birthday'] === $sm_profile['birthday']
+);
+check('Zeig dich: danach keine Karte mehr', !showme_due($sm_user));
+update_user_meta($sm_user, 'eintrikot_showme_done', 1);
+$sm_done = $sm_html();
+check(
+    'Zeig dich: Bestätigung genau einmal',
+    str_contains($sm_done, 'Freigegeben.') && str_contains($sm_done, 'abschnitt-hockey') && $sm_html() === ''
+);
+global $wpdb;
+check(
+    'Zeig dich: Freigabe steht im Änderungsprotokoll',
+    (int) $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target=%d AND reason LIKE %s",
+            $sm_user,
+            '%Zeig dich%'
+        )
+    ) > 0
+);
+
+$sm_later = make_user('eintrikot_member', $sm_profile);
+wp_set_current_user($sm_later);
+update_user_meta($sm_later, 'eintrikot_showme_later', time() + SHOWME_LATER_DAYS * DAY_IN_SECONDS);
+check('Zeig dich: „Später“ pausiert die Karte', !showme_due($sm_later) && $sm_html() === '');
+update_user_meta($sm_later, 'eintrikot_showme_later', time() - 1);
+check('Zeig dich: nach der Pause kommt sie wieder', showme_due($sm_later));
+
+$sm_empty = make_user('eintrikot_member', ['birthday' => day('-40 years')]);
+wp_set_current_user($sm_empty);
+$sm_empty_card = $sm_html();
+check(
+    'Zeig dich: ohne Angaben „Jetzt ergänzen“ statt Freigeben',
+    str_contains($sm_empty_card, 'Jetzt ergänzen') && !str_contains($sm_empty_card, 'value="share"')
+);
+
+$sm_minor = make_user('eintrikot_member', array_merge($sm_profile, ['birthday' => day('-15 years')]));
+wp_set_current_user($sm_minor);
+check('Zeig dich: nicht für Mitglieder unter 18', !showme_due($sm_minor) && $sm_html() === '');
+
+wp_set_current_user($sm_later);
+$_GET['fokus'] = 'about';
+ob_start();
+render_profile($sm_later);
+$sm_profile_html = ob_get_clean();
+unset($_GET['fokus']);
+check(
+    'Zeig dich: „Im Profil ansehen“ markiert den Abschnitt',
+    str_contains($sm_profile_html, 'id="abschnitt-about"') &&
+        str_contains($sm_profile_html, 'is-focus') &&
+        str_contains($sm_profile_html, 'Hier legst du fest, was andere sehen.')
+);
+check(
+    'Zeig dich: Zeile im Verzeichnis unverändert',
+    member_line_html(['team' => 'Damen', 'age_class' => '', 'phase' => 'Alumni', 'city' => 'Köln']) ===
+        'Damen · Alumni · <b>Köln</b>'
+);
+wp_set_current_user(0);
+
 foreach ($created as $id) {
     require_once ABSPATH . 'wp-admin/includes/user.php';
     wp_delete_user($id);
