@@ -1,0 +1,36 @@
+Live-Abfrage eintrikot.de vor dem Transfer, 24.11.2026 (dig)
+eintrikot.de NS: hydrogen.ns.hetzner.com.
+oxygen.ns.hetzner.com.
+helium.ns.hetzner.de.
+eintrikot.de A: 188.40.29.79
+eintrikot.de MX: 1 smtp.google.com.
+eintrikot.de TXT: "v=spf1 a mx include:amazonses.com include:_spf.google.com -all"
+"google-site-verification=P9e00JDcxbkxKlzm7liCCiOv0_C3WCXOPfiTQ1CPUK0"
+www.eintrikot.de A: 188.40.29.79
+mail.eintrikot.de A: 188.40.29.79
+_dmarc.eintrikot.de TXT: "v=DMARC1;p=quarantine;sp=none;pct=50;adkim=r;aspf=r;"
+google._domainkey.eintrikot.de TXT: "v=DKIM1;k=rsa;p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt0ylso8MfJtacHpl1A19zfbZIienrXrJkobIFvVu74wUJva/XDh5RFCOYLyeqFKJpbcnYDvrs/qhwg10XRLIni1JMwZ07Jf/KDhnWn2lATkE5sH2umJSDFST9d1SoWijHm4PlBic9+UEUfIgJfFc09oNH6ibdeYxNAQsqASPTtKEj1v2qYOf86cxwXabGA7M4cF" "ZmXXijUlaJ7UY1Lo0O4l13LUU+EGKHbs6ZsDuJZA+FHuHzKv6N/NxGMzfQZZpOrVLNJMkrFYscG/JnK618E1My7TrSmFXTBo8YyYnhCWo+0U1aWvMPDX4SetfKtBGHDePBt/SOogQOFTO/1D9/wIDAQAB"
+newsmail.eintrikot.de NS: redir.inxmail-commerce.com.
+newsmail.eintrikot.de A: redir.inxmail-commerce.com.
+93.191.164.121
+newsmail.eintrikot.de AAAA: redir.inxmail-commerce.com.
+newsmail.eintrikot.de MX: redir.inxmail-commerce.com.
+10 mx-in-002.inxserver.de.
+10 mx-in-005.inxserver.de.
+10 mx-in-001.inxserver.de.
+newsmail.eintrikot.de TXT: redir.inxmail-commerce.com.
+"v=spf1 include:inxserver.com mx -all"
+"google-site-verification=JKqmuskE_wqKIdsAy1Kbkf6P4bS0mUwvvBr1qMQYT0c"
+newsmail.eintrikot.de CNAME: redir.inxmail-commerce.com.
+
+Zonenliste vom Dienstleister (24.11.2026), Zusatzeinträge gegenüber der Abfrage oben:
+CNAME 7dqvrvooybn2242ibefklpf4qy7epmsi._domainkey -> 7dqvrvooybn2242ibefklpf4qy7epmsi.dkim.amazonses.com.
+CNAME u6uullye7mktal6nfqtfhjmopnrl6woz._domainkey -> u6uullye7mktal6nfqtfhjmopnrl6woz.dkim.amazonses.com.
+CNAME y26ufruhwkvu24xy4zoi2pntfpqq6i7c._domainkey -> y26ufruhwkvu24xy4zoi2pntfpqq6i7c.dkim.amazonses.com.
+CNAME inx25238512._domainkey -> inx25238512._domainkey.eintrikot-de.domains.inxserver.com.
+CNAME inx64990706._domainkey -> inx64990706._domainkey.eintrikot-de.domains.inxserver.com.
+CNAME inx91815290._domainkey -> inx91815290._domainkey.eintrikot-de.domains.inxserver.com.
+CNAME newsmail -> redir.inxmail-commerce.com.
+A * / mail -> 188.40.29.79 (entfällt)
+SRV _imap._tcp, _imaps._tcp, _submission._tcp -> mail.your-server.de (entfällt)
+TXT default2512._domainkey (alter Hetzner-DKIM, entfällt)

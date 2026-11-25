@@ -32,7 +32,7 @@ Zum Abhaken, in dieser Reihenfolge. Werte und Kennwörter nie in Chat, Issue ode
 
 - [ ] Für das versendende Postfach die Bestätigung in zwei Schritten einschalten und ein **App-Passwort** erzeugen (myaccount.google.com → Sicherheit → App-Passwörter, Name „WordPress eintrikot.de“). Kein persönliches Passwort verwenden.
 - [ ] Backend → Plugins → Installieren: „WP Mail SMTP“. Mailer „Andere SMTP“: Host `smtp.gmail.com`, Verschlüsselung TLS, Port `587`, Authentifizierung an, Benutzer = versendendes Postfach, Passwort = App-Passwort.
-- [ ] Absender-Adresse dort `info@eintrikot.de`, **„Absender-E-Mail erzwingen“ aus** lassen, sonst überschreibt das Plugin `newsletter@`.
+- [x] Absender-Adresse dort `service@eintrikot.de` (Anmeldung mit diesem Konto, eingerichtet am 25.11.2026), **„Absender-E-Mail erzwingen“ aus** lassen, sonst überschreibt das Plugin `newsletter@`. `newsletter@` muss in `service@` als „Senden als“-Adresse hinterlegt sein, sonst ersetzt Google den Absender durch `service@`.
 - [ ] Testmail aus WP Mail SMTP an ein eigenes Gmail-Postfach: kommt an, nicht im Spam.
 - [ ] Grenze im Blick: Google erlaubt pro Postfach etwa 2.000 Mails am Tag. Bei vier Ausgaben an 200 bis 300 Empfänger reicht das deutlich.
 
