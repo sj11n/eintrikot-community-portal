@@ -78,6 +78,7 @@ Der alte Provider (der Dienstleister, der das DNS bei Hetzner verwaltet) muss am
 - WordPress: Datenbank gesichert (phpMyAdmin), Better Search Replace `https://eintrikot.com` und `http://eintrikot.myemmel.com` → `https://www.eintrikot.de`, Adressen und Permalinks gespeichert, `noindex` aus. `SITE_URL` in `Production` = `https://www.eintrikot.de`.
 - Geprüft: alle Varianten von `.de` und `.com` leiten per 301 auf `https://www.eintrikot.de/`, Mail-Test an info@ erfolgreich.
 - `eintrikot.myemmel.com` bleibt Testseite (Phase 7).
+- **Mailversand der Seite (25.11.2026):** Vorher ging WordPress über den STRATO-Mailserver, der den Absender durch `postmaster+…@post.webmailer.de` ersetzt. Jetzt: eigenes Workspace-Konto `service@eintrikot.de` (nur für die Website, 2-Faktor-Authentifizierung, App-Passwort, Weiterleitung an `info@`), WP Mail SMTP „Anderer SMTP“ `smtp.gmail.com:587` TLS, Absender `service@eintrikot.de`, „Absender erzwingen“ aus. Administrator-E-Mail = `service@eintrikot.de` (das Portal nimmt sie als Absender). DKIM in der Admin Console gestartet. Testmail: SPF, DKIM (`eintrikot.de`) und DMARC PASS. `info@` bleibt ohne 2-Faktor-Authentifizierung für den Vorstand nutzbar.
 
 1. **Sicherung** der neuen Seite, Screenshot der alten Zone.
 2. **Auth-Code prüfen** (Gültigkeit), Transfer bei STRATO beauftragen, Zone wie in Phase 4 vorbereitet lassen.
