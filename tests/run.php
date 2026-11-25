@@ -1074,7 +1074,23 @@ check(
     testphase_active() && str_contains(testphase_bar(), 'Rückmeldung geben')
 );
 check('Testphase: keine E-Mail wird verschickt', apply_filters('pre_wp_mail', null, $tp_mail) === false);
+$tp_robots = function () {
+    ob_start();
+    wp_robots();
+    return (string) ob_get_clean();
+};
+$tp_public = get_option('blog_public');
+update_option('blog_public', '1');
+check(
+    'Testphase: Suchmaschinen ausgesperrt, auch wenn die Einstellung sie erlaubt',
+    get_option('blog_public') === '0' && str_contains($tp_robots(), 'noindex')
+);
 remove_filter('eintrikot_testphase', '__return_true');
+check(
+    'Testphase: außerhalb der Phase gilt die Einstellung',
+    (string) get_option('blog_public') === '1' && !str_contains($tp_robots(), 'noindex')
+);
+update_option('blog_public', $tp_public);
 check('Testphase: Mailsperre nur während der Phase', apply_filters('pre_wp_mail', null, $tp_mail) !== false);
 
 $tp_users_before = count(get_users(['fields' => 'ID']));
