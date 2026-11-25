@@ -55,6 +55,8 @@
                 <element value="field_error_attrs"/>
                 <element value="membership_box"/>
                 <element value="section_visibility_switch"/>
+                <element value="profile_focus_hint"/>
+                <element value="member_card_html"/>
                 <element value="avatar_cropper_markup"/>
                 <element value="consent_manual_form"/>
             </property>

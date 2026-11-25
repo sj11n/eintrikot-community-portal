@@ -106,7 +106,9 @@ function showme_share_step($data, $numbered) {
                 '<a class="button" href="' .
                 esc_url(profile_focus_url('about')) .
                 '">Im Profil ansehen</a>'
-            : '<a class="button solid" href="' . esc_url(profile_focus_url('about')) . '">Jetzt ergänzen</a>') .
+            : '<a class="button solid" href="' .
+                esc_url(profile_focus_url('about')) .
+                '">Jetzt ergänzen</a>') .
         ($numbered ? '' : showme_button('later', 'Später', 'text-link')) .
         '</form></div>';
 }
@@ -115,7 +117,9 @@ function showme_share_step($data, $numbered) {
 function showme_shared_step($data) {
     $values = showme_values($data);
     return '<div class="showme-step showme-step-done"><h3><span class="step-no">✓</span>Freigegeben.</h3><p>' .
-        ($values ? 'Andere Mitglieder sehen jetzt: <strong>' . esc_html(implode(' · ', $values)) . '</strong>. ' : '') .
+        ($values
+            ? 'Andere Mitglieder sehen jetzt: <strong>' . esc_html(implode(' · ', $values)) . '</strong>. '
+            : '') .
         '<a class="text-link" href="' .
         esc_url(profile_focus_url('hockey')) .
         '">Auch Hockey-Lebenslauf zeigen →</a></p></div>';
@@ -196,7 +200,9 @@ function showme_card() {
         $values = showme_values($data);
         return '<section class="showme showme-done" role="status" aria-labelledby="showme-title"><div class="showme-text"><h2 id="showme-title">Freigegeben.</h2><p>' .
             ($values
-                ? 'Andere Mitglieder sehen jetzt: <strong>' . esc_html(implode(' · ', $values)) . '</strong>. '
+                ? 'Andere Mitglieder sehen jetzt: <strong>' .
+                    esc_html(implode(' · ', $values)) .
+                    '</strong>. '
                 : '') .
             'Du kannst das jederzeit im Profil ändern.</p><div class="showme-actions"><a class="button" href="' .
             esc_url(profile_focus_url('hockey')) .

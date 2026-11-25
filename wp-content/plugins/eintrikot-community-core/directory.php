@@ -86,7 +86,10 @@ function directory_letter($name) {
 /** The small line under a name in the directory: team, age class, phase and (bold) place of residence. */
 function member_line_html($shared) {
     $line = esc_html(
-        implode(' · ', array_filter([$shared['team'] ?? '', $shared['age_class'] ?? '', $shared['phase'] ?? '']))
+        implode(
+            ' · ',
+            array_filter([$shared['team'] ?? '', $shared['age_class'] ?? '', $shared['phase'] ?? ''])
+        )
     );
     if (($shared['city'] ?? '') !== '') {
         $line .= ($line !== '' ? ' · ' : '') . '<b>' . esc_html($shared['city']) . '</b>';
