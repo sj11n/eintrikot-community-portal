@@ -626,14 +626,15 @@ function send_welcome_mail($to, $first_name, $login, $number, $link, $pdf, $user
             $p('Hallo ' . esc_html($first_name) . ',') .
             ($existing
                 ? $p(
-                        'EINTRIKOT zieht um: Wir verlassen NDAlumni und haben jetzt ein eigenes Mitgliederportal. Dort findest du ab sofort andere Mitglieder, Vereinsinfos und Termine – und dein Profil. Deine Mitgliedschaft läuft unverändert weiter; Beitrag und Jahresspende verwalten wir jetzt in MeinVerein.'
+                        'EINTRIKOT ist umgezogen: Wir haben jetzt unser eigenes Mitgliederportal. Dort findest du ab sofort andere Mitglieder, Infos aus dem Verein und Termine – und natürlich dein Profil. Weil das Portal uns gehört, können wir es so gestalten, wie der Verein es braucht. Außerdem ist es günstiger als bisher: Was wir sparen, fließt in die Förderung.'
                     ) .
-                    '<h2 style="margin:28px 0 12px;font-size:18px">Bitte prüfe dein Profil</h2>' .
+                    '<h2 style="margin:28px 0 12px;font-size:18px">Dein erster Schritt: Profil prüfen und Foto hochladen</h2>' .
                     $p(
-                        'Deine Angaben aus NDAlumni haben wir übernommen: Beruf, Hockey-Stationen, Interessen und Links. Alles ist zunächst nur für dich und die Mitgliederverwaltung sichtbar. Schau bitte einmal drüber, ergänze, was fehlt, und entscheide pro Abschnitt, was andere Mitglieder sehen. Erst dann erscheinst du mit mehr als deinem Namen im Mitgliederverzeichnis.'
+                        'Deine bisherigen Angaben haben wir für dich übernommen: Beruf, Hockey-Stationen, Interessen und Links. Sichtbar ist davon vorerst nur dein Name, und zwar nur für angemeldete Mitglieder. Alles andere sehen nur du und die Mitgliederverwaltung. Schau bitte einmal drüber, ergänze, was fehlt, und lade ein Foto hoch. Dann entscheide pro Abschnitt, was andere Mitglieder sehen dürfen. Je mehr du teilst, desto leichter finden dich alte Teamkameradinnen und Teamkameraden – davon lebt unser Netzwerk.'
                     ) .
+                    '<h2 style="margin:28px 0 12px;font-size:18px">Newsletter: nur mit deinem Ja</h2>' .
                     $p(
-                        'Den Newsletter bekommst du im neuen Portal nur, wenn du zustimmst. Das Portal fragt dich dazu beim Anmelden.'
+                        'Unseren Newsletter bekommst du im neuen Portal nur, wenn du ausdrücklich zustimmst. Die Frage dazu findest du auf der Startseite des Portals, gleich nach deiner ersten Anmeldung. Ein Klick genügt.'
                     )
                 : $p(
                     'willkommen bei EINTRIKOT – schön, dass du dabei bist. Im Anhang findest du deine persönliche Mitgliedsurkunde' .
@@ -645,7 +646,9 @@ function send_welcome_mail($to, $first_name, $login, $number, $link, $pdf, $user
             ($existing ? '' : $p('<em>Du hast das Trikot getragen. Jetzt trägst du es weiter.</em>')) .
             '<h2 style="margin:28px 0 12px;font-size:18px">Dein Zugang zum Mitgliederportal</h2>' .
             ($existing
-                ? $p('Lege zuerst dein Passwort fest. Danach landest du direkt in deinem Profil.')
+                ? $p(
+                    'Lege zuerst dein Passwort fest und notiere es dir gut. Danach landest du direkt auf der Startseite des Portals.'
+                )
                 : $p(
                     'Im Portal findest du andere Mitglieder, Vereinsinfos und Termine. Dein Profil pflegst du selbst – du entscheidest, was andere Mitglieder sehen.'
                 )) .
@@ -765,10 +768,9 @@ add_filter(
             if (!(int) get_option('eintrikot_portal_page')) {
                 return $redirect;
             }
-            // Profiles taken over from NDAlumni: first stop is the profile, until it has been saved once.
-            return get_user_meta($user->ID, 'eintrikot_review', true) === 'pending'
-                ? portal_url('profile')
-                : portal_url();
+            // Everyone lands on "Start": the first card there asks for sharing and the newsletter, and the
+            // profile check of taken-over profiles is one click away (decision of 25.11.2026).
+            return portal_url();
         }
         return $redirect;
     },

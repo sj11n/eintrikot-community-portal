@@ -2561,6 +2561,26 @@ check(
     member_line_html(['team' => 'Damen', 'age_class' => '', 'phase' => 'Alumni', 'city' => 'Köln']) ===
         'Damen · Alumni · <b>Köln</b>'
 );
+// Umstiegsmail und erster Halt nach dem Passwort
+$gr_fail = false;
+$gr_mails = [];
+send_welcome_mail('umstieg@example.net', 'Anna', 'anna', '', home_url('/'), '', 0, true);
+$um_body = (string) ($gr_mails[0]['message'] ?? '');
+check(
+    'Umstiegsmail: neuer Text ohne Systemnamen',
+    str_contains($um_body, 'EINTRIKOT ist umgezogen') &&
+        str_contains($um_body, 'Was wir sparen, fließt in die Förderung') &&
+        str_contains($um_body, 'Newsletter: nur mit deinem Ja') &&
+        str_contains($um_body, 'direkt auf der Startseite des Portals') &&
+        !str_contains($um_body, 'NDAlumni') &&
+        !str_contains($um_body, 'MeinVerein')
+);
+update_user_meta($sm_later, 'eintrikot_review', 'pending');
+check(
+    'Anmeldung: übernommenes Profil landet auf Start, nicht im Profil',
+    apply_filters('login_redirect', admin_url(), '', get_user_by('id', $sm_later)) === portal_url()
+);
+delete_user_meta($sm_later, 'eintrikot_review');
 wp_set_current_user(0);
 
 foreach ($created as $id) {
