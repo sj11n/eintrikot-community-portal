@@ -2411,6 +2411,158 @@ $gr_settings === false
     : update_option('eintrikot_greeting', $gr_settings);
 wp_clear_scheduled_hook('eintrikot_greetings_retry');
 
+/* ---------- „Zeig dich“: erste Karte auf „Start“, bis „Über dich“ freigegeben ist ---------- */
+
+$sm_profile = [
+    'birthday' => day('-40 years'),
+    'city' => 'Hamburg',
+    'region' => 'Hamburg',
+    'club' => 'Club an der Alster',
+    'team' => 'Damen',
+    'visibility' => ['city' => 'private', 'region' => 'private', 'club' => 'private', 'team' => 'private']
+];
+$sm_html = function () {
+    ob_start();
+    echo showme_card();
+    return ob_get_clean();
+};
+$sm_user = make_user('eintrikot_member', $sm_profile);
+wp_set_current_user($sm_user);
+$sm_card = $sm_html();
+check(
+    'Zeig dich: zwei getrennte Fragen auf einer Karte (Freigabe und Newsletter)',
+    showme_due($sm_user) &&
+        newsletter_prompt_due($sm_user) &&
+        str_contains($sm_card, 'Zwei kurze Fragen zum Start.') &&
+        str_contains($sm_card, 'value="share"') &&
+        str_contains($sm_card, 'value="et_newsletter"') &&
+        str_contains($sm_card, 'value="yes"') &&
+        str_contains($sm_card, esc_html(newsletter_wording())) &&
+        !str_contains($sm_card, 'checked')
+);
+check(
+    'Zeig dich: Vorschau sind echte Verzeichniskarten, so wie andere sie sehen',
+    str_contains($sm_card, 'Noch keine Angaben geteilt') &&
+        str_contains($sm_card, '<b>Hamburg</b>') &&
+        str_contains($sm_card, 'class="et-avatar tone-neutral"') && // Team privat: keine Farbe
+        str_contains($sm_card, 'class="member-arrow"')
+);
+check(
+    'Zeig dich: keine zweite Newsletter-Leiste neben der Karte',
+    !str_contains(portal_shell('', 'portal'), 'newsletter-bar')
+);
+check('Zeig dich: nur auf „Start“', !str_contains(portal_shell('', 'members'), 'showme'));
+check('Zeig dich: Freigeben gelingt', showme_share($sm_user) === true);
+$sm_after = profile_data($sm_user);
+check(
+    'Zeig dich: nur „Über dich“ wird geteilt, Hockey und Newsletter bleiben unberührt',
+    visible_value($sm_after, 'city') === 'Hamburg' &&
+        visible_value($sm_after, 'club') === 'Club an der Alster' &&
+        visible_value($sm_after, 'team') === '' &&
+        $sm_after['birthday'] === $sm_profile['birthday'] &&
+        newsletter_consent($sm_user)['state'] === ''
+);
+check('Zeig dich: Freigabe danach nicht mehr gefragt', !showme_due($sm_user));
+update_user_meta($sm_user, 'eintrikot_showme_done', 1);
+$sm_rest = $sm_html();
+check(
+    'Zeig dich: nach der Freigabe bleibt die Newsletter-Frage auf der Karte',
+    str_contains($sm_rest, 'Noch eine kurze Frage.') &&
+        str_contains($sm_rest, 'Freigegeben.') &&
+        str_contains($sm_rest, 'Newsletter per E-Mail?') &&
+        !str_contains($sm_rest, 'value="share"')
+);
+check(
+    'Zeig dich: beim nächsten Besuch übernimmt die Newsletter-Leiste',
+    $sm_html() === '' && str_contains(portal_shell('', 'portal'), 'newsletter-bar')
+);
+newsletter_set_consent($sm_user, 'no', 'Test');
+update_user_meta($sm_user, 'eintrikot_showme_done', 1);
+$sm_done = $sm_html();
+check(
+    'Zeig dich: ist alles beantwortet, kommt die grüne Bestätigung genau einmal',
+    str_contains($sm_done, 'showme-done') && str_contains($sm_done, 'abschnitt-hockey') && $sm_html() === ''
+);
+global $wpdb;
+check(
+    'Zeig dich: Freigabe steht im Änderungsprotokoll',
+    (int) $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}eintrikot_audit WHERE target=%d AND reason LIKE %s",
+            $sm_user,
+            '%Zeig dich%'
+        )
+    ) > 0
+);
+
+$sm_nl = make_user('eintrikot_member', $sm_profile);
+newsletter_set_consent($sm_nl, 'yes', 'Test');
+wp_set_current_user($sm_nl);
+$sm_nl_card = $sm_html();
+check(
+    'Zeig dich: Newsletter schon beantwortet, dann nur die Freigabe',
+    str_contains($sm_nl_card, 'Zeig dich den anderen.') && !str_contains($sm_nl_card, 'Newsletter per E-Mail?')
+);
+
+$sm_later = make_user('eintrikot_member', $sm_profile);
+wp_set_current_user($sm_later);
+update_user_meta($sm_later, 'eintrikot_showme_later', time() + SHOWME_LATER_DAYS * DAY_IN_SECONDS);
+newsletter_postpone($sm_later);
+check(
+    'Zeig dich: „Später erinnern“ pausiert beide Fragen',
+    !showme_due($sm_later) && $sm_html() === '' && !str_contains(portal_shell('', 'portal'), 'newsletter-bar')
+);
+update_user_meta($sm_later, 'eintrikot_showme_later', time() - 1);
+check('Zeig dich: nach der Pause kommt die Freigabe wieder', showme_due($sm_later));
+
+$sm_empty = make_user('eintrikot_member', ['birthday' => day('-40 years')]);
+wp_set_current_user($sm_empty);
+$sm_empty_card = $sm_html();
+check(
+    'Zeig dich: ohne Angaben „Jetzt ergänzen“ statt Freigeben, ohne Vorschau',
+    str_contains($sm_empty_card, 'Jetzt ergänzen') &&
+        !str_contains($sm_empty_card, 'value="share"') &&
+        !str_contains($sm_empty_card, 'showme-preview')
+);
+
+$sm_minor = make_user('eintrikot_member', array_merge($sm_profile, ['birthday' => day('-15 years')]));
+wp_set_current_user($sm_minor);
+$sm_minor_card = $sm_html();
+check(
+    'Zeig dich: unter 18 die Region freigeben, ohne Newsletter',
+    showme_due($sm_minor) &&
+        str_contains($sm_minor_card, 'Gib deine Region frei') &&
+        !str_contains($sm_minor_card, 'Newsletter') &&
+        !str_contains($sm_minor_card, 'Club an der Alster')
+);
+showme_share($sm_minor);
+$sm_minor_after = profile_data($sm_minor);
+check(
+    'Zeig dich: unter 18 bleiben Wohnort und Verein trotzdem verborgen',
+    visible_value($sm_minor_after, 'region') === 'Hamburg' &&
+        visible_value($sm_minor_after, 'city') === '' &&
+        visible_value($sm_minor_after, 'club') === ''
+);
+
+wp_set_current_user($sm_later);
+$_GET['fokus'] = 'about';
+ob_start();
+render_profile($sm_later);
+$sm_profile_html = ob_get_clean();
+unset($_GET['fokus']);
+check(
+    'Zeig dich: „Im Profil ansehen“ markiert den Abschnitt',
+    str_contains($sm_profile_html, 'id="abschnitt-about"') &&
+        str_contains($sm_profile_html, 'is-focus') &&
+        str_contains($sm_profile_html, 'Hier legst du fest, was andere sehen.')
+);
+check(
+    'Zeig dich: Zeile im Verzeichnis unverändert',
+    member_line_html(['team' => 'Damen', 'age_class' => '', 'phase' => 'Alumni', 'city' => 'Köln']) ===
+        'Damen · Alumni · <b>Köln</b>'
+);
+wp_set_current_user(0);
+
 foreach ($created as $id) {
     require_once ABSPATH . 'wp-admin/includes/user.php';
     wp_delete_user($id);

@@ -298,6 +298,13 @@ function section_visibility_state($data, $group) {
 }
 
 /** One switch per section instead of a selector per field. Off = only the club administration sees it. */
+/** Note on a profile section reached from "Start" (?fokus=…). */
+function profile_focus_hint($focused) {
+    return $focused
+        ? '<p class="focus-hint"><strong>Hier legst du fest, was andere sehen.</strong> Prüf die Angaben, leg den Schalter um und speichere unten.</p>'
+        : '';
+}
+
 function section_visibility_switch($group, $data) {
     $slug = profile_group_slugs()[$group] ?? '';
     // Name and photo are always visible; in the first section the switch covers only the rest.
@@ -556,23 +563,40 @@ function render_profile($id) {
         '"><input type="hidden" name="revision" value="' .
         esc_attr(profile_revision($id)) .
         '">';
+    // Links like "Im Profil ansehen" on "Start" jump to a section (?fokus=about#abschnitt-about) and mark it.
+    $focus =
+        $own && isset($_GET['fokus']) && is_string($_GET['fokus'])
+            ? sanitize_key(wp_unslash($_GET['fokus']))
+            : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only marks a section
     foreach (profile_groups() as $group => $fields) {
         $extra = in_array($group, ['Beruf & Ausbildung', 'Interessen & Mitmachen', 'Social Media'], true);
         $state = section_visibility_state($data, $group);
+        $slug = profile_group_slugs()[$group];
+        $focused = $focus === $slug;
         echo $extra
-            ? '<details class="form-section profile-extra"' .
-                (array_intersect_key(profile_field_errors(), $fields) ? ' open' : '') .
+            ? '<details class="form-section profile-extra' .
+                ($focused ? ' is-focus' : '') .
+                '" id="abschnitt-' .
+                esc_attr($slug) .
+                '"' .
+                (array_intersect_key(profile_field_errors(), $fields) || $focused ? ' open' : '') .
                 '><summary>' .
                 esc_html($group) .
                 '<span class="visibility-badge">' .
                 ($state === 'all' ? 'sichtbar' : ($state === 'mixed' ? 'teilweise' : 'privat')) .
                 '</span></summary>' .
+                profile_focus_hint($focused) .
                 section_visibility_switch($group, $data)
-            : '<section class="form-section"><div class="section-head"><h2>' .
+            : '<section class="form-section' .
+                ($focused ? ' is-focus' : '') .
+                '" id="abschnitt-' .
+                esc_attr($slug) .
+                '"><div class="section-head"><h2>' .
                 esc_html($group) .
                 '</h2>' .
                 section_visibility_switch($group, $data) .
-                '</div>';
+                '</div>' .
+                profile_focus_hint($focused);
         echo '<div class="form-grid">';
         if ($group === 'Über dich') {
             $has_photo =

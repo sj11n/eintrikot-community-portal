@@ -83,6 +83,47 @@ function directory_letter($name) {
     return preg_match('/^[A-Z]$/', $first) ? $first : '#';
 }
 
+/** The small line under a name in the directory: team, age class, phase and (bold) place of residence. */
+function member_line_html($shared) {
+    $line = esc_html(
+        implode(
+            ' · ',
+            array_filter([$shared['team'] ?? '', $shared['age_class'] ?? '', $shared['phase'] ?? ''])
+        )
+    );
+    if (($shared['city'] ?? '') !== '') {
+        $line .= ($line !== '' ? ' · ' : '') . '<b>' . esc_html($shared['city']) . '</b>';
+    }
+    return $line;
+}
+
+/**
+ * One card of the directory. $line comes from member_line_html(); $tone overrides the avatar colour
+ * (the "Zeig dich" preview shows the colour other members see, not the own one).
+ */
+function member_card_html($user, $line, $href, $linkedin, $tone = null, $id = '') {
+    return '<a class="et-member"' .
+        ($id !== '' ? ' id="' . esc_attr($id) . '"' : '') .
+        ' href="' .
+        esc_url($href) .
+        '">' .
+        member_avatar($user->ID, $user->display_name, $tone) .
+        '<span><strong><span class="member-name">' .
+        esc_html($user->display_name) .
+        '</span>' .
+        // Small LinkedIn mark: this member shares a LinkedIn profile (the link itself is on the profile).
+        ($linkedin && social_logo('linkedin') !== ''
+            ? '<img class="member-linkedin" src="' .
+                esc_url(plugins_url(social_logo('linkedin'), __FILE__)) .
+                '" alt="(auf LinkedIn)" title="Auf LinkedIn" width="16" height="16">'
+            : '') .
+        '</strong>' .
+        ($line !== ''
+            ? '<small>' . wp_kses($line, ['b' => []]) . '</small>'
+            : '<small>Noch keine Angaben geteilt</small>') .
+        '</span><span class="member-arrow" aria-hidden="true">→</span></a>';
+}
+
 function directory_projection($user) {
     $data = profile_data($user->ID);
     $shared = [];
@@ -321,33 +362,14 @@ function render_directory() {
                 esc_html($heading) .
                 '</h2>';
         }
-        $data = $row['shared'];
-        $meta = array_filter([$data['team'], $data['age_class'], $data['phase']]);
-        $line = esc_html(implode(' · ', $meta));
-        if ($data['city'] !== '') {
-            $line .= ($line !== '' ? ' · ' : '') . '<b>' . esc_html($data['city']) . '</b>';
-        }
-        echo '<a class="et-member" id="m-' .
-            (int) $u->ID .
-            '" href="' .
-            esc_url(portal_url('member', array_filter(['member' => $u->ID, 'back' => rawurlencode($back)]))) .
-            '">' .
-            member_avatar($u->ID, $u->display_name) .
-            '<span><strong><span class="member-name">' .
-            esc_html($u->display_name) .
-            '</span>' .
-            // Small LinkedIn mark: this member shares a LinkedIn profile (the link itself is on the profile).
-            (social_logo('linkedin') !== '' &&
-            str_starts_with((string) visible_value(profile_data($u->ID), 'linkedin'), 'https://')
-                ? '<img class="member-linkedin" src="' .
-                    esc_url(plugins_url(social_logo('linkedin'), __FILE__)) .
-                    '" alt="(auf LinkedIn)" title="Auf LinkedIn" width="16" height="16">'
-                : '') .
-            '</strong>' .
-            ($line !== ''
-                ? '<small>' . wp_kses($line, ['b' => []]) . '</small>'
-                : '<small>Noch keine Angaben geteilt</small>') .
-            '</span><span class="member-arrow" aria-hidden="true">→</span></a>';
+        echo member_card_html(
+            $u,
+            member_line_html($row['shared']),
+            portal_url('member', array_filter(['member' => $u->ID, 'back' => rawurlencode($back)])),
+            str_starts_with((string) visible_value(profile_data($u->ID), 'linkedin'), 'https://'),
+            null,
+            'm-' . $u->ID
+        );
     }
     echo '</div>';
     if (!$total) {
