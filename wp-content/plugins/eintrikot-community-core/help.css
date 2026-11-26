@@ -28,6 +28,7 @@
 .et-help img,
 .et-help video {
     max-width: 100%;
+    height: auto; /* width/height attributes only reserve space; never stretch a picture */
     display: block;
 }
 .et-help main:focus {
@@ -631,6 +632,9 @@
 .et-help .hw-handy p {
     margin: 0;
     max-width: 440px;
+}
+.et-help .hw-telefon img {
+    width: 100%;
 }
 .et-help .hw-telefon {
     border-radius: 34px;
