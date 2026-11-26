@@ -2603,6 +2603,93 @@ check(
 delete_user_meta($sm_later, 'eintrikot_review');
 wp_set_current_user(0);
 
+/* ---------- Mitglieder-Hilfe ---------- */
+
+$hw_dir = WP_PLUGIN_DIR . '/eintrikot-community-core/help/';
+$hw_boxes = help_boxes();
+$hw_problems = [];
+foreach (help_articles() as $slug => $a) {
+    if (!isset(help_topics()[$a['topic']])) {
+        $hw_problems[] = "$slug: Thema";
+    }
+    if (count($a['steps']) > 5) {
+        $hw_problems[] = "$slug: mehr als fünf Schritte";
+    }
+    foreach ($a['steps'] as $step) {
+        if (!empty($step['shot']) && !is_file($hw_dir . $step['shot'] . '.webp')) {
+            $hw_problems[] = "$slug: Bild {$step['shot']}";
+        }
+        foreach ($step['marks'] ?? [] as $mark) {
+            if (!isset($hw_boxes[$step['shot']]['t'][$mark['el']])) {
+                $hw_problems[] = "$slug: Markierung {$step['shot']}.{$mark['el']}";
+            }
+        }
+    }
+    if (!empty($a['video']) && !is_file($hw_dir . $a['video']['file'] . '.webm')) {
+        $hw_problems[] = "$slug: Video";
+    }
+    if (!empty($a['phone']) && !is_file($hw_dir . $a['phone']['shot'] . '.webp')) {
+        $hw_problems[] = "$slug: Handybild";
+    }
+    foreach ($a['related'] ?? [] as $r) {
+        if (!isset(help_articles()[$r])) {
+            $hw_problems[] = "$slug: Verweis $r";
+        }
+    }
+}
+foreach (['portal', 'members', 'member', 'events', 'infos', 'service', 'request', 'profile'] as $v) {
+    if (!isset(help_articles()[help_context_article($v)])) {
+        $hw_problems[] = "?-Knopf $v";
+    }
+}
+check('Hilfe: Bilder, Videos, Markierungen und Verweise vollständig (' . implode(', ', $hw_problems) . ')', !$hw_problems);
+check('Hilfe: „?“ auf Termine führt zur Termin-Anleitung', help_context_article('aktuelles', 'termine') === 'termin-anmelden');
+check('Hilfe: „?“ auf Vereinsinfos führt zu Vereinsinfos', help_context_article('aktuelles') === 'vereinsinfos');
+
+$hw_mark = help_mark_geometry('termine-liste', ['el' => 'anmelden', 'at' => 'right']);
+check(
+    'Hilfe: Nummer liegt im Bild und neben dem markierten Element',
+    $hw_mark && $hw_mark['px'] > $hw_mark['x'] + $hw_mark['bw'] && $hw_mark['px'] <= 1280 - 28
+);
+check('Hilfe: unbekanntes Element ergibt keine Markierung', help_mark_geometry('termine-liste', ['el' => 'gibtesnicht']) === null);
+
+// Ohne Anmeldung: nur die Anleitung zur Anmeldung.
+wp_set_current_user(0);
+check('Hilfe ohne Anmeldung: nur öffentliche Anleitungen', array_keys(help_visible_articles()) === ['anmelden']);
+$_GET = ['view' => 'hilfe', 'artikel' => 'termin-anmelden'];
+$hw_html = render_help();
+check(
+    'Hilfe ohne Anmeldung: Mitglieder-Anleitung bleibt verborgen',
+    str_contains($hw_html, 'sobald du im Mitgliederportal angemeldet bist') && !str_contains($hw_html, 'hw-schritt')
+);
+$_GET = ['view' => 'hilfe', 'artikel' => 'anmelden'];
+check('Hilfe ohne Anmeldung: Anleitung zur Anmeldung lesbar', str_contains(render_help(), 'Neues Passwort erhalten'));
+
+$hw_member = make_user('eintrikot_member', ['birthday' => day('-30 years')]);
+wp_set_current_user($hw_member);
+check('Hilfe: Suche „Passwort“ findet die Anmeldung', in_array('anmelden', help_search('Passwort'), true));
+check('Hilfe: Suche ohne Umlaut findet „Prüfung“', in_array('anfrage-stand', help_search('pruefung'), true));
+check('Hilfe: Suche nach Unsinn findet nichts', help_search('xyzqwv') === []);
+$_GET = ['view' => 'hilfe', 'q' => '<script>alert(1)</script>'];
+check('Hilfe: Suchbegriff wird maskiert', !str_contains(render_help(), '<script>alert(1)'));
+$_GET = ['view' => 'hilfe', 'von' => 'https://example.com'];
+check('Hilfe: „Zurück ins Portal“ nur zu Portalseiten', help_back_args() === []);
+$_GET = ['view' => 'hilfe', 'von' => 'aktuelles', 'von_tab' => 'termine', 'artikel' => 'termin-anmelden'];
+$hw_html = render_help();
+check(
+    'Hilfe: Anleitung mit Schritten, Markierungen, Video und Rückweg',
+    str_contains($hw_html, 'hw-schritt') &&
+        str_contains($hw_html, 'class="hw-anno"') &&
+        str_contains($hw_html, 'video-termin.webm') &&
+        str_contains($hw_html, esc_url(portal_url('aktuelles', ['tab' => 'termine'])))
+);
+$_GET = ['view' => 'hilfe', 'artikel' => 'anfrage-stand'];
+check('Hilfe: Service-Anleitungen mit schwarzen Markierungen', str_contains(render_help(), 'hw-dunkel'));
+$_GET = ['view' => 'aktuelles', 'tab' => 'termine'];
+check('Hilfe: „?“-Knopf im Portal', str_contains(help_button('aktuelles'), 'artikel=termin-anmelden'));
+$_GET = [];
+wp_set_current_user(0);
+
 foreach ($created as $id) {
     require_once ABSPATH . 'wp-admin/includes/user.php';
     wp_delete_user($id);

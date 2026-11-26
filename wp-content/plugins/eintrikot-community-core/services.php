@@ -93,6 +93,11 @@ function render_service_overview($types) {
     }
     echo '<section class="portal-section"><h2>Konto</h2>' .
         service_link(portal_url('profile'), 'Profil bearbeiten') .
+        service_link(
+            portal_url('hilfe', ['von' => 'service']),
+            'Hilfe',
+            'Anleitungen mit Bildern und Videos'
+        ) .
         service_link(home_url('/'), 'Zur öffentlichen Website') .
         logout_others_form() .
         service_link(wp_logout_url(home_url('/')), 'Abmelden') .

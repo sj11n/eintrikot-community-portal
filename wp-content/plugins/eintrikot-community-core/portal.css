@@ -2733,3 +2733,61 @@
     font-weight: 600;
     cursor: pointer;
 }
+
+/* „?“-Knopf zur Mitglieder-Hilfe (help.php), links neben dem Kontomenü. */
+.et-app .account-header {
+    align-items: center;
+    gap: 14px;
+}
+.et-app .help-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 5px 12px 5px 6px;
+    border: 1.5px solid #000;
+    border-radius: 999px;
+    background: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.et-app .help-button > span[aria-hidden] {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #000;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 0.78rem;
+}
+.et-app .help-button:hover {
+    background: #000;
+    color: #fff;
+}
+.et-app .help-button:hover > span[aria-hidden] {
+    background: #fff;
+    color: #000;
+}
+.et-app .auth-help {
+    margin-left: 18px;
+}
+@media (max-width: 800px) {
+    .et-app .account-header {
+        display: flex;
+        gap: 10px;
+    }
+    .et-app .help-button {
+        padding: 5px;
+        min-height: 36px;
+        min-width: 36px;
+        justify-content: center;
+    }
+    .et-app .help-button {
+        font-size: 0;
+    }
+    .et-app .help-button > span[aria-hidden] {
+        font-size: 0.85rem;
+    }
+}

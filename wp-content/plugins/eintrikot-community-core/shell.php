@@ -113,10 +113,11 @@ function portal_brand() {
 }
 
 /** Account menu: own profile, role areas (for mobile) and sign-out. */
-function portal_account_menu($user) {
+function portal_account_menu($user, $view = 'portal') {
     $links = [
         [portal_url('member', ['member' => $user->ID]), 'Mein Profil ansehen'],
-        [portal_url('profile'), 'Profil bearbeiten']
+        [portal_url('profile'), 'Profil bearbeiten'],
+        [portal_url('hilfe', in_array($view, HELP_BACK_VIEWS, true) ? ['von' => $view] : []), 'Hilfe']
     ];
     if (view_can_edit_infos()) {
         $links[] = [portal_url('editorial'), 'Redaktion', 'role'];
@@ -127,7 +128,9 @@ function portal_account_menu($user) {
     $links[] = [home_url('/'), 'Zur öffentlichen Website'];
     $links[] = [wp_logout_url(home_url('/')), 'Abmelden'];
     $html =
-        '<header class="account-header"><details class="account-menu"><summary aria-label="Mein Konto">' .
+        '<header class="account-header">' .
+        help_button($view) .
+        '<details class="account-menu"><summary aria-label="Mein Konto">' .
         member_avatar($user->ID, $user->display_name) .
         '<span class="account-name">' .
         esc_html($user->display_name) .
@@ -174,7 +177,7 @@ function portal_shell($content, $view) {
         '">Zur öffentlichen Website →</a></div></aside><div class="portal-workspace"><div class="mobile-brand">' .
         portal_brand() .
         '</div>' .
-        portal_account_menu($user) .
+        portal_account_menu($user, $view) .
         '<main class="portal-main" id="main" tabindex="-1">' .
         testphase_bar() .
         preview_bar() .
@@ -191,6 +194,10 @@ add_shortcode('eintrikot_portal', function () {
     // Parental consent pages work without an account (see consent.php).
     if (current_view() === 'consent') {
         return render_consent();
+    }
+    // The help has its own page head; the sign-in articles are readable before sign-in (help.php).
+    if (current_view() === 'hilfe') {
+        return render_help();
     }
     if (!member_access()) {
         $form = is_user_logged_in()
@@ -219,6 +226,9 @@ add_shortcode('eintrikot_portal', function () {
             '<a class="text-link" href="' .
             esc_url(wp_lostpassword_url(portal_url())) .
             '">Passwort vergessen?</a>' .
+            '<a class="text-link auth-help" href="' .
+            esc_url(portal_url('hilfe', ['artikel' => 'anmelden'])) .
+            '">Hilfe zur Anmeldung</a>' .
             (is_user_logged_in()
                 ? ''
                 : '<aside class="auth-first"><h2>Zum ersten Mal hier?</h2><p>Sobald deine Mitgliedschaft bestätigt ist, bekommst du per E-Mail einen persönlichen Link. Damit legst du dein Passwort selbst fest.</p><p>Link nicht erhalten oder abgelaufen? Unter „Passwort vergessen?“ deine E-Mail-Adresse eingeben – du bekommst sofort einen neuen Link.</p></aside>') .
