@@ -7,7 +7,7 @@ Vorschlag (nur öffentliche Website, Portal und Hilfe unverändert):
 - Die Kopfzeile (Logo, Menü, „Mitglied werden“, „Anmelden“) bleibt beim Scrollen oben stehen.
 - Hintergrund Weiß mit 88 % Deckkraft und Weichzeichner: Darunterliegendes scheint nur leicht durch, Schrift bleibt gut lesbar.
 - Handy: Kopfzeile mit Menüknopf bleibt stehen, das Vollbild-Menü funktioniert wie bisher.
-- Sprungmarken landen nicht unter der Kopfzeile; angemeldet berücksichtigt sie die WordPress-Leiste.
+- Sprungmarken landen nicht unter der Kopfzeile.
 
 Bilder (lokales Testportal, Breite 1280 und 390 px):
 
