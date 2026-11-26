@@ -57,7 +57,7 @@ Nur Theme und Plugin werden eingespielt. Alles andere bleibt im Repository.
 - Mitgliedschaft: Mitgliedsnummer, Eintrittsdatum, Jahresbeitrag und Jahresspende kommen aus dem Import (MeinVerein) und stehen nur im eigenen Profil und für die Verwaltung; andere Mitglieder sehen sie nicht. Korrektur durch die Verwaltung im Abschnitt Verwaltung des Profils, protokolliert (docs/07).
 - DHB-Vita: pro Station optional die Position (Vorschläge Tor, Abwehr, Mittelfeld, Sturm), durchsuchbar. Länderspiele sind Freitext; für die Kennzahl zählt die erste Zahl („185 (A-Kader)“ → 185).
 - Social Media: Name beim Netzwerk genügt („@name“ bei Instagram/Facebook, „name“ bei LinkedIn) oder ein Link.
-- Service-Anfragen mit Vorgangsnummer und Verlauf; Bearbeitung durch Vorstand und Admin (docs/07).
+- Service-Anfragen mit Vorgangsnummer und Verlauf; Bearbeitung durch Vorstand und Admin (docs/07). Neue Anfragen melden sich per Mail an die Adresse unter Aufnahme & Urkunde → „Neue Anfragen melden an“; das Mitglied bekommt eine Mail bei Rückmeldung oder Abschluss (docs/02).
 - Änderungsprotokoll unter `/community-protokoll/`, nur lesbar.
 - Geschützte Seiten werden nicht zwischengespeichert (`no-store, private`) und nicht indexiert.
 

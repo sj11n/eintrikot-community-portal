@@ -82,7 +82,8 @@ function request_next_step($state, $kind) {
     $who = request_owner_label($kind);
     switch ($state['status'] ?? 'received') {
         case 'review':
-            return $who . ' prüft deine Anfrage gerade. Die Rückmeldung erscheint hier.';
+            return $who .
+                ' prüft deine Anfrage gerade. Die Rückmeldung erscheint hier, dazu bekommst du eine E-Mail.';
         case 'adopted':
             return in_array($kind, ['address', 'bank', 'funding'], true)
                 ? 'Erledigt: Die Änderung ist in MeinVerein übernommen.'
@@ -128,6 +129,125 @@ function funding_summary($id, $state) {
     return '<section class="funding-state is-requested"><p class="funding-state-label">Angefragt – noch nicht verbindlich</p><p><strong>' .
         esc_html($what) .
         '</strong></p><p>Verbindlich wird die Änderung erst, wenn der Vorstand sie in MeinVerein übernommen hat. Bis dahin ändert sich an deinem Beitrag nichts.</p></section>';
+}
+
+/* ---------- Benachrichtigungen (Core 0.44.0, freigegeben am 26.11.2026) ----------
+ * Vorstand: eine Mail je neuer Anfrage an „Neue Anfragen melden an“ (Aufnahme & Urkunde), nur Art,
+ * Nummer und Link, keine Namen und kein Inhalt. Mitglied: eine Mail, wenn es etwas zu lesen gibt
+ * (neue Rückmeldung, erledigt oder abgelehnt), nur mit Link. Für „In Prüfung“ keine Mail. */
+
+/** Address that hears about new requests. */
+function request_notify_address() {
+    $s = onboarding_settings();
+    $to = (string) ($s['request_notify'] ?? '');
+    return is_email($to) ? $to : (string) $s['reply_to'];
+}
+
+/** Tells the board about a new request, once per request. */
+function notify_board_new_request($id) {
+    $row = get_post($id);
+    if (!$row || $row->post_type !== 'et_request' || get_post_meta($id, 'et_board_notified', true)) {
+        return false;
+    }
+    $to = request_notify_address();
+    if (!is_email($to)) {
+        return false;
+    }
+    update_post_meta($id, 'et_board_notified', current_time('mysql', true));
+    $kind = (string) get_post_meta($id, 'et_kind', true);
+    embed_logo_once();
+    return wp_mail(
+        $to,
+        'Neue Anfrage #' . $id . ': ' . $row->post_title,
+        mail_wrap(
+            mail_p('Hallo,') .
+                mail_p('im Mitgliederportal ist eine neue Anfrage eingegangen:') .
+                mail_p(
+                    '<strong>' .
+                        esc_html($row->post_title) .
+                        '</strong><br>#' .
+                        $id .
+                        ' · ' .
+                        esc_html(get_the_date('d.m.Y, H:i', $row)) .
+                        ' Uhr · zuständig: ' .
+                        esc_html(request_owner_label($kind))
+                ) .
+                mail_button(portal_url('request', ['request' => $id]), 'Anfrage öffnen') .
+                mail_note(
+                    'Name und Inhalt stehen bewusst nicht in dieser E-Mail. Du siehst beides nach der Anmeldung im Portal unter Verwaltung → Service-Anfragen. Das Mitglied bekommt automatisch eine E-Mail, sobald du eine Rückmeldung speicherst oder die Anfrage abschließt.'
+                )
+        ),
+        mail_headers()
+    );
+}
+
+/** Whether a change gives the member something new to read: a new reply, or the request is closed. */
+function request_member_update_due($old, $next) {
+    $reply = trim((string) ($next['reply'] ?? ''));
+    $new_reply = $reply !== '' && $reply !== trim((string) ($old['reply'] ?? ''));
+    $closed =
+        in_array($next['status'] ?? '', ['adopted', 'rejected'], true) &&
+        ($next['status'] ?? '') !== ($old['status'] ?? 'received');
+    return $new_reply || $closed;
+}
+
+/** Mail to the member with a link only; the reply itself stays in the portal. */
+function notify_member_request_update($id, $next) {
+    $row = get_post($id);
+    $user = $row ? get_user_by('id', (int) $row->post_author) : false;
+    if (!$user || !is_email($user->user_email)) {
+        return false;
+    }
+    update_post_meta($id, 'et_member_unseen', 1);
+    $kind = (string) get_post_meta($id, 'et_kind', true);
+    $status = $next['status'] ?? 'received';
+    $label = request_labels($kind)[$status] ?? 'Eingegangen';
+    $subject = match ($status) {
+        'adopted' => 'Deine Anfrage #' . $id . ' ist erledigt',
+        'rejected' => 'Neuigkeiten zu deiner Anfrage #' . $id,
+        default => 'Rückmeldung zu deiner Anfrage #' . $id
+    };
+    $lead = match ($status) {
+        'adopted' => 'deine Anfrage ist erledigt.',
+        'rejected' => 'es gibt Neuigkeiten zu deiner Anfrage.',
+        default => 'es gibt eine Rückmeldung zu deiner Anfrage.'
+    };
+    embed_logo_once();
+    return wp_mail(
+        $user->user_email,
+        $subject,
+        mail_wrap(
+            mail_p('Hallo ' . esc_html(first_name($user->display_name) ?: $user->display_name) . ',') .
+                mail_p($lead) .
+                mail_p(
+                    '<strong>' .
+                        esc_html($row->post_title) .
+                        '</strong> (#' .
+                        $id .
+                        ')<br>Stand: ' .
+                        esc_html($label)
+                ) .
+                mail_p(
+                    trim((string) ($next['reply'] ?? '')) !== ''
+                        ? 'Die Rückmeldung liest du im Mitgliederportal:'
+                        : 'Alle Einzelheiten findest du im Mitgliederportal:'
+                ) .
+                mail_button(portal_url('request', ['request' => $id]), 'Anfrage ansehen') .
+                mail_note(
+                    'Du bekommst diese E-Mail, weil du die Anfrage im Mitgliederportal gestellt hast. Für Zwischenschritte wie „In Prüfung“ schicken wir keine E-Mail. Bitte schick uns nie Kontodaten per E-Mail.'
+                ) .
+                mail_signoff()
+        ),
+        mail_headers()
+    );
+}
+
+/** „Neue Rückmeldung“ until the member has opened the request. */
+function request_unseen($id) {
+    return (bool) get_post_meta($id, 'et_member_unseen', true);
+}
+function request_new_badge($id) {
+    return request_unseen($id) ? '<span class="request-new">Neue Rückmeldung</span>' : '';
 }
 
 function request_allowed($from, $to) {
@@ -241,6 +361,7 @@ function render_requests($all) {
             '</small><h3>' .
             esc_html($row->post_title) .
             '</h3></div>' .
+            ($all ? '' : request_new_badge($row->ID)) .
             request_status_pill($state['status'] ?? 'received', get_post_meta($row->ID, 'et_kind', true)) .
             '<span aria-hidden="true">→</span></a>';
     }
@@ -279,6 +400,10 @@ function render_request($id) {
     $state = request_state($id);
     $kind = get_post_meta($id, 'et_kind', true);
     $labels = request_labels($kind);
+    // The member has now seen the reply: the „Neue Rückmeldung“ marker goes away.
+    if ((int) $row->post_author === get_current_user_id()) {
+        delete_post_meta($id, 'et_member_unseen');
+    }
     $manager = view_manager();
     $author = get_user_by('id', $row->post_author);
     echo '<a class="text-link service-back" href="' .
@@ -296,7 +421,7 @@ function render_request($id) {
             $manager ? 'admin' : 'service'
         );
     if (isset($_GET['saved']) && !$manager) {
-        echo '<div class="request-confirm" role="status" tabindex="-1"><h2>Deine Anfrage ist eingegangen.</h2><p>Hier siehst du jederzeit, wie weit sie ist. Es wird keine E-Mail versendet – der Stand erscheint hier und auf deiner Startseite.</p></div>';
+        echo '<div class="request-confirm" role="status" tabindex="-1"><h2>Deine Anfrage ist eingegangen.</h2><p>Hier und auf deiner Startseite siehst du jederzeit, wie weit sie ist. Sobald es eine Rückmeldung gibt oder sie erledigt ist, bekommst du eine E-Mail.</p></div>';
     } elseif (isset($_GET['saved'])) {
         echo '<p role="status" class="portal-success">Bearbeitung gespeichert.</p>';
     }
@@ -555,6 +680,9 @@ add_action('admin_post_et_request_update', function () {
         exit();
     }
     delete_transient($conflict_key);
+    if (request_member_update_due($old, $next)) {
+        notify_member_request_update($id, $next);
+    }
     // An adopted donation request is now binding in MeinVerein: show the new amount in the profile.
     if ($kind === 'funding' && $status === 'adopted' && ($old['status'] ?? '') !== 'adopted') {
         $details = get_post_meta($id, 'et_details', true);

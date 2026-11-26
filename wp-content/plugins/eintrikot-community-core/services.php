@@ -420,6 +420,7 @@ add_action('admin_post_et_service', function () {
     if (is_wp_error($id)) {
         service_error($type, $id->get_error_message());
     }
+    notify_board_new_request($id); // once per request, also when the form is sent twice
     wp_safe_redirect(portal_url('request', ['request' => $id, 'saved' => 1]));
     exit();
 });

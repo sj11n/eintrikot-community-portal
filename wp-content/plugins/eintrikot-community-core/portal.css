@@ -2791,3 +2791,20 @@
         font-size: 0.85rem;
     }
 }
+
+/* „Neue Rückmeldung“ an einer Anfrage, bis das Mitglied sie geöffnet hat (requests.php). */
+.et-app .request-new {
+    background: #000;
+    color: #fff;
+    padding: 7px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.et-app .home-requests a {
+    flex-wrap: wrap;
+}
+.et-app .home-requests .request-new {
+    margin-left: auto;
+}

@@ -154,4 +154,5 @@ update_post_meta($request, 'et_workflow', [
     'updated_at' => $reviewed,
     'history' => [['status' => 'review', 'at' => $reviewed]]
 ]);
+update_post_meta($request, 'et_member_unseen', 1); // Rückmeldung noch ungelesen: „Neue Rückmeldung“
 echo "Anfrage $request\n";

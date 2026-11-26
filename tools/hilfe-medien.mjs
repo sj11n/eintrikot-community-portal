@@ -172,6 +172,7 @@ async function pictures(browser) {
         stand: p.locator('ol.request-timeline')
     });
     await p.goto(href);
+    await scrollTo(p, p.locator('.request-overview'), 150);
     await shot(p, 'anfrage-verlauf', {
         stand: p.locator('ol.request-timeline'),
         weiter: p.locator('dl.request-facts'),

@@ -32,6 +32,7 @@ function onboarding_settings() {
     return wp_parse_args(get_option('eintrikot_onboarding', []), [
         'from_name' => 'EINTRIKOT e.V.',
         'reply_to' => get_option('admin_email'),
+        'request_notify' => '',
         'signature' => "Björn Emmerling\n1. Vorsitzender"
     ]);
 }
@@ -81,6 +82,11 @@ function onboarding_settings_page() {
     echo '<tr><th scope="row"><label for="et-reply">Antworten an</label></th><td><input id="et-reply" class="regular-text" type="email" name="reply_to" value="' .
         esc_attr($s['reply_to']) .
         '"><p class="description">Antworten der neuen Mitglieder landen hier.</p></td></tr>';
+    echo '<tr><th scope="row"><label for="et-notify">Neue Anfragen melden an</label></th><td><input id="et-notify" class="regular-text" type="email" name="request_notify" value="' .
+        esc_attr($s['request_notify']) .
+        '" placeholder="' .
+        esc_attr($s['reply_to']) .
+        '"><p class="description">Bei jeder neuen Service-Anfrage geht hierhin eine kurze E-Mail mit Link, ohne Namen und Inhalt. Leer = „Antworten an“.</p></td></tr>';
     echo '<tr><th scope="row"><label for="et-sig">Unterschrift im Schreiben</label></th><td><textarea id="et-sig" class="regular-text" rows="3" name="signature">' .
         esc_textarea($s['signature']) .
         '</textarea></td></tr>';
@@ -110,11 +116,13 @@ add_action('admin_post_et_onboarding_settings', function () {
     }
     check_admin_referer('et_onboarding_settings');
     $reply = sanitize_email(post_text('reply_to', '', 200));
+    $notify = sanitize_email(post_text('request_notify', '', 200));
     update_option(
         'eintrikot_onboarding',
         [
             'from_name' => sanitize_text_field(post_text('from_name', '', 100)),
             'reply_to' => is_email($reply) ? $reply : get_option('admin_email'),
+            'request_notify' => is_email($notify) ? $notify : '',
             'signature' => sanitize_textarea_field(post_text('signature', '', 300))
         ],
         false

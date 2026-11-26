@@ -620,7 +620,7 @@ function help_articles() {
                 [
                     'title' => 'Eingegangen',
                     'text' =>
-                        'Du siehst sofort „Deine Anfrage ist eingegangen.“ und darunter den Stand. Diese Seite findest du jederzeit wieder unter <b>Service → Deine Anfragen</b>.',
+                        'Du siehst sofort „Deine Anfrage ist eingegangen.“ und darunter den Stand. Der Verein bekommt gleichzeitig Bescheid. Diese Seite findest du jederzeit wieder unter <b>Service → Deine Anfragen</b>.',
                     'shot' => 'anfrage-eingegangen',
                     'where' => 'Service',
                     'marks' => [
@@ -639,7 +639,8 @@ function help_articles() {
                     'kind' => 'info',
                     'title' => 'Gut zu wissen',
                     'items' => [
-                        'Es kommt keine E-Mail. Den Stand siehst du im Portal unter <b>Service</b> und auf <b>Start</b>.',
+                        'Sobald es eine Rückmeldung gibt oder die Anfrage erledigt ist, bekommst du eine E-Mail mit einem Link zur Anfrage.',
+                        'Den Stand siehst du jederzeit im Portal unter <b>Service</b> und auf <b>Start</b>.',
                         'Für Termine brauchst du keine Anfrage: Du meldest dich direkt am Termin unter <b>Aktuelles</b> an.',
                         'Kontodaten gibst du nie in eine Nachricht ein. Dafür gibt es <b>Bankverbindung ändern</b> mit einem sicheren Weg.'
                     ]
@@ -652,7 +653,7 @@ function help_articles() {
             'topic' => 'service',
             'title' => 'Den Stand meiner Anfrage sehen',
             'lead' =>
-                'Jede Anfrage hat eine eigene Seite. Dort siehst du, wie weit sie ist, wer sich kümmert und die Rückmeldung des Vereins.',
+                'Jede Anfrage hat eine eigene Seite. Dort siehst du, wie weit sie ist, wer sich kümmert und die Rückmeldung des Vereins. Gibt es etwas Neues, bekommst du eine E-Mail.',
             'minutes' => 1,
             'dark' => true,
             'keywords' =>
@@ -661,7 +662,7 @@ function help_articles() {
                 [
                     'title' => 'Deine Anfragen finden',
                     'text' =>
-                        'Offene Anfragen stehen auf <b>Start</b> und ganz oben unter <b>Service</b>. Klicke eine Anfrage an, um sie zu öffnen.',
+                        'Offene Anfragen stehen auf <b>Start</b> und ganz oben unter <b>Service</b>. Gibt es eine Antwort, die du noch nicht gelesen hast, steht dort <b>Neue Rückmeldung</b>. Klicke eine Anfrage an, um sie zu öffnen. Oder du klickst einfach auf den Knopf in der E-Mail.',
                     'shot' => 'service',
                     'where' => 'Service',
                     'marks' => [
@@ -669,7 +670,8 @@ function help_articles() {
                             'el' => 'anfragen',
                             'at' => 'right',
                             'd' => 50,
-                            'text' => '<b>Deine Anfragen</b> mit ihrem Stand, zum Beispiel „In Prüfung“.'
+                            'text' =>
+                                '<b>Deine Anfragen</b> mit ihrem Stand, zum Beispiel „In Prüfung“ oder „Neue Rückmeldung“.'
                         ]
                     ]
                 ],
@@ -706,7 +708,8 @@ function help_articles() {
                     'kind' => 'info',
                     'title' => 'Gut zu wissen',
                     'items' => [
-                        'Es kommt keine E-Mail, wenn sich der Stand ändert. Schau einfach auf <b>Start</b> vorbei.',
+                        'Eine E-Mail kommt, wenn es eine Rückmeldung gibt oder die Anfrage erledigt oder abgelehnt ist. Für Zwischenschritte wie „In Prüfung“ schicken wir keine.',
+                        'Die Rückmeldung selbst steht nur im Portal. In der E-Mail ist nur ein Link, damit nichts Persönliches im Postfach liegt.',
                         'Erledigte Anfragen bleiben unter <b>Service → Deine Anfragen</b> zum Nachlesen.'
                     ]
                 ]
