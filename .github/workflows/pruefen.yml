@@ -49,4 +49,4 @@ jobs:
           npm run check
 
       - name: Deploy-Skript (ShellCheck)
-        run: shellcheck tools/deploy.sh tools/lokal-test.sh
+        run: shellcheck tools/deploy.sh tools/lokal-test.sh tools/hilfe-medien.sh

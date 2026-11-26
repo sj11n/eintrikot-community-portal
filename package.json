@@ -1,13 +1,15 @@
 {
   "name": "eintrikot-community-portal",
   "private": true,
-  "description": "Nur Entwicklungswerkzeuge (Formatierung). Wird nicht auf den Server eingespielt.",
+  "description": "Nur Entwicklungswerkzeuge (Formatierung, Hilfe-Bilder). Wird nicht auf den Server eingespielt.",
   "scripts": {
     "format": "prettier --write \"wp-content/plugins/eintrikot-community-core/**/*.{php,js}\" \"wp-content/plugins/eintrikot-newsletter/**/*.{php,js}\" wp-content/themes/eintrikot-community/functions.php",
-    "check": "prettier --check \"wp-content/plugins/eintrikot-community-core/**/*.{php,js}\" \"wp-content/plugins/eintrikot-newsletter/**/*.{php,js}\" wp-content/themes/eintrikot-community/functions.php"
+    "check": "prettier --check \"wp-content/plugins/eintrikot-community-core/**/*.{php,js}\" \"wp-content/plugins/eintrikot-newsletter/**/*.{php,js}\" wp-content/themes/eintrikot-community/functions.php",
+    "hilfe-medien": "tools/hilfe-medien.sh"
   },
   "devDependencies": {
     "@prettier/plugin-php": "0.26.0",
-    "prettier": "3.9.10"
+    "prettier": "3.9.10",
+    "playwright": "1.65.1"
   }
 }

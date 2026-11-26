@@ -44,6 +44,7 @@
                 <element value="event_signup_block"/>
                 <element value="event_attendees_block"/>
                 <element value="request_status_pill"/>
+                <element value="request_new_badge"/>
                 <element value="request_timeline"/>
                 <element value="funding_summary"/>
                 <element value="service_link"/>

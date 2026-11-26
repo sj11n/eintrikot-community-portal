@@ -57,9 +57,21 @@ Nur Theme und Plugin werden eingespielt. Alles andere bleibt im Repository.
 - Mitgliedschaft: Mitgliedsnummer, Eintrittsdatum, Jahresbeitrag und Jahresspende kommen aus dem Import (MeinVerein) und stehen nur im eigenen Profil und für die Verwaltung; andere Mitglieder sehen sie nicht. Korrektur durch die Verwaltung im Abschnitt Verwaltung des Profils, protokolliert (docs/07).
 - DHB-Vita: pro Station optional die Position (Vorschläge Tor, Abwehr, Mittelfeld, Sturm), durchsuchbar. Länderspiele sind Freitext; für die Kennzahl zählt die erste Zahl („185 (A-Kader)“ → 185).
 - Social Media: Name beim Netzwerk genügt („@name“ bei Instagram/Facebook, „name“ bei LinkedIn) oder ein Link.
-- Service-Anfragen mit Vorgangsnummer und Verlauf; Bearbeitung durch Vorstand und Admin (docs/07).
+- Service-Anfragen mit Vorgangsnummer und Verlauf; Bearbeitung durch Vorstand und Admin (docs/07). Neue Anfragen melden sich per Mail an die Adresse unter Aufnahme & Urkunde → „Neue Anfragen melden an“; das Mitglied bekommt eine Mail bei Rückmeldung oder Abschluss (docs/02).
 - Änderungsprotokoll unter `/community-protokoll/`, nur lesbar.
 - Geschützte Seiten werden nicht zwischengespeichert (`no-store, private`) und nicht indexiert.
+
+## Mitglieder-Hilfe (seit 0.44.0)
+
+Die Hilfe unter `?view=hilfe` besteht aus drei Teilen im Plugin:
+
+- `help-articles.php`: Themen und Anleitungen (Text, Schritte, Markierungen, Kästen, verwandte Anleitungen) und welche Anleitung der „?“-Knopf auf welcher Portalseite öffnet.
+- `help.php`, `help.css`, `help.js`: Darstellung, Suche, „?“-Knopf.
+- `help/`: Bilder (`.webp`), Videos (`.webm`) und `boxes.json` mit der Lage der markierten Elemente.
+
+Ändert sich das Portal, Bilder und Videos neu erzeugen: `tools/hilfe-medien.sh` (oder `nur-bilder` / `nur-videos`). Das Skript kopiert das lokale Testportal nach `.lokal/hilfe-medien/`, legt dort erfundene Testdaten an (`tools/hilfe-medien-seed.php`), nimmt mit Playwright auf (`tools/hilfe-medien.mjs`) und legt das Ergebnis in `help/`. Einmalig nötig: `tools/lokal-test.sh setup`, `npm install`, `npx playwright install ffmpeg`, `brew install webp`. Danach die Bilder ansehen und `tools/lokal-test.sh test` laufen lassen: Der Test meldet jedes Bild, Video oder markierte Element, das fehlt.
+
+Neue Anleitung: Eintrag in `help_articles()`, Aufnahme und Elemente in `tools/hilfe-medien.mjs` ergänzen, Skript laufen lassen. Eine Markierung nennt ein vermessenes Element (`el`) und die Seite, auf der die Nummer sitzt (`at`: `right`, `left`, `top`, `bottom` oder `corner`), optional den Abstand `d` in Bildpunkten.
 
 ## Lokaler Test
 

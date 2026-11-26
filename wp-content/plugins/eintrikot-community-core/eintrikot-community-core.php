@@ -2,7 +2,7 @@
 /**
  * Plugin Name: EINTRIKOT Community Core
  * Description: Getrennte Einrichtung und Berechtigungen für das EINTRIKOT-Portal.
- * Version: 0.43.2
+ * Version: 0.44.0
  * Requires PHP: 8.1
  */
 namespace Eintrikot\Community;
@@ -85,6 +85,7 @@ function asset_version($file) {
 }
 
 require_once __DIR__ . '/portal.php';
+require_once __DIR__ . '/help.php';
 register_activation_hook(__FILE__, __NAMESPACE__ . '\portal_install');
 register_activation_hook(__FILE__, __NAMESPACE__ . '\prepare_portal_page');
 

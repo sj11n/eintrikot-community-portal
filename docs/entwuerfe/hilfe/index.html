@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EINTRIKOT Hilfe – Entwurf</title>
+<style>
+@font-face{font-family:Montserrat;src:url(../../../wp-content/themes/eintrikot-community/assets/montserrat.woff2) format('woff2');font-weight:100 900;font-display:swap}
+:root{
+  --blau:#C8E2EE;--rose:#F1D1DD;--gruen:#CEDFBD;--gold:#FFCC4E;--rot:#DA525D;
+  --ink:#111;--ink2:#4a4a4a;--ink3:#767676;--line:#e3e3df;
+  --papier:#F7F6F2;--karte:#fff;
+  --mark:var(--rot);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:var(--ink);background:var(--papier);
+  background-image:radial-gradient(rgba(17,17,17,.075) 1px,transparent 1.2px);background-size:22px 22px;line-height:1.55;font-size:1rem}
+a{color:inherit}
+img,video{max-width:100%;display:block}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+@media (max-width:640px){.wrap{padding:0 16px}}
+
+/* ---------- Konzept-Rahmen (nicht Teil der Hilfe) ---------- */
+.konzept{background:var(--ink);color:#fff;font-size:.82rem;padding:10px 0}
+.konzept .wrap{display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap}
+.konzept b{font-weight:700}
+.kapitel{margin:72px 0 20px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.kapitel .nr{font-size:.75rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--ink);color:#fff;border-radius:999px;padding:5px 12px}
+.kapitel h2{margin:0;font-size:1.05rem;font-weight:700;color:var(--ink2)}
+.intro{background:#fff;border:1px solid var(--line);border-radius:20px;padding:32px;margin-top:32px}
+.intro h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.1;margin:0 0 10px;font-weight:900;letter-spacing:-.02em}
+.intro p.lead{font-size:1.1rem;color:var(--ink2);max-width:760px;margin:0 0 24px}
+.prinzipien{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;margin:0;padding:0;list-style:none}
+.prinzipien li{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--papier)}
+.prinzipien b{display:block;margin-bottom:4px}
+.prinzipien span{font-size:.9rem;color:var(--ink2)}
+.hinweis-konzept{font-size:.85rem;color:var(--ink3);margin-top:20px}
+
+/* ---------- Hilfe-Kopf ---------- */
+.hkopf{background:#fff;border-bottom:1px solid var(--line);position:relative}
+.hkopf .wrap{display:flex;align-items:center;gap:20px;min-height:76px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.marke{display:flex;align-items:center;gap:12px;text-decoration:none}
+.marke img{height:30px;width:auto}
+.marke .tag{font-weight:800;font-size:.95rem;border-left:2px solid var(--ink);padding-left:12px;line-height:1}
+.hkopf .rechts{margin-left:auto;display:flex;gap:10px;align-items:center}
+.knopf{display:inline-flex;align-items:center;gap:8px;border-radius:999px;font-weight:700;font-size:.9rem;padding:11px 20px;text-decoration:none;border:1.5px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;font-family:inherit;min-height:44px}
+.knopf.voll{background:var(--ink);color:#fff}
+.knopf:hover{background:var(--ink);color:#fff}
+.knopf.voll:hover{background:#333}
+
+/* Fenster: macht klar, dass alles darin das Portal ist */
+.fenster{border-radius:14px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.04),0 18px 50px -20px rgba(0,0,0,.28);border:1px solid #d9d9d4;overflow:hidden}
+.fenster .leiste{display:flex;align-items:center;gap:10px;height:34px;padding:0 12px;background:#ECECE8;border-bottom:1px solid #dcdcd6}
+.fenster .punkte{display:flex;gap:6px}
+.fenster .punkte i{width:10px;height:10px;border-radius:50%;background:#cfcfc9;display:block}
+.fenster .url{flex:1;max-width:420px;margin:0 auto;height:22px;border-radius:6px;background:#fff;font-size:.72rem;color:var(--ink3);display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;overflow:hidden}
+.fenster .stempel{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);white-space:nowrap}
+@media (max-width:640px){.fenster .stempel{display:none}}
+.buehne{position:relative}
+.buehne img,.buehne video{width:100%;height:auto}
+.buehne svg.anno{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.anno .rahmen{fill:none;stroke:var(--mark);stroke-width:4;rx:10}
+.anno .glow{fill:none;stroke:var(--mark);stroke-opacity:.22;stroke-width:14}
+.anno .pfeil{fill:none;stroke:var(--mark);stroke-width:4;stroke-linecap:round}
+.anno .badge circle{fill:var(--mark);stroke:#fff;stroke-width:4}
+.anno .badge text{fill:#fff;font:800 26px Montserrat,sans-serif;text-anchor:middle;dominant-baseline:central}
+.anno g.m{transition:opacity .2s}
+.anno.fokus g.m{opacity:.25}
+.anno.fokus g.m.an{opacity:1}
+.anno g.m.an .rahmen{animation:puls 1s ease-in-out infinite alternate}
+@keyframes puls{from{stroke-width:4}to{stroke-width:8}}
+.dunkel{--mark:#111}
+
+/* ---------- Hilfe-Start ---------- */
+.hstart{padding-top:56px;padding-bottom:40px}
+.hstart h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:900;letter-spacing:-.025em;line-height:1.05;margin:0 0 12px}
+.hstart p{font-size:1.1rem;color:var(--ink2);margin:0 0 26px;max-width:620px}
+.suche{display:flex;gap:10px;max-width:640px;background:#fff;border:1.5px solid var(--ink);border-radius:999px;padding:6px 6px 6px 22px;align-items:center}
+.suche input{flex:1;border:0;font:inherit;font-size:1rem;outline:0;min-width:0;background:transparent}
+.suche:focus-within{box-shadow:0 0 0 4px var(--blau)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;font-size:.85rem;color:var(--ink2);align-items:center}
+.chips a{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;text-decoration:none;font-weight:600;color:var(--ink)}
+.chips a:hover{border-color:var(--ink)}
+.themen{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:40px}
+.thema{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;text-decoration:none;display:flex;flex-direction:column;gap:6px;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+.thema:hover{transform:translateY(-2px);box-shadow:0 12px 30px -14px rgba(0,0,0,.25)}
+.thema .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;margin-bottom:8px}
+.thema .ic svg{width:24px;height:24px}
+.thema b{font-size:1.08rem}
+.thema span{font-size:.88rem;color:var(--ink2)}
+.thema small{margin-top:auto;padding-top:12px;font-size:.78rem;color:var(--ink3);font-weight:600}
+.rundgang{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:22px;padding:28px;margin-top:28px}
+.rundgang h3{font-size:1.5rem;margin:6px 0 8px;font-weight:800;letter-spacing:-.01em}
+.rundgang p{margin:0 0 16px;color:var(--ink2)}
+.eyebrow{font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+@media (max-width:820px){.rundgang{grid-template-columns:1fr}}
+
+/* ---------- Artikel ---------- */
+.artikel{display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px;padding-top:40px;padding-bottom:24px}
+@media (max-width:900px){.artikel{grid-template-columns:1fr;gap:0}.seitennav{display:none}}
+.seitennav{position:sticky;top:20px;align-self:start;font-size:.88rem}
+.seitennav p{font-weight:800;margin:0 0 8px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.seitennav a{display:block;padding:7px 12px;border-radius:10px;text-decoration:none;color:var(--ink2);font-weight:600}
+.seitennav a.akt{background:#fff;color:var(--ink);box-shadow:inset 3px 0 0 var(--ink)}
+.seitennav a:hover{color:var(--ink)}
+.brot{font-size:.82rem;color:var(--ink3);margin-bottom:14px}
+.brot a{text-decoration:none;font-weight:600;color:var(--ink2)}
+.artikel h1{font-size:clamp(1.9rem,4.4vw,2.8rem);font-weight:900;letter-spacing:-.02em;line-height:1.08;margin:0 0 12px}
+.artikel .kurz{font-size:1.12rem;color:var(--ink2);max-width:680px;margin:0 0 22px}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.meta span{font-size:.78rem;font-weight:700;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+.videoblock{margin-bottom:12px}
+.videobar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 2px 0;font-size:.85rem;color:var(--ink2)}
+.videobar button{font:inherit;font-weight:700;background:none;border:0;border-bottom:1.5px solid var(--ink);padding:4px 0;cursor:pointer;color:var(--ink)}
+.oder{display:flex;align-items:center;gap:14px;margin:36px 0 8px;font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.oder::before,.oder::after{content:"";height:1px;background:var(--line);flex:1}
+.schritt{display:grid;grid-template-columns:56px minmax(0,1fr);gap:18px;margin-top:36px}
+.schritt .zahl{width:56px;height:56px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-weight:900;font-size:1.4rem;background:#fff}
+.schritt h3{font-size:1.25rem;margin:12px 0 6px;font-weight:800}
+.schritt p{margin:0 0 16px;max-width:660px}
+@media (max-width:640px){.schritt{grid-template-columns:1fr}.schritt .zahl{width:44px;height:44px;font-size:1.1rem}}
+ol.legende{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:6px}
+ol.legende li{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:12px;cursor:default;transition:background .15s}
+ol.legende li:hover,ol.legende li:focus{background:#fff;outline:none}
+ol.legende li b.n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--mark);color:#fff;display:grid;place-items:center;font-size:.85rem;font-weight:800}
+ol.legende li span{padding-top:3px}
+.box{border-radius:16px;padding:18px 22px;margin:28px 0;max-width:720px}
+.box h4{margin:0 0 6px;font-size:.95rem}
+.box ul{margin:0;padding-left:18px}
+.box li{margin:4px 0}
+.box.info{background:var(--blau)}
+.box.privat{background:var(--rose)}
+.handy{display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:center;margin-top:24px}
+@media (max-width:640px){.handy{grid-template-columns:1fr}}
+.telefon{border-radius:34px;border:9px solid #1d1d1d;overflow:hidden;background:#000;box-shadow:0 18px 40px -18px rgba(0,0,0,.4);max-width:240px}
+.weiter{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:20px}
+.weiter a{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-decoration:none;font-weight:700;display:flex;justify-content:space-between;gap:10px}
+.weiter a:hover{border-color:var(--ink)}
+.fuss{margin-top:48px;border-top:1px solid var(--line);padding-top:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.fuss p{margin:0;color:var(--ink2)}
+
+/* ---------- Übersicht ---------- */
+.liste{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.gruppe{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 22px}
+.gruppe h3{margin:0 0 10px;font-size:1.05rem;display:flex;align-items:center;gap:10px}
+.gruppe h3 i{width:14px;height:14px;border-radius:4px;display:inline-block}
+.gruppe ul{list-style:none;margin:0;padding:0}
+.gruppe li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid #f0f0ec;font-size:.92rem}
+.gruppe li:first-child{border-top:0}
+.gruppe li em{font-style:normal;font-size:.72rem;font-weight:700;color:var(--ink2);white-space:nowrap}
+.einstieg{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.einstieg .k{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
+.einstieg .k b{display:block;margin-bottom:6px}
+.einstieg .k p{margin:0;color:var(--ink2);font-size:.92rem}
+.mini{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--papier);font-size:.85rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hilfe-knopf{display:inline-flex;align-items:center;gap:6px;font-weight:700;border:1.5px solid var(--ink);border-radius:999px;padding:6px 12px;background:#fff;font-size:.82rem}
+.hilfe-knopf i{width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-style:normal;font-size:.75rem}
+.offen{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 26px}
+.offen ol{margin:0;padding-left:20px}
+.offen li{margin:10px 0}
+footer.ende{padding:60px 0 80px;color:var(--ink3);font-size:.82rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="konzept"><div class="wrap"><span><b>Entwurf zur Designfreigabe</b> · Hilfe-Bereich für Mitglieder</span><span>Stand 26.11.2026 · Screenshots aus dem lokalen Testportal, alle Personen erfunden</span></div></div>
+
+<div class="wrap">
+  <section class="intro">
+    <span class="eyebrow">Konzept</span>
+    <h1>Hilfe, die zeigt statt erklärt.</h1>
+    <p class="lead">Ein eigener Hilfe-Bereich für Mitglieder: kurze Anleitungen nach Aufgaben („Ich möchte …“), jede mit echten Screenshots, nummerierten Markierungen und – wo es sich lohnt – einem stummen Video von 20 bis 30 Sekunden. Vorstand und Redaktion bekommen später eine eigene Hilfe.</p>
+    <ul class="prinzipien">
+      <li><b>Aufgaben statt Seiten</b><span>Überschriften sind Ziele („Für einen Termin anmelden“), nicht Menüpunkte. So finden Mitglieder die Antwort mit ihren eigenen Worten.</span></li>
+      <li><b>Zeigen, dann erklären</b><span>Ein Screenshot pro Schritt, rote Nummern darauf, dieselben Nummern im Text. Fährt man über einen Punkt der Liste, leuchtet die Stelle im Bild auf.</span></li>
+      <li><b>Video als Abkürzung</b><span>Wer lieber zuschaut: kurzes Video ohne Ton, mit Untertitel-Leiste und sichtbarem Mauszeiger. Darunter stehen dieselben Schritte zum Nachlesen.</span></li>
+      <li><b>Erkennbar „nicht das Portal“</b><span>Punktraster wie auf einer Taktiktafel, Portal-Bilder immer in einem Fensterrahmen. Schrift, Farben und Logo bleiben EINTRIKOT.</span></li>
+      <li><b>Hilfe dort, wo man hängt</b><span>Jede Portalseite bekommt einen kleinen „?“-Knopf, der direkt zum passenden Artikel springt (siehe Ansicht 5).</span></li>
+      <li><b>Einfache Sprache</b><span>Du-Form, kurze Sätze, höchstens fünf Schritte pro Anleitung, keine Fachbegriffe. Datenschutz-Fragen beantwortet ein eigener Kasten „Wer sieht das?“.</span></li>
+    </ul>
+    <p class="hinweis-konzept">Diese Datei zeigt die Gestaltung. Gebaut wird erst nach deiner Freigabe, dann als eigene Seite im Portal (nur für angemeldete Mitglieder), lokal getestet und per Pull Request eingespielt.</p>
+  </section>
+
+  <!-- ===================== ANSICHT 1 ===================== -->
+  <div class="kapitel" id="a1"><span class="nr">Ansicht 1</span><h2>Startseite der Hilfe</h2></div>
+</div>
+
+<div class="fenster" style="max-width:1160px;margin:0 auto;border-radius:20px">
+  <header class="hkopf"><div class="wrap">
+    <a class="marke" href="#a1"><img src="../../../wp-content/themes/eintrikot-community/assets/logo.svg" alt="EINTRIKOT"><span class="tag">Hilfe</span></a>
+    <div class="rechts"><a class="knopf" href="#a1">← Zurück ins Portal</a></div>
+  </div></header>
+  <div style="background:var(--papier);background-image:radial-gradient(rgba(17,17,17,.075) 1px,transparent 1.2px);background-size:22px 22px">
+  <div class="wrap hstart">
+    <h1>Wie können wir helfen?</h1>
+    <p>Kurze Anleitungen mit Bildern und Videos – für alles, was du im Mitgliederportal tun kannst.</p>
+    <form class="suche" role="search" onsubmit="return false"><label class="sr" for="q">Hilfe durchsuchen</label><input id="q" placeholder="z. B. Termin, Profilbild, Passwort"><button class="knopf voll" type="submit">Suchen</button></form>
+    <div class="chips"><span>Oft gesucht:</span><a href="#a2">Für einen Termin anmelden</a><a href="#a3">Wer sieht mein Profil?</a><a href="#a4">Mitglied finden</a><a href="#a6">Passwort vergessen</a></div>
+
+    <div class="themen">
+      <a class="thema" href="#a5b"><div class="ic" style="background:var(--rose)"><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg></div><b>Erste Schritte</b><span>Anmelden, das Portal auf einen Blick, die zwei Fragen zum Start</span><small>3 Anleitungen · 1 Video</small></a>
+      <a class="thema" href="#a3"><div class="ic" style="background:var(--rose)"><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></div><b>Profil &amp; Sichtbarkeit</b><span>Angaben pflegen, Foto, Geburtstag – und wer was sieht</span><small>7 Anleitungen · 1 Video</small></a>
+      <a class="thema" href="#a4"><div class="ic" style="background:var(--blau)"><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></div><b>Mitglieder finden</b><span>Suchen, filtern, A–Z und Kontakt aufnehmen</span><small>3 Anleitungen · 1 Video</small></a>
+      <a class="thema" href="#a2"><div class="ic" style="background:var(--gruen)"><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div><b>Termine &amp; Vereinsinfos</b><span>Neuigkeiten lesen, an- und abmelden, wer ist dabei</span><small>4 Anleitungen · 1 Video</small></a>
+      <a class="thema" href="#a5"><div class="ic" style="background:var(--gold)"><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h7"/></svg></div><b>Service &amp; Anfragen</b><span>Daten ändern, Spende, Förderidee, Stand einer Anfrage</span><small>8 Anleitungen</small></a>
+      <a class="thema" href="#a6"><div class="ic" style="background:#ECECE8"><svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div><b>Konto &amp; Anmeldung</b><span>Passwort, angemeldet bleiben, abmelden, Newsletter</span><small>5 Anleitungen</small></a>
+    </div>
+
+    <div class="rundgang">
+      <div class="fenster">
+        <div class="leiste"><div class="punkte"><i></i><i></i><i></i></div><div class="url">eintrikot.de/community-portal</div></div>
+        <div class="buehne"><img src="media/start-ueberblick.png" alt="Startseite des Portals mit Suche, Profilfortschritt, Vereinsinfo, nächstem Termin und offenen Anfragen"></div>
+      </div>
+      <div>
+        <span class="eyebrow">Neu hier?</span>
+        <h3>Das Portal auf einen Blick</h3>
+        <p>Was auf „Start“ steht, wo die vier Bereiche sind und wo du dein Profil findest – in sechs Punkten.</p>
+        <a class="knopf voll" href="#a5b">Rundgang ansehen →</a>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ===================== ANSICHT 2 ===================== -->
+<div class="wrap"><div class="kapitel" id="a2"><span class="nr">Ansicht 2</span><h2>Anleitung mit Video – Termin</h2></div></div>
+
+<div class="fenster" style="max-width:1160px;margin:0 auto;border-radius:20px">
+  <header class="hkopf"><div class="wrap">
+    <a class="marke" href="#a1"><img src="../../../wp-content/themes/eintrikot-community/assets/logo.svg" alt="EINTRIKOT"><span class="tag">Hilfe</span></a>
+    <div class="rechts"><a class="knopf" href="#a1">← Zurück ins Portal</a></div>
+  </div></header>
+  <div style="background:var(--papier);background-image:radial-gradient(rgba(17,17,17,.075) 1px,transparent 1.2px);background-size:22px 22px">
+  <div class="wrap artikel">
+    <nav class="seitennav" aria-label="Termine &amp; Vereinsinfos">
+      <p>Termine &amp; Vereinsinfos</p>
+      <a class="akt" href="#a2">Für einen Termin anmelden</a>
+      <a href="#a2">Wer ist dabei?</a>
+      <a href="#a2">Vereinsinfos lesen</a>
+      <a href="#a2">Geburtstage unter „Termine“</a>
+    </nav>
+    <article>
+      <div class="brot"><a href="#a1">Hilfe</a> › <a href="#a2">Termine &amp; Vereinsinfos</a></div>
+      <h1>Für einen Termin anmelden</h1>
+      <p class="kurz">Alle Treffen, Online-Runden und Ausflüge stehen unter <b>Aktuelles → Termine</b>. Ein Klick genügt, und du stehst auf der Liste.</p>
+      <div class="meta"><span>⏱ 1 Minute</span><span>▶ Video 30 Sek.</span><span>Handy &amp; Computer</span></div>
+
+      <div class="videoblock">
+        <div class="fenster">
+          <div class="leiste"><div class="punkte"><i></i><i></i><i></i></div><div class="url">eintrikot.de/community-portal</div><span class="stempel">Video · ohne Ton</span></div>
+          <div class="buehne"><video src="../../../wp-content/plugins/eintrikot-community-core/help/video-termin.webm" muted loop playsinline autoplay preload="metadata" aria-label="Video: Für einen Termin anmelden, mit Untertiteln für jeden Schritt"></video></div>
+        </div>
+        <div class="videobar"><span>Die Schritte unten zeigen dasselbe zum Nachlesen.</span><button type="button" class="vtoggle">Pause</button></div>
+      </div>
+
+      <div class="oder">Schritt für Schritt</div>
+
+      <div class="schritt">
+        <div class="zahl">1</div>
+        <div>
+          <h3>Termine öffnen</h3>
+          <p>Klicke links auf <b>Aktuelles</b> und dann auf den Reiter <b>Termine</b>. Die Termine sind nach Monaten sortiert, der nächste steht oben.</p>
+          <figure class="fenster abb" style="margin:0" data-anno='[{"n":1,"b":[35.25,31.68,7.6,5.39],"p":[50,23]},{"n":2,"b":[29.52,63.13,10.6,2.89],"p":[62,62]},{"n":3,"b":[29.52,67.27,20.24,6],"p":[60,72]}]'>
+            <div class="leiste"><div class="punkte"><i></i><i></i><i></i></div><div class="url">eintrikot.de/community-portal · Aktuelles</div><span class="stempel">So sieht es im Portal aus</span></div>
+            <div class="buehne"><img src="media/termine-liste.png" alt="Seite Aktuelles mit Reiter Termine und Terminkarten"></div>
+          </figure>
+          <ol class="legende">
+            <li data-n="1" tabindex="0"><b class="n">1</b><span>Reiter <b>Termine</b> – daneben findest du die <b>Vereinsinfos</b>.</span></li>
+            <li data-n="2" tabindex="0"><b class="n">2</b><span><b>Mehr zum Termin</b> klappt Ort, Treffpunkt, Ansprechperson und Beschreibung auf.</span></li>
+            <li data-n="3" tabindex="0"><b class="n">3</b><span><b>Für Veranstaltung anmelden</b> – das war’s schon.</span></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="schritt">
+        <div class="zahl">2</div>
+        <div>
+          <h3>Angemeldet – und jederzeit wieder abmelden</h3>
+          <p>Oben erscheint <b>„Du bist angemeldet.“</b> Am Termin steht jetzt ein Knopf zum Abmelden, und unter <b>Wer ist dabei?</b> siehst du, wer noch kommt.</p>
+          <figure class="fenster abb" style="margin:0" data-anno='[{"n":4,"b":[29.3,42.6,10.6,3.6],"p":[24.5,55]},{"n":5,"b":[42.31,35.91,9.96,6],"p":[62,33]}]'>
+            <div class="leiste"><div class="punkte"><i></i><i></i><i></i></div><div class="url">eintrikot.de/community-portal · Aktuelles</div><span class="stempel">So sieht es im Portal aus</span></div>
+            <div class="buehne"><img src="media/termine-angemeldet.png" alt="Terminkarte nach der Anmeldung mit Abmelden-Knopf und Wer ist dabei"></div>
+          </figure>
+          <ol class="legende">
+            <li data-n="4" tabindex="0"><b class="n">4</b><span><b>Wer ist dabei?</b> zeigt die Anmeldungen. Die Zahl in Klammern zählt alle.</span></li>
+            <li data-n="5" tabindex="0"><b class="n">5</b><span><b>Abmelden</b> nimmt dich wieder von der Liste. Niemand bekommt dafür eine Nachricht.</span></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="box privat">
+        <h4>Wer sieht das?</h4>
+        <ul>
+          <li>Andere Mitglieder sehen deinen Namen in der Teilnehmerliste. Öffentlich ist nichts davon.</li>
+          <li>Bei Jugendlichen unter 18 erscheint nur die Zahl, kein Name.</li>
+          <li>Anmeldungen werden 180 Tage nach dem Termin automatisch gelöscht.</li>
+        </ul>
+      </div>
+
+      <h3 style="font-size:1.25rem;margin:36px 0 0">Am Handy</h3>
+      <div class="handy">
+        <div class="telefon"><img src="media/handy-termine.png" alt="Termine am Handy mit Menüleiste unten"></div>
+        <p style="margin:0;max-width:440px">Am Handy liegt das Menü unten: <b>Start · Mitglieder · Aktuelles · Service</b>. Sonst ist alles gleich – Termin antippen, <b>Für Veranstaltung anmelden</b>, fertig.</p>
+      </div>
+
+      <div class="fuss">
+        <p>Hat es nicht geklappt? Schreib uns über <b>Service → Vorstand kontaktieren</b>.</p>
+        <a class="knopf" href="#a5">Zum Service →</a>
+      </div>
+      <div class="weiter"><a href="#a2">Vereinsinfos lesen <span>→</span></a><a href="#a3">Geburtstag zeigen oder nicht <span>→</span></a></div>
+    </article>
+  </div>
+  </div>
+</div>
+
+<!-- ===================== ANSICHT 3 ===================== -->
+<div class="wrap"><div class="kapitel" id="a3"><span class="nr">Ansicht 3</span><h2>Anleitung ohne Video – Profil &amp; Sichtbarkeit</h2></div></div>
+
+<div class="fenster" style="max-width:1160px;margin:0 auto;border-radius:20px">
+  <header class="hkopf"><div class="wrap">
+    <a class="marke" href="#a1"><img src="../../../wp-content/themes/eintrikot-community/assets/logo.svg" alt="EINTRIKOT"><span class="tag">Hilfe</span></a>
+    <div class="rechts"><a class="knopf" href="#a1">← Zurück ins Portal</a></div>
+  </div></header>
+  <div style="background:var(--papier);background-image:radial-gradient(rgba(17,17,17,.075) 1px,transparent 1.2px);background-size:22px 22px">
+  <div class="wrap artikel">
+    <nav class="seitennav" aria-label="Profil &amp; Sichtbarkeit">
+      <p>Profil &amp; Sichtbarkeit</p>
+      <a class="akt" href="#a3">Wer sieht mein Profil?</a>
+      <a href="#a3">Profil bearbeiten</a>
+      <a href="#a3">Profilbild hochladen</a>
+      <a href="#a3">Geburtstag zeigen oder nicht</a>
+      <a href="#a3">Hockey-Lebenslauf &amp; DHB-Vita</a>
+      <a href="#a3">Social Media verlinken</a>
+      <a href="#a3">Foto auf der Website</a>
+    </nav>
+    <article>
+      <div class="brot"><a href="#a1">Hilfe</a> › <a href="#a3">Profil &amp; Sichtbarkeit</a></div>
+      <h1>Wer sieht mein Profil?</h1>
+      <p class="kurz">Du entscheidest. Name und Profilbild sehen alle Mitglieder, alles andere schaltest du Abschnitt für Abschnitt frei. Öffentlich im Internet steht nichts davon.</p>
+      <div class="meta"><span>⏱ 2 Minuten</span><span>Handy &amp; Computer</span></div>
+
+      <div class="schritt">
+        <div class="zahl">1</div>
+        <div>
+          <h3>Profil bearbeiten öffnen</h3>
+          <p>Klicke oben rechts auf deinen Namen und wähle <b>Profil bearbeiten</b>. Oben siehst du deine Daten aus der Mitgliederverwaltung und die Regeln zur Sichtbarkeit.</p>
+          <figure class="fenster abb" style="margin:0" data-anno='[{"n":1,"b":[47.6,57.6,12.3,5],"p":[67,50]},{"n":2,"b":[22.3,73.6,75.6,25.4],"p":[93,66]},{"n":3,"b":[23.19,91.86,12.76,5.92],"p":[45,93]}]'>
+            <div class="leiste"><div class="punkte"><i></i><i></i><i></i></div><div class="url">eintrikot.de/community-portal · Profil bearbeiten</div><span class="stempel">So sieht es im Portal aus</span></div>
+            <div class="buehne"><img src="media/profil-oben.png" alt="Profil bearbeiten mit Mitgliedsdaten und Erklärung der Sichtbarkeit"></div>
+          </figure>
+          <ol class="legende">
+            <li data-n="1" tabindex="0"><b class="n">1</b><span>Jahresbeitrag und Spende kommen aus der Mitgliederverwaltung. Ändern geht über <b>Jahresspende ändern</b> bzw. den Service.</span></li>
+            <li data-n="2" tabindex="0"><b class="n">2</b><span>Die drei Regeln: immer sichtbar, du entscheidest, öffentlich.</span></li>
+            <li data-n="3" tabindex="0"><b class="n">3</b><span><b>So sehen dich andere</b> zeigt dein Profil mit den Augen eines anderen Mitglieds.</span></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="schritt">
+        <div class="zahl">2</div>
+        <div>
+          <h3>Abschnitt freigeben und speichern</h3>
+          <p>Jeder Abschnitt hat rechts einen Schalter <b>Für Mitglieder sichtbar</b>. Schwarz heißt: sichtbar. Danach unten <b>Änderungen speichern</b> – der Knopf bleibt beim Scrollen immer am unteren Rand.</p>
+          <figure class="fenster abb" style="margin:0" data-anno='[{"n":4,"b":[79.2,19.3,18.4,4.4],"p":[71,9]},{"n":5,"b":[21.62,92.13,17.09,6],"p":[46,88]}]'>
+            <div class="leiste"><div class="punkte"><i></i><i></i><i></i></div><div class="url">eintrikot.de/community-portal · Profil bearbeiten</div><span class="stempel">So sieht es im Portal aus</span></div>
+            <div class="buehne"><img src="media/profil-schalter.png" alt="Abschnitt Hockey-Lebenslauf mit Sichtbarkeitsschalter und Speichern-Knopf"></div>
+          </figure>
+          <ol class="legende">
+            <li data-n="4" tabindex="0"><b class="n">4</b><span>Schalter an: andere Mitglieder sehen diesen Abschnitt. Aus: nur du und die Vereinsverwaltung.</span></li>
+            <li data-n="5" tabindex="0"><b class="n">5</b><span><b>Änderungen speichern</b> nicht vergessen. Klappt das Speichern nicht, bleiben deine Eingaben 30 Minuten als Entwurf erhalten.</span></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="box info">
+        <h4>Gut zu wissen</h4>
+        <ul>
+          <li>Leere Felder erscheinen nirgends – auch nicht, wenn der Abschnitt freigegeben ist.</li>
+          <li>Deinen Geburtstag gibst du extra frei: niemand, Tag und Monat, oder mit Jahr. Das Alter ist eine eigene Wahl.</li>
+          <li>Die Vereinsverwaltung schaltet nie etwas für dich frei.</li>
+        </ul>
+      </div>
+      <div class="weiter"><a href="#a3">Geburtstag zeigen oder nicht <span>→</span></a><a href="#a3">Profilbild hochladen <span>→</span></a></div>
+    </article>
+  </div>
+  </div>
+</div>
+
+<!-- ===================== ANSICHT 4 ===================== -->
+<div class="wrap"><div class="kapitel" id="a4"><span class="nr">Ansicht 4</span><h2>Anleitung mit Video – Mitglied finden</h2></div></div>
+
+<div class="fenster" style="max-width:1160px;margin:0 auto;border-radius:20px">
+  <header class="hkopf"><div class="wrap">
+    <a class="marke" href="#a1"><img src="../../../wp-content/themes/eintrikot-community/assets/logo.svg" alt="EINTRIKOT"><span class="tag">Hilfe</span></a>
+    <div class="rechts"><a class="knopf" href="#a1">← Zurück ins Portal</a></div>
+  </div></header>
+  <div style="background:var(--papier);background-image:radial-gradient(rgba(17,17,17,.075) 1px,transparent 1.2px);background-size:22px 22px">
+  <div class="wrap artikel">
+    <nav class="seitennav" aria-label="Mitglieder finden">
+      <p>Mitglieder finden</p>
+      <a class="akt" href="#a4">Ein Mitglied finden</a>
+      <a href="#a4">Filter, A–Z und Sortierung</a>
+      <a href="#a4">Kontakt aufnehmen</a>
+    </nav>
+    <article>
+      <div class="brot"><a href="#a1">Hilfe</a> › <a href="#a4">Mitglieder finden</a></div>
+      <h1>Ein Mitglied finden</h1>
+      <p class="kurz">Alte Teamkameradin, Trainer von damals, jemand aus deiner Stadt: Unter <b>Mitglieder</b> suchst du nach Name, Team oder Ort.</p>
+      <div class="meta"><span>⏱ 1 Minute</span><span>▶ Video 20 Sek.</span></div>
+
+      <div class="videoblock">
+        <div class="fenster">
+          <div class="leiste"><div class="punkte"><i></i><i></i><i></i></div><div class="url">eintrikot.de/community-portal</div><span class="stempel">Video · ohne Ton</span></div>
+          <div class="buehne"><video src="../../../wp-content/plugins/eintrikot-community-core/help/video-mitglied.webm" muted loop playsinline autoplay preload="metadata" aria-label="Video: Ein Mitglied finden, mit Untertiteln für jeden Schritt"></video></div>
+        </div>
+        <div class="videobar"><span>Die Schritte unten zeigen dasselbe zum Nachlesen.</span><button type="button" class="vtoggle">Pause</button></div>
+      </div>
+
+      <div class="oder">Schritt für Schritt</div>
+      <div class="schritt">
+        <div class="zahl">1</div>
+        <div>
+          <h3>Suchen, filtern, blättern</h3>
+          <p>Tippe einen Namen, ein Team oder einen Ort ein und klicke <b>Suchen</b>. Mit <b>Filter</b>, der A–Z-Leiste und der Sortierung grenzt du weiter ein.</p>
+          <figure class="fenster abb" style="margin:0" data-anno='[{"n":1,"b":[24.75,35.09,40.91,6.8],"p":[75,27]},{"n":2,"b":[21.8,49.6,6.6,4.8],"p":[35,50]},{"n":3,"b":[21.62,60.4,22.3,3.6],"p":[52,59]},{"n":4,"b":[21.62,65.3,72.3,5.2],"p":[62,80]},{"n":5,"b":[21.62,84.67,37.09,11.32],"p":[66,84]}]'>
+            <div class="leiste"><div class="punkte"><i></i><i></i><i></i></div><div class="url">eintrikot.de/community-portal · Mitglieder</div><span class="stempel">So sieht es im Portal aus</span></div>
+            <div class="buehne"><img src="media/mitglieder-liste.png" alt="Mitgliederverzeichnis mit Suchfeld, Filter, Sortierung, A-Z-Leiste und Mitgliederkarten"></div>
+          </figure>
+          <ol class="legende">
+            <li data-n="1" tabindex="0"><b class="n">1</b><span><b>Suchfeld</b>: Name, Team oder Ort, zum Beispiel „Köln“.</span></li>
+            <li data-n="2" tabindex="0"><b class="n">2</b><span><b>Filter</b>: Team, Altersklasse, Region und mehr – als Chips anklickbar.</span></li>
+            <li data-n="3" tabindex="0"><b class="n">3</b><span><b>Sortiert nach</b> Nachname oder Vorname.</span></li>
+            <li data-n="4" tabindex="0"><b class="n">4</b><span><b>A–Z</b>: zeigt nur einen Buchstaben. Graue Buchstaben haben keine Treffer.</span></li>
+            <li data-n="5" tabindex="0"><b class="n">5</b><span><b>Karte</b> anklicken öffnet das Profil. „Zurück zur Suche“ bringt dich genau hierher zurück.</span></li>
+          </ol>
+        </div>
+      </div>
+      <div class="box privat">
+        <h4>Warum sehe ich bei manchen so wenig?</h4>
+        <ul><li>Jedes Mitglied entscheidet selbst, was es teilt. „Noch keine Angaben geteilt“ heißt: Name und Foto, sonst nichts.</li><li>Private Angaben tauchen auch in Treffern und Filtern nicht auf.</li></ul>
+      </div>
+    </article>
+  </div>
+  </div>
+</div>
+
+<!-- ===================== ANSICHT 5 ===================== -->
+<div class="wrap">
+  <div class="kapitel" id="a5b"><span class="nr">Ansicht 5</span><h2>Rundgang – das Portal auf einen Blick</h2></div>
+  <div class="fenster" style="border-radius:20px">
+    <div style="background:var(--papier);padding:28px">
+      <div class="brot"><a href="#a1">Hilfe</a> › <a href="#a5b">Erste Schritte</a></div>
+      <h1 style="font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:900;letter-spacing:-.02em;margin:0 0 18px">Das Portal auf einen Blick</h1>
+      <figure class="fenster abb" style="margin:0" data-anno='[{"n":1,"b":[1.4,15,15.6,27],"p":[19,52]},{"n":2,"b":[24.75,29.57,40.91,6.8],"p":[80,30]},{"n":3,"b":[86.5,46.5,10.6,4.6],"p":[80,57]},{"n":4,"b":[23.5,79.74,9.9,6.01],"p":[28,94]},{"n":5,"b":[49.01,79.74,7.78,6.01],"p":[53,94]},{"n":6,"b":[74.51,79.74,7.77,6.01],"p":[79,94]}]'>
+        <div class="leiste"><div class="punkte"><i></i><i></i><i></i></div><div class="url">eintrikot.de/community-portal · Start</div><span class="stempel">So sieht es im Portal aus</span></div>
+        <div class="buehne"><img src="media/start-ueberblick.png" alt="Startseite des Portals"></div>
+      </figure>
+      <ol class="legende" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+        <li data-n="1" tabindex="0"><b class="n">1</b><span><b>Die vier Bereiche</b>: Start, Mitglieder, Aktuelles, Service. Am Handy unten.</span></li>
+        <li data-n="2" tabindex="0"><b class="n">2</b><span><b>Schnellsuche</b> nach Mitgliedern direkt von Start.</span></li>
+        <li data-n="3" tabindex="0"><b class="n">3</b><span><b>Dein Profil</b>: was noch fehlt, mit „Ergänzen“.</span></li>
+        <li data-n="4" tabindex="0"><b class="n">4</b><span><b>Neueste Vereinsinfo</b> aus dem Verein.</span></li>
+        <li data-n="5" tabindex="0"><b class="n">5</b><span><b>Nächster Termin</b> – mit Link zu allen Terminen.</span></li>
+        <li data-n="6" tabindex="0"><b class="n">6</b><span><b>Deine Anfragen</b> und ihr Stand.</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ===================== ANSICHT 6 ===================== -->
+  <div class="kapitel" id="a5"><span class="nr">Ansicht 6</span><h2>Markierungen auf goldenen Seiten (Service)</h2></div>
+  <div class="fenster" style="border-radius:20px">
+    <div style="background:var(--papier);padding:28px">
+      <p style="margin:0 0 18px;max-width:760px;color:var(--ink2)">Brandbook: Schwarz, Rot und Gold nie zusammen. Auf den goldenen Service-Seiten werden die Markierungen deshalb <b>schwarz statt rot</b>. Sonst bleibt alles gleich.</p>
+      <div class="dunkel">
+      <figure class="fenster abb" style="margin:0" data-anno='[{"n":1,"b":[22.8,49.5,53.5,12.4],"p":[84,54]},{"n":2,"b":[60,63,35,10],"p":[52,80]}]'>
+        <div class="leiste"><div class="punkte"><i></i><i></i><i></i></div><div class="url">eintrikot.de/community-portal · Anfrage</div><span class="stempel">So sieht es im Portal aus</span></div>
+        <div class="buehne"><img src="media/anfrage-verlauf.png" alt="Eine Service-Anfrage mit Fortschrittsanzeige"></div>
+      </figure>
+      <ol class="legende">
+        <li data-n="1" tabindex="0"><b class="n">1</b><span><b>Stand</b>: eingegangen, in Prüfung, erledigt – mit Datum.</span></li>
+        <li data-n="2" tabindex="0"><b class="n">2</b><span><b>Wie es weitergeht</b> und wer sich kümmert. Die Rückmeldung erscheint hier, zusätzlich kommt eine E-Mail.</span></li>
+      </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== ANSICHT 7 ===================== -->
+  <div class="kapitel" id="a6"><span class="nr">Ansicht 7</span><h2>Wie Mitglieder zur Hilfe kommen</h2></div>
+  <div class="einstieg">
+    <div class="k"><b>„?“-Knopf auf jeder Portalseite</b><p>Oben rechts neben deinem Namen. Er führt zur passenden Anleitung: auf „Termine“ zu „Für einen Termin anmelden“, im Profil zu „Wer sieht mein Profil?“.</p><div class="mini"><span class="hilfe-knopf"><i>?</i>Hilfe</span><span>MT&nbsp;Mia&nbsp;Test&nbsp;⌄</span></div></div>
+    <div class="k"><b>Kontomenü und Service</b><p>„Hilfe“ als eigener Punkt im Kontomenü und als Kachel im Service unter „Konto“.</p></div>
+    <div class="k"><b>Neu im Portal</b><p>In der Umstiegsmail und auf der Karte „Deine ersten Schritte“ ein Link „In 2 Minuten erklärt“ zum Rundgang.</p></div>
+    <div class="k"><b>Vor der Anmeldung</b><p>Die Artikel zu Anmeldung und Passwort sind auch ohne Login erreichbar, ein Link steht auf der Anmeldeseite. Alles andere nur für Mitglieder.</p></div>
+  </div>
+
+  <!-- ===================== ANSICHT 8 ===================== -->
+  <div class="kapitel" id="a7"><span class="nr">Ansicht 8</span><h2>Alle geplanten Anleitungen (Mitgliedersicht)</h2></div>
+  <div class="liste">
+    <div class="gruppe"><h3><i style="background:var(--rose)"></i>Erste Schritte</h3><ul>
+      <li>Zum ersten Mal anmelden (Link aus der Mail)<em>📷</em></li>
+      <li>Das Portal auf einen Blick<em>📷 ▶</em></li>
+      <li>„Zeig dich“ und Newsletter: die zwei Fragen zum Start<em>📷</em></li></ul></div>
+    <div class="gruppe"><h3><i style="background:var(--rose)"></i>Profil &amp; Sichtbarkeit</h3><ul>
+      <li>Wer sieht mein Profil?<em>📷</em></li>
+      <li>Profil bearbeiten und speichern<em>📷 ▶</em></li>
+      <li>Profilbild hochladen und zuschneiden<em>📷</em></li>
+      <li>Geburtstag und Alter zeigen oder nicht<em>📷</em></li>
+      <li>Hockey-Lebenslauf und DHB-Vita<em>📷</em></li>
+      <li>LinkedIn, Instagram, Facebook verlinken<em>📷</em></li>
+      <li>Profilbild auf der Website (Vorstand, Beirat)<em>📷</em></li></ul></div>
+    <div class="gruppe"><h3><i style="background:var(--blau)"></i>Mitglieder finden</h3><ul>
+      <li>Ein Mitglied finden<em>📷 ▶</em></li>
+      <li>Filter, A–Z und Sortierung<em>📷</em></li>
+      <li>Kontakt aufnehmen<em>📷</em></li></ul></div>
+    <div class="gruppe"><h3><i style="background:var(--gruen)"></i>Termine &amp; Vereinsinfos</h3><ul>
+      <li>Vereinsinfos lesen<em>📷</em></li>
+      <li>Für einen Termin anmelden<em>📷 ▶</em></li>
+      <li>Wer ist dabei?<em>📷</em></li>
+      <li>Geburtstage unter „Termine“<em>📷</em></li></ul></div>
+    <div class="gruppe"><h3><i style="background:var(--gold)"></i>Service &amp; Anfragen</h3><ul>
+      <li>Eine Anfrage stellen und den Stand sehen<em>📷</em></li>
+      <li>Adresse, E-Mail oder Telefon ändern<em>📷</em></li>
+      <li>Bankverbindung ändern (ohne Kontodaten im Portal)<em>📷</em></li>
+      <li>Jahresspende anfragen oder ändern<em>📷</em></li>
+      <li>Förderidee einreichen<em>📷</em></li>
+      <li>Mich einbringen: Zeit, Wissen, Kontakte<em>📷</em></li>
+      <li>Dokumente: Satzung und Protokolle<em>📷</em></li>
+      <li>Newsletter-Ausgaben nachlesen<em>📷</em></li></ul></div>
+    <div class="gruppe"><h3><i style="background:#ddd"></i>Konto &amp; Anmeldung</h3><ul>
+      <li>Passwort vergessen<em>📷</em></li>
+      <li>„Angemeldet bleiben“ – wann sinnvoll?<em>📷</em></li>
+      <li>Auf allen anderen Geräten abmelden<em>📷</em></li>
+      <li>Newsletter an- oder abbestellen<em>📷</em></li>
+      <li>Was gilt für Mitglieder unter 18?<em>Text</em></li></ul></div>
+  </div>
+  <p class="hinweis-konzept">📷 Screenshots mit Markierungen · ▶ zusätzlich Video. Videos nur bei Abläufen mit mehreren Klicks, sonst reichen Bilder.</p>
+
+  <!-- ===================== OFFENE PUNKTE ===================== -->
+  <div class="kapitel" id="a8"><span class="nr">Zur Entscheidung</span><h2>Was ich von dir brauche</h2></div>
+  <div class="offen"><ol>
+    <li><b>Gestaltung:</b> Punktraster, Fensterrahmen, rote Markierungen (schwarz auf goldenen Seiten) – so freigeben?</li>
+    <li><b>Videos:</b> stumm mit Untertitel-Leiste, startet automatisch in Schleife (nicht bei „Bewegung reduzieren“). Oder lieber erst auf Klick abspielen?</li>
+    <li><b>Ort im Portal:</b> eigene Seite „Hilfe“ unter dem Portal, gepflegt im Code. Screenshots und Videos werden per Skript aus dem Testportal neu erstellt, wenn sich das Portal ändert – so bleiben sie aktuell und zeigen nie echte Mitglieder.</li>
+    <li><b>Umfang für die erste Ausgabe:</b> alle 30 Anleitungen auf einmal oder zuerst die zehn wichtigsten (Erste Schritte, Profil, Termine, Passwort)?</li>
+  </ol></div>
+</div>
+
+<footer class="ende"><div class="wrap">EINTRIKOT e. V. · Das Netzwerk der Nationalteams. · Entwurf, nicht veröffentlicht.</div></footer>
+
+<script>
+(function(){
+  const NS='http://www.w3.org/2000/svg', W=1280, H=800;
+  function el(n,a){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e}
+  document.querySelectorAll('figure.abb').forEach(fig=>{
+    const list=JSON.parse(fig.dataset.anno||'[]');
+    const svg=el('svg',{class:'anno',viewBox:`0 0 ${W} ${H}`,'aria-hidden':'true'});
+    const defs=el('defs',{});const mk=el('marker',{id:'',viewBox:'0 0 10 10',refX:'7',refY:'5',markerWidth:'5',markerHeight:'5',orient:'auto-start-reverse'});
+    list.forEach(a=>{
+      const [x,y,w,h]=a.b.map((v,i)=>v*(i%2?H:W)/100);
+      const bx=a.p[0]*W/100, by=a.p[1]*H/100;
+      const g=el('g',{class:'m','data-n':a.n});
+      g.append(el('rect',{class:'glow',x:x-6,y:y-6,width:w+12,height:h+12,rx:14}));
+      g.append(el('rect',{class:'rahmen',x:x-6,y:y-6,width:w+12,height:h+12,rx:14}));
+      // Ziel: nächster Punkt auf dem Rahmen
+      const tx=Math.max(x-6,Math.min(bx,x+w+6)), ty=Math.max(y-6,Math.min(by,y+h+6));
+      const dx=tx-bx, dy=ty-by, d=Math.hypot(dx,dy);
+      if(d>46){
+        const sx=bx+dx/d*26, sy=by+dy/d*26, ex=tx-dx/d*8, ey=ty-dy/d*8;
+        const mx=(sx+ex)/2-dy/d*18, my=(sy+ey)/2+dx/d*18;
+        g.append(el('path',{class:'pfeil',d:`M${sx},${sy} Q${mx},${my} ${ex},${ey}`}));
+        const ang=Math.atan2(ey-my,ex-mx), L=16;
+        g.append(el('path',{class:'pfeil',d:`M${ex-L*Math.cos(ang-0.5)},${ey-L*Math.sin(ang-0.5)} L${ex},${ey} L${ex-L*Math.cos(ang+0.5)},${ey-L*Math.sin(ang+0.5)}`}));
+      }
+      const b=el('g',{class:'badge'});b.append(el('circle',{cx:bx,cy:by,r:24}));const t=el('text',{x:bx,y:by+1});t.textContent=a.n;b.append(t);g.append(b);
+      svg.append(g);
+    });
+    fig.querySelector('.buehne').append(svg);
+    // Legende verbinden
+    const leg=fig.nextElementSibling;
+    if(leg&&leg.classList.contains('legende')){
+      leg.querySelectorAll('li').forEach(li=>{
+        const on=()=>{svg.classList.add('fokus');svg.querySelectorAll('g.m').forEach(g=>g.classList.toggle('an',g.dataset.n===li.dataset.n))};
+        const off=()=>{svg.classList.remove('fokus');svg.querySelectorAll('g.m').forEach(g=>g.classList.remove('an'))};
+        li.addEventListener('mouseenter',on);li.addEventListener('focus',on);li.addEventListener('mouseleave',off);li.addEventListener('blur',off);
+      });
+    }
+  });
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('.videoblock').forEach(vb=>{
+    const v=vb.querySelector('video'), btn=vb.querySelector('.vtoggle');
+    if(reduce){v.removeAttribute('autoplay');v.pause();btn.textContent='Abspielen'}
+    btn.addEventListener('click',()=>{if(v.paused){v.play();btn.textContent='Pause'}else{v.pause();btn.textContent='Abspielen'}});
+  });
+})();
+</script>
+</body>
+</html>

@@ -93,6 +93,11 @@ function render_service_overview($types) {
     }
     echo '<section class="portal-section"><h2>Konto</h2>' .
         service_link(portal_url('profile'), 'Profil bearbeiten') .
+        service_link(
+            portal_url('hilfe', ['von' => 'service']),
+            'Hilfe',
+            'Anleitungen mit Bildern und Videos'
+        ) .
         service_link(home_url('/'), 'Zur öffentlichen Website') .
         logout_others_form() .
         service_link(wp_logout_url(home_url('/')), 'Abmelden') .
@@ -415,6 +420,7 @@ add_action('admin_post_et_service', function () {
     if (is_wp_error($id)) {
         service_error($type, $id->get_error_message());
     }
+    notify_board_new_request($id); // once per request, also when the form is sent twice
     wp_safe_redirect(portal_url('request', ['request' => $id, 'saved' => 1]));
     exit();
 });

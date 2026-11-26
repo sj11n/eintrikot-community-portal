@@ -1,0 +1,748 @@
+/* Mitglieder-Hilfe (help.php). Gestaltung freigegeben am 26.11.2026: docs/entwuerfe/hilfe/index.html.
+   Bewusst abgesetzt vom Portal: Punktraster wie auf einer Taktiktafel, Portal-Bilder im Fensterrahmen. */
+.et-help {
+    --hw-ink: #111;
+    --hw-ink2: #4a4a4a;
+    --hw-ink3: #6b6b6b;
+    --hw-line: #e3e3df;
+    --hw-papier: #f7f6f2;
+    --hw-blau: #c8e2ee;
+    --hw-rose: #f1d1dd;
+    --hw-mark: #da525d;
+    min-height: 100vh;
+    color: var(--hw-ink);
+    background-color: var(--hw-papier);
+    background-image: radial-gradient(rgba(17, 17, 17, 0.075) 1px, transparent 1.2px);
+    background-size: 22px 22px;
+    line-height: 1.55;
+}
+/* Gold-Seiten (Service): Schwarz, Rot und Gold nie zusammen, darum schwarze Markierungen. */
+.et-help .hw-dunkel {
+    --hw-mark: #111;
+}
+.et-help *,
+.et-help *::before,
+.et-help *::after {
+    box-sizing: border-box;
+}
+.et-help img,
+.et-help video {
+    max-width: 100%;
+    display: block;
+}
+.et-help main:focus {
+    outline: none;
+}
+.et-help .hw-wrap {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Kopf */
+.et-help .hw-kopf {
+    background: #fff;
+    border-bottom: 1px solid var(--hw-line);
+}
+.et-help .hw-kopf .hw-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 76px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+.et-help .hw-marke {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.et-help .hw-marke img {
+    height: 30px;
+    width: auto;
+}
+.et-help .hw-tag {
+    font-weight: 800;
+    font-size: 0.95rem;
+    border-left: 2px solid var(--hw-ink);
+    padding-left: 12px;
+    line-height: 1;
+}
+.et-help .hw-knopf,
+.et-help a.hw-knopf {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 999px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    min-height: 44px;
+    border: 1.5px solid var(--hw-ink);
+    background: #fff;
+    color: var(--hw-ink);
+    cursor: pointer;
+    white-space: nowrap;
+}
+.et-help .hw-knopf.voll {
+    background: var(--hw-ink);
+    color: #fff;
+}
+.et-help .hw-knopf:hover {
+    background: var(--hw-ink);
+    color: #fff;
+}
+.et-help .hw-knopf.voll:hover {
+    background: #333;
+}
+.et-help .hw-knopf:focus-visible,
+.et-help a:focus-visible,
+.et-help .hw-legende li:focus-visible,
+.et-help button:focus-visible {
+    outline: 3px solid var(--hw-ink);
+    outline-offset: 3px;
+}
+.et-help .hw-link {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-weight: 600;
+}
+
+/* Fenster um alles, was das Portal zeigt */
+.et-help .hw-fenster {
+    margin: 0;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #d9d9d4;
+    box-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.04),
+        0 18px 50px -20px rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+}
+.et-help .hw-leiste {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 34px;
+    padding: 0 12px;
+    background: #ecece8;
+    border-bottom: 1px solid #dcdcd6;
+}
+.et-help .hw-punkte {
+    display: flex;
+    gap: 6px;
+}
+.et-help .hw-punkte i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #cfcfc9;
+    display: block;
+}
+.et-help .hw-url {
+    flex: 1;
+    max-width: 420px;
+    margin: 0 auto;
+    height: 22px;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 0.72rem;
+    color: var(--hw-ink3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 0 8px;
+}
+.et-help .hw-stempel {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--hw-ink2);
+    white-space: nowrap;
+}
+.et-help .hw-buehne {
+    position: relative;
+}
+.et-help .hw-buehne img,
+.et-help .hw-buehne video {
+    width: 100%;
+    height: auto;
+}
+.et-help .hw-anno {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+}
+.et-help .hw-anno .rahmen {
+    fill: none;
+    stroke: var(--hw-mark);
+    stroke-width: 4;
+}
+.et-help .hw-anno .glow {
+    fill: none;
+    stroke: var(--hw-mark);
+    stroke-opacity: 0.22;
+    stroke-width: 14;
+}
+.et-help .hw-anno .pfeil {
+    fill: none;
+    stroke: var(--hw-mark);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.et-help .hw-anno .badge circle {
+    fill: var(--hw-mark);
+    stroke: #fff;
+    stroke-width: 4;
+}
+.et-help .hw-anno .badge text {
+    fill: #fff;
+    font: 800 26px Montserrat, Arial, sans-serif;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+.et-help .hw-anno g.m {
+    transition: opacity 0.2s;
+}
+.et-help .hw-anno.fokus g.m {
+    opacity: 0.22;
+}
+.et-help .hw-anno.fokus g.m.an {
+    opacity: 1;
+}
+.et-help .hw-anno g.m.an .rahmen {
+    animation: hw-puls 1s ease-in-out infinite alternate;
+}
+@keyframes hw-puls {
+    from {
+        stroke-width: 4;
+    }
+    to {
+        stroke-width: 8;
+    }
+}
+
+/* Startseite der Hilfe */
+.et-help .hw-start,
+.et-help .hw-liste {
+    padding-top: 56px;
+    padding-bottom: 40px;
+}
+.et-help h1 {
+    font-size: clamp(1.9rem, 4.6vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    margin: 0 0 12px;
+}
+.et-help .hw-liste h1 {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
+}
+.et-help .hw-kurz {
+    font-size: 1.1rem;
+    color: var(--hw-ink2);
+    max-width: 680px;
+    margin: 0 0 24px;
+}
+.et-help .hw-hinweis {
+    background: var(--hw-blau);
+    border-radius: 14px;
+    padding: 12px 18px;
+    max-width: 640px;
+    margin: 18px 0 0;
+}
+.et-help .hw-suche {
+    display: flex;
+    gap: 10px;
+    max-width: 640px;
+    background: #fff;
+    border: 1.5px solid var(--hw-ink);
+    border-radius: 999px;
+    padding: 6px 6px 6px 22px;
+    align-items: center;
+    margin: 0 0 8px;
+}
+.et-help .hw-suche input[type="search"] {
+    flex: 1;
+    border: 0;
+    font: inherit;
+    font-size: 1rem;
+    outline: 0;
+    min-width: 0;
+    background: transparent;
+    padding: 8px 0;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.et-help .hw-suche:focus-within {
+    box-shadow: 0 0 0 4px var(--hw-blau);
+}
+.et-help .hw-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: var(--hw-ink2);
+    align-items: center;
+}
+.et-help .hw-chips a {
+    background: #fff;
+    border: 1px solid var(--hw-line);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-weight: 600;
+    color: var(--hw-ink);
+}
+.et-help .hw-chips a:hover {
+    border-color: var(--hw-ink);
+}
+.et-help .hw-themen {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 40px;
+}
+.et-help .hw-thema {
+    background: #fff;
+    border: 1px solid var(--hw-line);
+    border-radius: 18px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition:
+        transform 0.15s,
+        box-shadow 0.15s;
+}
+.et-help .hw-thema:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -14px rgba(0, 0, 0, 0.25);
+}
+.et-help .hw-ic {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex: none;
+}
+.et-help .hw-thema .hw-ic {
+    margin-bottom: 8px;
+}
+.et-help .hw-ic svg {
+    width: 24px;
+    height: 24px;
+}
+.et-help .hw-thema strong {
+    font-size: 1.08rem;
+}
+.et-help .hw-thema span {
+    font-size: 0.88rem;
+    color: var(--hw-ink2);
+}
+.et-help .hw-thema small {
+    margin-top: auto;
+    padding-top: 12px;
+    font-size: 0.78rem;
+    color: var(--hw-ink3);
+    font-weight: 600;
+}
+.et-help .hw-rundgang {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 28px;
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--hw-line);
+    border-radius: 22px;
+    padding: 28px;
+    margin-top: 28px;
+}
+.et-help .hw-rundgang h2 {
+    font-size: 1.5rem;
+    margin: 6px 0 8px;
+    font-weight: 800;
+}
+.et-help .hw-rundgang p {
+    margin: 0 0 16px;
+    color: var(--hw-ink2);
+}
+.et-help .hw-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--hw-ink2);
+}
+
+/* Listen: Thema und Suche */
+.et-help .hw-zeilen {
+    display: grid;
+    gap: 10px;
+    max-width: 820px;
+    margin-top: 20px;
+}
+.et-help .hw-zeile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    background: #fff;
+    border: 1px solid var(--hw-line);
+    border-radius: 16px;
+    padding: 16px 20px;
+}
+.et-help .hw-zeile:hover {
+    border-color: var(--hw-ink);
+}
+.et-help .hw-zeile strong {
+    display: block;
+    font-size: 1.05rem;
+}
+.et-help .hw-zeile small {
+    display: block;
+    color: var(--hw-ink2);
+    font-size: 0.9rem;
+    margin-top: 2px;
+}
+.et-help .hw-treffer {
+    color: var(--hw-ink2);
+    margin: 16px 0 0;
+}
+
+/* Anleitung */
+.et-help .hw-artikel {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    gap: 48px;
+    padding-top: 40px;
+    padding-bottom: 24px;
+}
+.et-help .hw-artikel article {
+    min-width: 0;
+}
+.et-help .hw-seitennav {
+    position: sticky;
+    top: 20px;
+    align-self: start;
+    font-size: 0.88rem;
+}
+.et-help .hw-seitennav p {
+    font-weight: 800;
+    margin: 0 0 8px;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--hw-ink3);
+}
+.et-help .hw-seitennav a {
+    display: block;
+    padding: 7px 12px;
+    border-radius: 10px;
+    color: var(--hw-ink2);
+    font-weight: 600;
+}
+.et-help .hw-seitennav a.akt {
+    background: #fff;
+    color: var(--hw-ink);
+    box-shadow: inset 3px 0 0 var(--hw-ink);
+}
+.et-help .hw-seitennav a:hover {
+    color: var(--hw-ink);
+}
+.et-help .hw-brot {
+    font-size: 0.82rem;
+    color: var(--hw-ink3);
+    margin-bottom: 14px;
+}
+.et-help .hw-brot a {
+    font-weight: 600;
+    color: var(--hw-ink2);
+}
+.et-help .hw-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+}
+.et-help .hw-meta span {
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: #fff;
+    border: 1px solid var(--hw-line);
+    border-radius: 999px;
+    padding: 5px 12px;
+}
+.et-help .hw-video {
+    margin-bottom: 12px;
+}
+.et-help .hw-videobar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 12px 2px 0;
+    font-size: 0.85rem;
+    color: var(--hw-ink2);
+}
+.et-help .hw-vtoggle {
+    font: inherit;
+    font-weight: 700;
+    background: none;
+    border: 0;
+    border-bottom: 1.5px solid var(--hw-ink);
+    padding: 4px 0;
+    cursor: pointer;
+    color: var(--hw-ink);
+    min-height: 32px;
+}
+.et-help .hw-oder {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 36px 0 8px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--hw-ink3);
+}
+.et-help .hw-oder::before,
+.et-help .hw-oder::after {
+    content: "";
+    height: 1px;
+    background: var(--hw-line);
+    flex: 1;
+}
+.et-help .hw-schritt {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 18px;
+    margin-top: 36px;
+}
+.et-help .hw-zahl {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid var(--hw-ink);
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+    font-size: 1.4rem;
+    background: #fff;
+}
+.et-help .hw-schritt h2 {
+    font-size: 1.25rem;
+    margin: 12px 0 6px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+.et-help .hw-schritt p {
+    margin: 0 0 16px;
+    max-width: 660px;
+}
+.et-help .hw-legende {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 0;
+    display: grid;
+    gap: 6px;
+}
+.et-help .hw-legende li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    border-radius: 12px;
+    transition: background 0.15s;
+}
+.et-help .hw-legende li:hover,
+.et-help .hw-legende li:focus {
+    background: #fff;
+}
+.et-help .hw-legende li:focus:not(:focus-visible) {
+    outline: none;
+}
+.et-help .hw-legende b.n {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--hw-mark);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+.et-help .hw-legende li > span {
+    padding-top: 3px;
+}
+.et-help .hw-box {
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin: 36px 0 0;
+    max-width: 720px;
+}
+.et-help .hw-box h2 {
+    margin: 0 0 6px;
+    font-size: 1rem;
+    font-weight: 800;
+}
+.et-help .hw-box ul {
+    margin: 0;
+    padding-left: 18px;
+}
+.et-help .hw-box li {
+    margin: 4px 0;
+}
+.et-help .hw-box.info {
+    background: var(--hw-blau);
+}
+.et-help .hw-box.privat {
+    background: var(--hw-rose);
+}
+.et-help .hw-handy-teil h2 {
+    font-size: 1.25rem;
+    margin: 40px 0 0;
+    font-weight: 800;
+}
+.et-help .hw-handy {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 28px;
+    align-items: center;
+    margin-top: 20px;
+}
+.et-help .hw-handy p {
+    margin: 0;
+    max-width: 440px;
+}
+.et-help .hw-telefon {
+    border-radius: 34px;
+    border: 9px solid #1d1d1d;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.4);
+    max-width: 240px;
+}
+.et-help .hw-fuss {
+    margin-top: 48px;
+    border-top: 1px solid var(--hw-line);
+    padding-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.et-help .hw-fuss p {
+    margin: 0;
+    color: var(--hw-ink2);
+}
+.et-help .hw-weiter {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+.et-help .hw-weiter a {
+    background: #fff;
+    border: 1px solid var(--hw-line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+.et-help .hw-weiter a:hover {
+    border-color: var(--hw-ink);
+}
+.et-help .hw-ende {
+    padding: 48px 0 64px;
+    color: var(--hw-ink3);
+    font-size: 0.82rem;
+}
+
+@media (max-width: 900px) {
+    .et-help .hw-artikel {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    .et-help .hw-seitennav {
+        display: none;
+    }
+    .et-help .hw-rundgang {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 640px) {
+    .et-help .hw-wrap {
+        padding: 0 16px;
+    }
+    .et-help .hw-kopf .hw-wrap {
+        min-height: 64px;
+    }
+    .et-help .hw-kopf .hw-knopf {
+        padding: 8px 14px;
+        font-size: 0.82rem;
+    }
+    .et-help .hw-start,
+    .et-help .hw-liste {
+        padding-top: 32px;
+    }
+    .et-help .hw-stempel {
+        display: none;
+    }
+    .et-help .hw-schritt {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+    .et-help .hw-zahl {
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+    }
+    .et-help .hw-handy {
+        grid-template-columns: 1fr;
+    }
+    .et-help .hw-telefon {
+        margin: 0 auto;
+    }
+    .et-help .hw-suche {
+        padding-left: 16px;
+    }
+    .et-help .hw-suche .hw-knopf {
+        padding: 8px 14px;
+    }
+    .et-help .hw-rundgang {
+        padding: 18px;
+    }
+    /* Auf dem Handy sind Desktop-Bilder klein: Nummern größer zeichnen. */
+    .et-help .hw-anno .badge circle {
+        stroke-width: 5;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .et-help *,
+    .et-help *::before,
+    .et-help *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}

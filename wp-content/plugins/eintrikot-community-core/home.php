@@ -39,9 +39,11 @@ function open_member_requests($limit = 3) {
         'orderby' => 'date',
         'order' => 'DESC'
     ]);
+    // Open requests, and closed ones whose last reply the member has not read yet.
     $open = array_filter(
         $rows,
-        fn($row) => !in_array(request_state($row->ID)['status'] ?? 'received', ['adopted', 'rejected'], true)
+        fn($row) => request_unseen($row->ID) ||
+            !in_array(request_state($row->ID)['status'] ?? 'received', ['adopted', 'rejected'], true)
     );
     return array_slice(array_values($open), 0, $limit);
 }
@@ -178,7 +180,11 @@ function render_home() {
     // Open requests, or an invitation to the service area.
     $open = open_member_requests();
     echo '<section class="home-card tone-gold"><h2 class="home-card-label">' .
-        ($open ? 'Deine offenen Anfragen' : 'Service') .
+        ($open
+            ? (array_filter($open, fn($r) => request_unseen($r->ID))
+                ? 'Deine Anfragen'
+                : 'Deine offenen Anfragen')
+            : 'Service') .
         '</h2>';
     if ($open) {
         echo '<ul class="home-requests">';
@@ -189,6 +195,7 @@ function render_home() {
                 '"><span>' .
                 esc_html($row->post_title) .
                 '</span>' .
+                request_new_badge($row->ID) .
                 request_status_pill($status, get_post_meta($row->ID, 'et_kind', true)) .
                 '</a></li>';
         }
