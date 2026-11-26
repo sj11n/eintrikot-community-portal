@@ -1240,6 +1240,25 @@ check(
     count($pp['Doppel Name']['accounts']) === 2 &&
         str_contains($pp['Doppel Name']['reason'], 'Mehrere Konten')
 );
+// Fest eingestelltes Konto: trotz doppeltem Namen gilt genau dieses.
+update_user_meta($pp_d2, 'eintrikot_avatar', $pp_img);
+update_user_meta($pp_d2, 'eintrikot_profile', ['public_photo' => '1']);
+$pp_pin = fn() => ['Doppel Name' => 'zz_d2@example.test'];
+add_filter('eintrikot_people_pinned', $pp_pin);
+$pp_pinned = array_column(people_diagnosis(), null, 'name');
+$pp_html = do_blocks(
+    '<!-- wp:group {"className":"board-person"} --><div class="wp-block-group board-person"><!-- wp:html --><div class="wp-block-cover "><div class="wp-block-cover__inner-container">x</div></div><h3>Doppel Name</h3><!-- /wp:html --></div><!-- /wp:group -->'
+);
+check(
+    'Menschen: fest eingestelltes Konto trotz Doppelname',
+    (int) person_account('Doppel Name')->ID === $pp_d2 &&
+        count($pp_pinned['Doppel Name']['accounts']) === 1 &&
+        str_contains($pp_pinned['Doppel Name']['reason'], 'Alles in Ordnung') &&
+        str_contains($pp_html, 'et-person-photo')
+);
+remove_filter('eintrikot_people_pinned', $pp_pin);
+check('Menschen: ohne Festlegung bleibt Doppelname leer', person_account('Doppel Name') === null);
+check('Menschen: andere Namen wie gehabt', (int) person_account('Pia Prüfstein')->ID === $pp_ok);
 check('Menschen prüfen: Bild fehlt', str_contains($pp['Nora Ohnebild']['reason'], 'kein Profilbild'));
 check('Menschen prüfen: kein Konto', str_contains($pp['Unbekannt Niemand']['reason'], 'Kein Konto'));
 wp_delete_post($pp_page, true);
@@ -2501,7 +2520,8 @@ wp_set_current_user($sm_nl);
 $sm_nl_card = $sm_html();
 check(
     'Zeig dich: Newsletter schon beantwortet, dann nur die Freigabe',
-    str_contains($sm_nl_card, 'Zeig dich den anderen.') && !str_contains($sm_nl_card, 'Newsletter per E-Mail?')
+    str_contains($sm_nl_card, 'Zeig dich den anderen.') &&
+        !str_contains($sm_nl_card, 'Newsletter per E-Mail?')
 );
 
 $sm_later = make_user('eintrikot_member', $sm_profile);
