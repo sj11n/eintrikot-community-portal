@@ -18,7 +18,16 @@ body .wp-site-blocks{padding:0}.wp-site-blocks>*,.entry-content>*{margin-block-s
 @media(max-width:1100px){.header{flex-wrap:nowrap!important}.header>.wp-block-navigation{margin-left:auto}.header .wp-block-navigation__responsive-container:not(.is-menu-open){display:none!important}.header .wp-block-navigation__responsive-container-open{display:flex!important;align-items:center;justify-content:center;width:44px;height:44px}.header .wp-block-navigation__responsive-container.is-menu-open{display:flex!important;padding:70px 7% 30px}.header .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__container{align-items:flex-start;gap:25px}.header .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item{font-size:1.25rem}}
 
 /* Full-screen mobile menu: a filtered ancestor must not contain the fixed overlay. */
-.header{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:#fff}
+/* Sticky header (public site): the template-part wrapper sticks, since .header inside is exactly as tall.
+   The translucent background with blur sits on ::before, so no ancestor of the fixed mobile menu has a filter. */
+.header{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:transparent}
+header.wp-block-template-part:has(>.header){position:sticky;top:0;z-index:1000}
+header.wp-block-template-part>.header::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);pointer-events:none}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){header.wp-block-template-part>.header::before{background:#fff}}
+/* Elements in the sticky header are always visible: without this, scroll-padding-top makes focus() on them
+   (e.g. the menu button after closing the mobile menu, Tab through the menu) scroll the page. */
+header.wp-block-template-part>.header *{scroll-margin-top:-125px}
+header.wp-block-template-part>.header .is-menu-open *{scroll-margin-top:0}
 @media(max-width:1100px){
 .header:has(.is-menu-open){position:static!important}
 .header .wp-block-navigation__responsive-container.is-menu-open{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-height:none!important;overflow-y:auto!important;background:#fff!important;z-index:100000!important;padding:90px 7% 30px!important}
