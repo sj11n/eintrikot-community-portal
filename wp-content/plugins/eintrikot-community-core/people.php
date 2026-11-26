@@ -5,6 +5,7 @@
  * Jede Person auf der Seite ist ein Block mit Namen (h3). Gibt es ein Mitgliedskonto mit genau
  * diesem Namen und hat die Person im Profil zugestimmt („Profilbild auf der Website“), erscheint
  * ihr Profilbild. Sonst stehen die Initialen. Ein im Backend selbst gesetztes Bild hat Vorrang.
+ * Ausnahme PEOPLE_PINNED: Für diese Namen gilt immer ein festes Konto (per E-Mail).
  */
 namespace Eintrikot\Community;
 if (!defined('ABSPATH')) {
@@ -62,8 +63,22 @@ function person_tone($name, $user) {
     return PEOPLE_TONES[$name] ?? '';
 }
 
+/**
+ * Names whose photo always comes from one fixed account (by e-mail), even if several accounts
+ * carry the name. Everyone else is matched by display name as before, whatever their role.
+ */
+const PEOPLE_PINNED = ['Björn Emmerling' => 'bjoern@eintrikot.de'];
+function pinned_email($name) {
+    $pinned = apply_filters('eintrikot_people_pinned', PEOPLE_PINNED);
+    return is_array($pinned) && isset($pinned[$name]) ? (string) $pinned[$name] : '';
+}
+
 /** The portal account with exactly this display name, or null (none or ambiguous). */
 function person_account($name) {
+    $email = pinned_email($name);
+    if ($email !== '') {
+        return get_user_by('email', $email) ?: null;
+    }
     $users = get_users([
         'search' => $name,
         'search_columns' => ['display_name'],
@@ -134,6 +149,11 @@ function people_diagnosis() {
             )
         );
         $used = person_account($name);
+        $email = pinned_email($name);
+        if ($email !== '') {
+            // Fixed account: only that one counts, other accounts with the name are ignored.
+            $found = $used ? [$used] : [];
+        }
         $accounts = [];
         foreach ($found as $u) {
             $avatar = get_user_meta($u->ID, 'eintrikot_avatar', true);
@@ -145,7 +165,9 @@ function people_diagnosis() {
                 'consent' => !empty(profile_data($u->ID)['public_photo'])
             ];
         }
-        if (!$found) {
+        if (!$found && $email !== '') {
+            $reason = 'Fest eingestelltes Konto ' . $email . ' gibt es nicht.';
+        } elseif (!$found) {
             $reason = 'Kein Konto mit genau diesem Anzeigenamen.';
         } elseif (count($found) > 1) {
             $reason =
