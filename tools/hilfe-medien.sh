@@ -19,6 +19,7 @@ COPY="$WORK/wordpress"
 RAW="$WORK/roh"
 DEST="$ROOT/wp-content/plugins/eintrikot-community-core/help"
 PORT="${PORT:-8906}"
+export PORT # WordPress in der Kopie liest den Port aus der Umgebung
 
 [[ -f "$SRC/wp-config.php" ]] || { echo "Kein lokales Testportal. Zuerst: tools/lokal-test.sh setup"; exit 1; }
 command -v cwebp >/dev/null || { echo "cwebp fehlt (brew install webp)."; exit 1; }
@@ -32,7 +33,7 @@ cp -R "$SRC" "$COPY" # Plugin und Theme bleiben Verweise auf dieses Repository
 sed -i.orig "s#127.0.0.1:8899#127.0.0.1:$PORT#g; s#getenv('PORT') ?: '8899'#getenv('PORT') ?: '$PORT'#" "$COPY/wp-config.php"
 
 echo "== Testdaten"
-PORT="$PORT" php "$ROOT/tools/hilfe-medien-seed.php" "$COPY"
+php "$ROOT/tools/hilfe-medien-seed.php" "$COPY"
 
 cat >"$WORK/router.php" <<PHP
 <?php
@@ -42,7 +43,7 @@ if (\$path !== '/' && is_file('$COPY' . \$path)) { return false; }
 chdir('$COPY');
 require '$COPY/index.php';
 PHP
-(cd "$COPY" && PORT="$PORT" exec php -S "127.0.0.1:$PORT" -t . "$WORK/router.php" >"$WORK/server.log" 2>&1) &
+(cd "$COPY" && exec php -S "127.0.0.1:$PORT" -t . "$WORK/router.php" >"$WORK/server.log" 2>&1) &
 SERVER=$!
 trap 'kill $SERVER 2>/dev/null || true' EXIT
 for _ in $(seq 1 50); do
