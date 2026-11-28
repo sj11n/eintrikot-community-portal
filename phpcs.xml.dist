@@ -37,6 +37,7 @@
                 <element value="page_head"/>
                 <element value="request_details_list"/>
                 <element value="birthday_choice_fields"/>
+                <element value="birthday_date_fields"/>
                 <element value="news_tabs"/>
                 <element value="event_field"/>
                 <element value="event_format_options"/>

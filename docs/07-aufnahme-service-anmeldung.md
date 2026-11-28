@@ -125,3 +125,15 @@ Wer ein Mitgliedskonto (mit Mitgliedsnummer) hat, aber kein gültiges Geburtsdat
 - Der Eintrag steht im Änderungsprotokoll („Geburtsdatum nach der Anmeldung ergänzt“, ohne den Wert).
 - Technische Konten ohne Mitgliedsnummer (Administrator) sind nicht betroffen.
 - Fehlermeldungen laufen über den Adressparameter `fehler`, nicht `error`: WordPress löscht `error` aus der Adresse (reserviert für 404). Das galt vorher auch für die Meldungen der Eltern-Seite, die dadurch nie erschienen.
+
+### Tag, Monat, Jahr statt Kalender (0.45)
+
+Rückmeldung aus dem Vorstand: Der Kalender des Browsers (Safari am Mac) blätterte nur Monat für Monat, man musste 18 Jahre zurückklicken. Seitdem ist das Geburtsdatum auf der Seite „Noch eine Angabe“ **und im Profil** eine Gruppe aus drei Feldern: Tag (Zahl), Monat (Liste mit Monatsnamen), Jahr (vier Ziffern). Browser und Passwort-Manager können sie automatisch ausfüllen.
+
+- Die Meldung sagt, was nicht stimmt, und markiert nur das betroffene Feld: Tag fehlt, Monat fehlt, Jahr nicht vierstellig, „Den 31. April gibt es nicht“, vor 1900, in der Zukunft.
+- Was eingetragen war, bleibt nach einem Fehler stehen (auf der Seite 15 Minuten lang, nur serverseitig, nie in der Adresse).
+- Im Profil bleibt ein leeres Geburtsdatum erlaubt; unter 18 sind die Felder für das Mitglied gesperrt (Änderung nur durch die Verwaltung).
+
+### Import ergänzt fehlende Geburtsdaten (0.45)
+
+Ist ein Mitglied beim MeinVerein-Import schon im Portal und hat dort noch **kein** Geburtsdatum, übernimmt der Import das Datum aus der Datei. Die Vorschau zeigt dann „Schon im Portal – Geburtsdatum wird ergänzt“. Sonst bleibt am bestehenden Konto alles, wie es ist; ein vorhandenes Datum wird nie überschrieben. Eintrag im Änderungsprotokoll: „Geburtsdatum aus MeinVerein ergänzt (Konto war schon im Portal)“.

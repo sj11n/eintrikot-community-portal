@@ -756,10 +756,78 @@ $bd_page = (function () {
 })();
 check(
     'Seite: Frage, Begründung mit Beitrag und Knopf',
-    str_contains($bd_page, 'name="birthday"') &&
+    str_contains($bd_page, 'name="birthday[day]"') &&
+        str_contains($bd_page, 'name="birthday[month]"') &&
+        str_contains($bd_page, 'name="birthday[year]"') &&
+        !str_contains($bd_page, 'type="date"') &&
         str_contains($bd_page, 'ab 32 Jahren') &&
         str_contains($bd_page, 'Speichern und weiter')
 );
+/* Tag, Monat, Jahr */
+$p = fn($d, $m, $y) => ['day' => $d, 'month' => $m, 'year' => $y];
+check('Datum: 14. März 1985', birthday_from_parts($p('14', '3', '1985')) === ['1985-03-14', '']);
+check('Datum: führende Null beim Tag', birthday_from_parts($p('04', '11', '1970')) === ['1970-11-04', '']);
+check('Datum: leer ist Pflicht auf der Seite', birthday_from_parts($p('', '', ''))[1] === 'empty');
+check('Datum: leer ist im Profil erlaubt', birthday_from_parts($p('', '', ''), false) === ['', '']);
+check('Datum: Tag fehlt', birthday_from_parts($p('', '3', '1985'))[1] === 'day');
+check('Datum: Tag 32', birthday_from_parts($p('32', '3', '1985'))[1] === 'day');
+check('Datum: Monat fehlt', birthday_from_parts($p('14', '', '1985'))[1] === 'month');
+check('Datum: Jahr zweistellig', birthday_from_parts($p('14', '3', '85'))[1] === 'year');
+check('Datum: 31. April', birthday_from_parts($p('31', '4', '1985'))[1] === 'nodate');
+check('Datum: 29. Februar im Schaltjahr', birthday_from_parts($p('29', '2', '1988'))[0] === '1988-02-29');
+check('Datum: 29. Februar ohne Schaltjahr', birthday_from_parts($p('29', '2', '1987'))[1] === 'nodate');
+check('Datum: vor 1900', birthday_from_parts($p('1', '1', '1899'))[1] === 'old');
+check('Datum: Zukunft', birthday_from_parts($p('1', '1', (string) ((int) wp_date('Y') + 1)))[1] === 'future');
+check('Datum: Meldung nennt Tag und Monat', str_contains(birthday_error_text('nodate', $p('31', '4', '1985')), '31. April'));
+check('Datum: gespeichertes Datum wird in Felder zerlegt', birthday_parts('1985-03-14') === $p('14', '3', '1985'));
+$_POST = ['birthday' => ['day' => ' 7 ', 'month' => '12', 'year' => '1990']];
+check('Datum: Formular wird gelesen', birthday_parts_from_post('birthday') === $p('7', '12', '1990'));
+$_POST = ['birthday' => '1990-12-07'];
+check('Datum: altes Einzelfeld wird noch gelesen', birthday_parts_from_post('birthday') === $p('7', '12', '1990'));
+$_POST = ['birthday' => ['day' => ['x'], 'month' => '12', 'year' => '1990']];
+check('Datum: Unsinn im Formular wird leer', birthday_parts_from_post('birthday')['day'] === '');
+$_POST = [];
+$bd_fields = birthday_date_fields('birthday', '1985-03-14', ['error' => 'Fehler', 'bad' => 'year']);
+check(
+    'Datum: Felder vorbelegt, nur das Jahr als fehlerhaft markiert',
+    str_contains($bd_fields, 'value="14"') &&
+        str_contains($bd_fields, '<option value="3" selected') &&
+        substr_count($bd_fields, 'aria-invalid="true"') === 1 &&
+        str_contains($bd_fields, 'autocomplete="bday-year" placeholder="JJJJ" value="1985" aria-invalid="true"')
+);
+wp_set_current_user($bd_none);
+set_transient(birthday_draft_key($bd_none), $p('31', '4', '1985'), 60);
+$_GET = ['fehler' => 'nodate'];
+$bd_draft = (function () {
+    ob_start();
+    render_birthday_page();
+    return ob_get_clean();
+})();
+check(
+    'Seite: nach einem Fehler bleibt das Eingetragene stehen',
+    str_contains($bd_draft, 'Den 31. April gibt es nicht') && str_contains($bd_draft, 'value="1985"')
+);
+delete_transient(birthday_draft_key($bd_none));
+wp_set_current_user(0);
+
+/* Import: bestehendes Konto ohne Geburtsdatum bekommt es aus MeinVerein */
+$fill_mail = 'fill.' . wp_generate_password(6, false) . '@example.test';
+$fill_user = make_user('eintrikot_member', ['city' => 'Test'], ['eintrikot_member_number' => '9301']);
+wp_update_user(['ID' => $fill_user, 'user_email' => $fill_mail]);
+$fill_row = ['email' => $fill_mail, 'birthday' => '1975-06-01'];
+check('Import: bestehendes Konto ohne Geburtsdatum erkannt', import_birthday_target($fill_row) === $fill_user);
+check(
+    'Import: Geburtsdatum ergänzt, andere Angaben bleiben',
+    import_fill_birthday($fill_row) &&
+        (profile_data($fill_user)['birthday'] ?? '') === '1975-06-01' &&
+        (profile_data($fill_user)['city'] ?? '') === 'Test'
+);
+check(
+    'Import: vorhandenes Geburtsdatum wird nicht überschrieben',
+    !import_fill_birthday(['email' => $fill_mail, 'birthday' => '1980-01-01']) &&
+        (profile_data($fill_user)['birthday'] ?? '') === '1975-06-01'
+);
+
 $_GET = ['fehler' => 'minor'];
 $bd_err = (function () {
     ob_start();
