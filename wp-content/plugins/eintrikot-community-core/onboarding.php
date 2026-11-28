@@ -495,6 +495,9 @@ function import_check($rows) {
             ];
         } elseif (email_exists($row['email']) || username_exists($row['email'])) {
             [$row['status'], $row['reason']] = ['exists', 'Schon im Portal'];
+            if (import_birthday_target($row)) {
+                $row['reason'] = 'Schon im Portal – Geburtsdatum wird ergänzt';
+            }
         } elseif ($row['number'] !== '' && isset($numbers[(string) (int) $row['number']])) {
             [$row['status'], $row['reason']] = [
                 'invalid',
@@ -507,6 +510,42 @@ function import_check($rows) {
 }
 
 /* ---------- Accounts and invitations ---------- */
+
+/**
+ * An existing account that has no birthday yet, while the row brings one: the user ID, else 0.
+ * Only the birthday is added; everything else of an existing account stays as it is.
+ */
+function import_birthday_target($row) {
+    if (($row['birthday'] ?? '') === '' || !is_email($row['email'] ?? '')) {
+        return 0;
+    }
+    $user = get_user_by('email', $row['email']) ?: get_user_by('login', $row['email']);
+    if (!$user || member_birthday(profile_data($user->ID)) !== null) {
+        return 0;
+    }
+    return (int) $user->ID;
+}
+/** Adds the birthday from MeinVerein to an existing account without one. Returns whether it did. */
+function import_fill_birthday($row) {
+    $id = import_birthday_target($row);
+    if (!$id) {
+        return false;
+    }
+    $data = profile_data($id);
+    $data['birthday'] = $row['birthday'];
+    if (update_user_meta($id, 'eintrikot_profile', wp_slash($data)) === false) {
+        return false;
+    }
+    clean_user_cache($id);
+    log_change(
+        $id,
+        'birthday',
+        null,
+        $row['birthday'],
+        'Geburtsdatum aus MeinVerein ergänzt (Konto war schon im Portal)'
+    );
+    return true;
+}
 
 function create_member_account($row) {
     $name = trim($row['first_name'] . ' ' . $row['last_name']);
@@ -943,7 +982,8 @@ function render_onboarding() {
                 count($nda['people']) .
                 '</strong> Personen werden beim Übernehmen ergänzt – nur leere Felder, alles privat.</p>';
         }
-        if ($new || is_array($nda)) {
+        $fills = array_filter($rows, fn($r) => $r['status'] === 'exists' && import_birthday_target($r));
+        if ($new || is_array($nda) || $fills) {
             echo '<fieldset class="import-choice"><legend>Was soll passieren?</legend><label class="check"><input type="radio" name="invite" value="now"' .
                 checked(IMPORT_DEFAULT, 'now', false) .
                 '><span>Konten anlegen und Begrüßung mit Urkunde und Zugangslink sofort senden – bei Mitgliedern unter 18 zuerst die Bitte um Zustimmung der Eltern (höchstens ' .
@@ -1133,6 +1173,13 @@ add_action('admin_post_et_import_create', function () {
             is_wp_error($result) ? ($errors[] = $result->get_error_message()) : $invited++;
         }
     }
+    // Accounts that were already there get the birthday from MeinVerein if they have none.
+    $birthdays = 0;
+    foreach ($rows as $row) {
+        if ($row['status'] === 'exists' && import_fill_birthday($row)) {
+            $birthdays++;
+        }
+    }
     delete_transient('et_import_' . get_current_user_id());
     // Profile values from the NDAlumni sheet of the same file, for new and existing accounts.
     $nda = get_transient('et_import_' . get_current_user_id() . '_nda');
@@ -1154,6 +1201,13 @@ add_action('admin_post_et_import_create', function () {
             ' ' .
             ($invited === 1 ? 'Einladung' : 'Einladungen') .
             ' verschickt.' .
+            ($birthdays
+                ? ' Geburtsdatum bei ' .
+                    $birthdays .
+                    ' ' .
+                    ($birthdays === 1 ? 'bestehendem Konto' : 'bestehenden Konten') .
+                    ' ergänzt.'
+                : '') .
             ($errors ? ' Probleme: ' . implode(' · ', array_slice($errors, 0, 5)) : '')
     );
 });

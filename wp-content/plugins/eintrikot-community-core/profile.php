@@ -631,20 +631,18 @@ function render_profile($id) {
         }
         if ($group === 'Über dich') {
             $minor_locked = is_minor_data(profile_data($id)) && !manager_access();
-            echo '<label class="field">Geburtsdatum<input type="date" name="birthday" min="1900-01-01" max="' .
-                esc_attr(wp_date('Y-m-d')) .
-                '" value="' .
-                esc_attr($data['birthday'] ?? '') .
-                '"' .
-                field_error_attrs('birthday') .
-                ($minor_locked ? ' readonly' : '') .
-                '>' .
-                field_error_text('birthday') .
-                '<small>' .
-                ($minor_locked
-                    ? 'Änderungen bitte über die Vereinsverwaltung.'
-                    : 'Das ganze Datum sehen nur du und die Vereinsverwaltung – außer du gibst es unten frei.') .
-                '</small></label>' .
+            $birthday_error = profile_field_errors()['birthday'] ?? '';
+            echo birthday_date_fields('birthday', $data['birthday_parts'] ?? ($data['birthday'] ?? ''), [
+                'disabled' => $minor_locked,
+                'error' => $birthday_error,
+                'bad' => (string) ($data['birthday_parts']['bad'] ?? ''),
+                'note' =>
+                    '<small>' .
+                    ($minor_locked
+                        ? 'Änderungen bitte über die Vereinsverwaltung.'
+                        : 'Das ganze Datum sehen nur du und die Vereinsverwaltung – außer du gibst es unten frei.') .
+                    '</small>'
+            ]) .
                 (is_minor_data($data)
                     ? '<p class="minor-note">Solange du unter 18 bist, sehen andere Mitglieder nur deinen Namen, dein Team, deine Altersklasse und deine Region – auch keinen Geburtstag. Ab deinem 18. Geburtstag entscheidest du selbst über alle Angaben.</p>'
                     : birthday_choice_fields($data, $id === get_current_user_id()) .
@@ -1016,18 +1014,23 @@ add_action('admin_post_et_profile', function () {
             $data['visibility'][$key] = $shared ? 'members' : 'private';
         }
     }
-    foreach (['display_name' => 120, 'birthday' => 10] as $key => $max) {
-        $v = $_POST[$key] ?? ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cleaned by profile_form_text() below
-        if (!is_scalar($v) || mb_strlen(wp_unslash((string) $v)) > $max) {
-            $errors[$key] =
-                $key === 'birthday' ? 'Bitte das Geburtsdatum prüfen.' : 'Bitte deinen Namen prüfen.';
-        }
-        $data[$key] = profile_form_text($v, $max);
+    $v = $_POST['display_name'] ?? ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cleaned by profile_form_text() below
+    if (!is_scalar($v) || mb_strlen(wp_unslash((string) $v)) > 120) {
+        $errors['display_name'] = 'Bitte deinen Namen prüfen.';
+    }
+    $data['display_name'] = profile_form_text($v, 120);
+    // The birthday comes as Tag, Monat, Jahr. Empty stays allowed here; what was typed is kept for the draft.
+    $birthday_parts = birthday_parts_from_post('birthday');
+    [$data['birthday'], $birthday_key] = birthday_from_parts($birthday_parts, false);
+    unset($data['birthday_parts']);
+    if ($birthday_key !== '') {
+        $errors['birthday'] = birthday_error_text($birthday_key, $birthday_parts);
+        $data['birthday_parts'] = $birthday_parts + ['bad' => birthday_error_field($birthday_key)];
     }
     // Under 18 the birthday decides the youth rules; only the administration changes it.
     if (is_minor_data($previous) && !manager_access()) {
         $data['birthday'] = $previous['birthday'];
-        unset($errors['birthday']);
+        unset($errors['birthday'], $data['birthday_parts']);
     }
     foreach (['show_age', 'public_photo'] as $key) {
         $data[$key] = isset($_POST[$key]);
@@ -1131,6 +1134,7 @@ add_action('admin_post_et_profile', function () {
     if ($errors) {
         profile_error($id, $data, implode(' ', array_unique($errors)), false, $errors);
     }
+    unset($data['birthday_parts']); // only for the draft, never stored
     $data['stations'] = $stations;
     if (
         get_transient('et_profile_conflict_' . get_current_user_id() . '_' . $id) &&

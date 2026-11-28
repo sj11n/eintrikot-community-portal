@@ -2187,6 +2187,54 @@
     line-height: 1;
 }
 
+/* Geburtsdatum als Tag, Monat, Jahr (kein Kalender: der blättert auf vielen Geräten nur Monat für Monat) */
+.et-app fieldset.date-parts {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    font-size: 0.875rem;
+}
+.et-app fieldset.date-parts legend {
+    padding: 0;
+    margin-bottom: 2px;
+}
+.et-app fieldset.date-parts .field-hint {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-size: 0.8125rem;
+}
+.et-app .date-parts-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-start;
+}
+.et-app .date-parts-row input,
+.et-app .date-parts-row select {
+    height: 3.25rem; /* select and text fields the same height */
+}
+.et-app .date-parts-row label {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    font-size: 0.8125rem;
+}
+.et-app .date-parts .date-day input {
+    width: 4.5em;
+}
+.et-app .date-parts .date-month select {
+    width: 8.75em;
+}
+.et-app .date-parts .date-year input {
+    width: 6em;
+}
+.et-app fieldset.date-parts small {
+    display: block;
+    margin-top: 8px;
+}
+
 /* Geburtstag: Wahl, wer ihn sieht, und die Zeile im Profil */
 .et-app fieldset.birthday-choice {
     grid-column: 1 / -1;
